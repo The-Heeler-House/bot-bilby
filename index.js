@@ -1,6 +1,12 @@
 const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
+var http = require('http');
+
+http.createServer(function (req, res) {
+  res.write("I'm alive");
+  res.end();
+}).listen(8080);
 // Require the necessary discord.js classes
 const {
   Client,
@@ -57,6 +63,8 @@ client.once('ready', () => {
           },
         );
         console.log('Successfully registered application commands for development guild');
+        const channel11 = client.channels.cache.get('800594970695303198');
+channel11.send('A new update of Bot Bilby is now live! You will no longer need a help page, just type \`/\` to see a list of commands!');
       }
     } catch (error) {
       if (error) console.error(error);
