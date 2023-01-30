@@ -59,7 +59,7 @@ client.once('ready', () => {
         console.log('Successfully registered application commands globally');
 
 
-        client.user.setActivity('with the Magic Xylophone', { type: 'PLAYING' });
+        client.user.setActivity('with Daddy Robot!', { type: 'PLAYING' });
 
         const defaultChannel = client.channels.cache.get('1012812013795295233');
         setInterval(function() {
