@@ -28,5 +28,8 @@
   "homepage": "https://github.com/kb24x7/discordjs-v13-starter#readme",
   "devDependencies": {
     "node": "^16.13.1"
+  },
+  "engines": {
+    "node": "^16.13.1"
   }
 }
