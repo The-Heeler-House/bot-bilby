@@ -5,7 +5,7 @@ const { Routes } = require('discord-api-types/v9');
 var http = require('http');
 const { MessageActionRow, MessageButton } = require('discord.js');
 http.createServer(function(req, res) {
-  res.write("I'm alive");
+  res.write("I'm alive?");
   res.end();
 }).listen(8080);
 // Require the necessary discord.js classes
