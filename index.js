@@ -24,7 +24,7 @@ const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 const TOKEN = process.env.TOKEN;
-
+console.log("Boot!");
 // Edit your TEST_GUILD_ID here in the env file for development
 const TEST_GUILD_ID = undefined;
 
