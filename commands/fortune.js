@@ -15,24 +15,24 @@ module.exports = {
       return ary[Math.floor(Math.random() * ary.length)];
     };
     var fortune = ra([
-      'Reply hazy, try again.',
-      'Excellent Luck.',
+      'I slipped on ma’ beans! Try again.',
+      'Whackadoo! Excellent Luck.',
       'Good Luck.',
       'Average Luck.',
-      'Bad Luck.',
-      'Good news will come to you by mail.',
+      'Aw Biscuits! Bad Luck.',
+      'Whackadoo! Good news will come to you by mail.',
       '（　´_ゝ`）ﾌｰﾝ.',
       'ｷﾀ━━━━━━(ﾟ∀ﾟ)━━━━━━ !!!!',
       'You will meet a dark handsome stranger.',
       'Better not tell you now.',
       'Outlook good.',
-      'Very Bad Luck.',
-      'Godly Luck.'
+      'Aw Biscuits! Very Bad Luck.',
+      'For real life? Godly Luck.'
     ])
-    if (target != null){
-    const message = await interaction.reply({ content: '<@' + target + '>\'s fortune: ' + fortune, fetchReply: true });
+    if (target != null) {
+      interaction.reply({ content: '<@' + target + '>\'s fortune: ' + fortune });
     } else {
-          const message = await interaction.reply({ content: 'Your fortune: ' + fortune, fetchReply: true });
+      interaction.reply({ content: 'Your fortune: ' + fortune });
     }
   }
 };

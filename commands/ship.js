@@ -29,8 +29,7 @@ module.exports = {
             { label: 'Socks', value: '33', },
             { label: 'Uncle Stripe', value: '40', },
             { label: 'Aunt Trixie', value: '41', },
-            { label: 'Rad', value: '63', },
-            { label: 'Bob', value: '43', },
+            { label: 'Radley', value: '63', },
             { label: 'Nana', value: '44', },
             { label: 'Mort', value: '69', }
           ]),
@@ -123,7 +122,8 @@ module.exports = {
             { label: 'Checkout Dog', value: '67', },
             { label: 'Pony Lady', value: '80', },
             { label: 'Sadie', value: '82', },
-            { label: 'Shanelle', value: '83', }
+            { label: 'Shanelle', value: '83', },
+            { label: 'Frisky', value: '84', }
           ]),
 
       );
@@ -137,11 +137,11 @@ module.exports = {
       );
     var action1 = null;
     var action2 = null;
-    if (interaction.options.getString('character1') != null){
-    var action1 = await finder(interaction.options.getString('character1'), char);
+    if (interaction.options.getString('character1') != null) {
+      var action1 = await finder(interaction.options.getString('character1'), char);
     }
-    if (interaction.options.getString('character2') != null){
-    var action2 = await finder(interaction.options.getString('character2'), char);
+    if (interaction.options.getString('character2') != null) {
+      var action2 = await finder(interaction.options.getString('character2'), char);
     }
     const message = await interaction.reply({ content: 'Select the first character to ship!\nYour selection: **TBA** and **TBA**.', components: [row, row1, row2, row3, row4], fetchReply: true });
     if ((action1 != null) && (action2 != null)) {
@@ -151,9 +151,9 @@ module.exports = {
       row3.components[0].setDisabled(true);
       row4.components[0].setDisabled(false);
       message.edit({ content: `Click the button below to ship!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
-    } else if ((action1 == null) && (action2 != null)){
+    } else if ((action1 == null) && (action2 != null)) {
       message.edit({ content: `Select the first character to ship!\nYour selection: **TBA** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
-    } else if ((action1 != null) && (action2 == null)){
+    } else if ((action1 != null) && (action2 == null)) {
       message.edit({ content: `Select the second character to ship!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
     }
     const collector = message.createMessageComponentCollector({ componentType: 'SELECT_MENU', time: 100000 });
@@ -220,7 +220,7 @@ module.exports = {
         row3.components[0].setDisabled(true);
         row4.components[0].setDisabled(true);
         message.edit({ content: `This command timed out!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
-      } else if (action2 != null){
+      } else if (action2 != null) {
         row.components[0].setDisabled(true);
         row1.components[0].setDisabled(true);
         row2.components[0].setDisabled(true);
@@ -236,23 +236,23 @@ module.exports = {
         message.edit({ content: `This command timed out!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
       }
     });
-    function finder (str, strArray) {
-    for (var j=0; j<strArray.length; j++) {
-        if (strArray[j].name.toLowerCase().replace('\'', '').replace('\’', '') === (str.toLowerCase().replace('\'', '').replace('\’', ''))){
+    function finder(str, strArray) {
+      for (var j = 0; j < strArray.length; j++) {
+        if (strArray[j].name.toLowerCase().replace('\'', '').replace('\’', '') === (str.toLowerCase().replace('\'', '').replace('\’', ''))) {
           console.log(j);
           return j + 1;
-          
+
         }
+      }
+      return null;
     }
-    return null;
-}
 
     function speculate(a, b) {
       return a + " and " + b + "?"
     };
 
-    function ra(ary) {
-      return ary[Math.floor(Math.random() * ary.length)];
+    function random(array) {
+      return array[Math.floor(Math.random() * array.length)];
     };
 
     function calculate(a_h, b_h) {
@@ -264,69 +264,59 @@ module.exports = {
       ary.push(speculate(a_name, b_name));
 
       if (a_name == b_name) {
-        ary.push("What do you think?");
+        ary.push("What do you think? ( ͡° ͜ʖ ͡°)");
         return ary.join(" ")
       };
 
-      if ((true == a.negative.includes("cousin_parents")) && (true == b.negative.includes("cousin_parents"))) {
-        ary.push(ra(["They're already together!"]));
+      if (a.parent && b.parent) {
+        if (a.parent[0] == b.parent[0]) {
+          ary.push(random(["They're already together!"]));
+          return ary.join(" ")
+        }
+      };
+
+      if (a.age != b.age) {
+        ary.push(random([
+          "Take a seat over there.",
+          "Cannot permit that!",
+          "Bit far a part in age?",
+          "Stay away from that ship!"
+        ]));
+
         return ary.join(" ")
       };
 
-      if ((true == a.negative.includes("bluey_parents")) && (true == b.negative.includes("bluey_parents"))) {
-        ary.push(ra(["They're already together!"]));
+      if ((true == a.negative.includes("family_bluey")) && (true == b.negative.includes("family_bluey"))) {
+        ary.push(random([
+          "That's certainly a creepy ship.",
+          "Incest is not an okay request.",
+          "Ew, no.",
+          "It's forbidden love."
+        ]))
+
         return ary.join(" ")
       };
 
       if (a.gender == b.gender) {
-        ary.push(ra([
+        ary.push(random([
           "Interesting ship...",
           "A taste for slash I see?",
           "Creative ship."
         ]))
       };
-
-      var no = false;
-
-      if (a.age != b.age) {
-        ary.push(ra([
-          "Take a seat over there.",
-          "Cannot permit that!",
-          "Ew, no.",
-          "Bit far a part in age?"
+      if ([a_name, b_name].join("").length % 2 == 0) {
+        ary.push(random([
+          "What can I say, it's sheer destiny for them.",
+          "They'd be perfect together <3.",
+          "I agree, that would work."
+        ]));
+      } else {
+        ary.push(random([
+          "Woudn't work out.",
+          "Can't recommend it.",
+          "Don't think they were made for each other."
         ]));
 
-        no = true
-      };
-
-      if ((true == a.negative.includes("family_bluey")) && (true == b.negative.includes("family_bluey"))) {
-        ary.push(ra([
-          "That's certainly a unique ship.",
-          "So you think incest is wincest?",
-          "It's forbidden love."
-        ]))
-      };
-
-      if (!no) {
-        ary.push(function() {
-          switch ([a_name, b_name].join.length % 2) {
-            case 0:
-
-              return ra([
-                "What can I say, it's sheer destiny for them.",
-                "They'd be perfect together <3.",
-                "I agree, that would work."
-              ]);
-
-            case 1:
-
-              return ra([
-                "No way.",
-                "Can't recommend it really.",
-                "Don't think they were made for each other really."
-              ])
-          }
-        }())
       };
 
       return ary.join(" ")

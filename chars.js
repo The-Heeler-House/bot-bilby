@@ -17,23 +17,26 @@ const char = [
     name: "Bandit",
     gender: "male",
     age: "adult",
-    negative: ["family_bluey", "bluey_parents"]
+    negative: ["family_bluey"],
+    parent: ["bluey"]
   },
 
   {
     name: "Chilli",
     gender: "female",
     age: "adult",
-    negative: ["family_bluey", "bluey_parents"]
+    negative: ["family_bluey"],
+    parent: ["bluey"]
   },
 
   {
     name: "Pat",
     gender: "male",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["lucky"]
   },
-  
+
   {
     name: "Mackenzie",
     gender: "male",
@@ -45,98 +48,112 @@ const char = [
     name: "Mackenzie's Mum",
     gender: "female",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["mack"]
   },
 
   {
     name: "Honey's Mum",
     gender: "female",
     age: "adult",
-    negative: ["honey_parents"]
+    negative: ["honey_parents"],
+    parent: ["honey"]
   },
 
   {
     name: "Juniper's Mum",
     gender: "female",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["juniper"]
   },
 
   {
     name: "Coco's Mum",
     gender: "female",
     age: "adult",
-    negative: ["coco_parents"]
+    negative: ["coco_parents"],
+    parent: ["coco"]
   },
 
   {
     name: "Indy's Mum",
     gender: "female",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["indy"]
   },
 
   {
     name: "Chloe's Mum",
     gender: "female",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["chloe"]
   },
 
   {
     name: "Jean-Luc's Mum",
     gender: "female",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["jean"]
   },
 
   {
     name: "Snickers' Mum",
     gender: "female",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["snickers"]
   },
 
   {
     name: "Winton's Dad",
     gender: "male",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["winston"]
   },
 
   {
     name: "Chloe's Dad",
     gender: "male",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["chloe"]
   },
 
   {
     name: "Honey's Dad",
     gender: "male",
     age: "adult",
-    negative: ["honey_parents"]
+    negative: ["honey_parents"],
+    parent: ["honey"]
   },
 
   {
     name: "Gruber's Dad",
     gender: "male",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["gruber"]
   },
 
   {
     name: "Mackenzie's Dad",
     gender: "male",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["mack"]
   },
 
   {
     name: "Jean-Luc's Dad",
     gender: "male",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["jean"]
   },
 
   {
@@ -188,7 +205,8 @@ const char = [
     name: "Rusty's dad",
     gender: "male",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["rusty"]
   },
 
   {
@@ -241,14 +259,16 @@ const char = [
     name: "Uncle Stripe",
     gender: "male",
     age: "adult",
-    negative: ["family_bluey", "cousin_parents"]
+    negative: ["family_bluey"],
+    parent: ["muffin"]
   },
 
   {
     name: "Aunt Trixie",
     gender: "female",
     age: "adult",
-    negative: ["family_bluey", "cousin_parents"]
+    negative: ["family_bluey"],
+    parent: ["muffin"]
   },
 
   {
@@ -262,14 +282,16 @@ const char = [
     name: "Bob",
     gender: "male",
     age: "adult",
-    negative: ["family_bluey"]
+    negative: ["family_bluey"],
+    parent: ["grand"]
   },
 
   {
     name: "Nana",
     gender: "female",
     age: "adult",
-    negative: ["family_bluey"]
+    negative: ["family_bluey"], 
+    parent: ["grand"]
   },
 
   {
@@ -366,14 +388,16 @@ const char = [
     name: "Jack's Dad",
     gender: "male",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["jack"]
   },
 
   {
     name: "Jack's Mum",
     gender: "female",
     age: "adult",
-    negative: []
+    negative: [],
+    parent: ["jack"]
   },
 
   {
@@ -388,10 +412,11 @@ const char = [
   },
 
   {
-    name: "Rad",
+    name: "Radley",
     gender: "male",
     age: "adult",
-    negative: ["family_bluey"]
+    negative: ["family_bluey"],
+    parent: ["cool"]
   },
 
   {
@@ -472,6 +497,12 @@ const char = [
     negative: []
   },
 
+  {
+    name: "INTENTIONAL BUG",
+    gender: "male",
+    age: "adult",
+    negative: []
+  },
   {
     name: "Jasper W",
     gender: "male",
