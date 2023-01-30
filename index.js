@@ -18,7 +18,7 @@ const {
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
 });
-console.log("started");
+console.log("started!");
 // Loading commands from the commands folder
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
