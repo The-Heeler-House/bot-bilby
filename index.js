@@ -2,8 +2,8 @@ const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 var http = require('http');
-
-http.createServer(function (req, res) {
+const { MessageActionRow, MessageButton } = require('discord.js');
+http.createServer(function(req, res) {
   res.write("I'm alive");
   res.end();
 }).listen(8080);
@@ -18,16 +18,15 @@ const {
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
 });
-
+console.log("started");
 // Loading commands from the commands folder
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 const TOKEN = process.env.TOKEN;
-console.log("Boot!");
+
 // Edit your TEST_GUILD_ID here in the env file for development
 const TEST_GUILD_ID = undefined;
-
 
 // Creating a collection for commands in client
 client.commands = new Collection();
@@ -40,6 +39,7 @@ for (const file of commandFiles) {
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
+
   console.log('Ready!');
   // Registering the commands in the client
   const CLIENT_ID = client.user.id;
@@ -56,6 +56,15 @@ client.once('ready', () => {
           },
         );
         console.log('Successfully registered application commands globally');
+
+
+        client.user.setActivity('with the Magic Xylophone', { type: 'PLAYING' });
+
+        const defaultChannel = client.channels.cache.get('1012812013795295233');
+        setInterval(function() {
+          defaultChannel.send("Disboard Bump Reminder! Remember to \`/bump\`!") //send it to whatever channel the bot has permissions to send on
+        }, 120 * 60 * 1000);
+
       } else {
         await rest.put(
           Routes.applicationGuildCommands(CLIENT_ID, TEST_GUILD_ID), {
@@ -63,8 +72,7 @@ client.once('ready', () => {
           },
         );
         console.log('Successfully registered application commands for development guild');
-        const channel11 = client.channels.cache.get('800594970695303198');
-channel11.send('A new update of Bot Bilby is now live! You will no longer need a help page, just type \`/\` to see a list of commands!');
+
       }
     } catch (error) {
       if (error) console.error(error);
@@ -86,6 +94,24 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
+client.on('messageCreate', message => {
+  console.log(message.content);
+
+  if (message.content.toLowerCase().includes('bilby, hello')) {
+    message.channel.send("Hi! How are you?");
+  }
+  else if (message.content.toLowerCase().includes('bilby, how are you')) {
+    message.channel.send("I'm great! You?");
+  }
+  else if (message.content.toLowerCase().includes('bilby, hi')) {
+    message.channel.send("I'm great! You?");
+  }
+  else if (message.content.toLowerCase().includes('bilby, help')) {
+    message.channel.send("All commands are slash commands now! Type `/` to see what commands you can use!");
+  } else if (message.content.toLowerCase().includes('bilby,')) {
+    message.channel.send("You no longer need to call me to run a command! Just type `/` to see what commands you can use!");
+  }
+});
 
 
 
