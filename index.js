@@ -76,7 +76,9 @@ client.once('ready', () => {
 
       }
     } catch (error) {
-      if (error) console.error(error);
+      if (error) {console.error(error);
+      client.channels.cache.get('966921162804301824').send("<@640921495245422632>");
+      client.channels.cache.get('966921162804301824').send(error);}
     }
   })();
 });
@@ -90,13 +92,15 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction);
 
   } catch (error) {
-    if (error) console.error(error);
+    if (error) {console.error(error);
+    client.channels.cache.get('966921162804301824').send("<@640921495245422632>");
+    client.channels.cache.get('966921162804301824').send(error);}
     await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
   }
 });
 
 client.on('messageCreate', message => {
-  console.log(message.content);
+  console.log(message.author.tag + ": " + message.content);
 
   if (message.content.toLowerCase().includes('bilby, hello')) {
     message.channel.send("Hi! How are you?");
@@ -112,6 +116,26 @@ client.on('messageCreate', message => {
   } else if (message.content.toLowerCase().includes('bilby,')) {
     message.channel.send("You no longer need to call me to run a command! Just type `/` to see what commands you can use!");
   }
+});
+client.on('messageDelete', message => {
+  try {
+  message.attachments.forEach(attachment => {
+    const image = attachment.proxyURL;
+    const footer = "file." + image.substring(image.length - 3);
+    if (footer == "peg"){
+      console.log("JPEG found");
+      footer = "file." + image.substring(image.length - 4);
+    }
+    client.channels.cache.get('961201095038873630').send({   files: [{
+      attachment: image,
+      name: footer
+    }], content : "File sent by <@" + message.author.id + "> deleted in <#" + message.channel.id + ">"});
+  })
+} catch (error) {
+  if (error){ console.error(error);
+  client.channels.cache.get('966921162804301824').send("<@640921495245422632>");
+  client.channels.cache.get('966921162804301824').send(error);}
+}
 });
 
 
