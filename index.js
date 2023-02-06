@@ -121,11 +121,7 @@ client.on('messageDelete', message => {
   try {
   message.attachments.forEach(attachment => {
     const image = attachment.proxyURL;
-    const footer = "file." + image.substring(image.length - 3);
-    if (footer == "peg"){
-      console.log("JPEG found");
-      footer = "file." + image.substring(image.length - 4);
-    }
+    const footer = image.substring(image.length - 6);
     client.channels.cache.get('961201095038873630').send({   files: [{
       attachment: image,
       name: footer
