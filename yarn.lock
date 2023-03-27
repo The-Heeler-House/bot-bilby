@@ -366,7 +366,7 @@ dayjs-with-plugins@^1.0.3:
   resolved "https://registry.npmjs.org/dayjs-with-plugins/-/dayjs-with-plugins-1.0.3.tgz"
   integrity sha512-l0LbJ/5f/pXzj0HQhAnz5pchkU3DC7YIw+oHYxzKmhVHynmDuSm7HHZbmPEyNs2X9a8IyH00cTMhfUdTXQL/uA==
 
-dayjs@*:
+dayjs@*, dayjs@^1.11.7:
   version "1.11.7"
   resolved "https://registry.npmjs.org/dayjs/-/dayjs-1.11.7.tgz"
   integrity sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==
