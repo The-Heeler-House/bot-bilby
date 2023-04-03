@@ -71,15 +71,6 @@ var regex = /<br\s*[\/]?>/gi;
       });
       // Logs countries array to the console
       console.dir(countries);
-      // Write countries array in countries.json file
-      fs.writeFile("coutries.json", JSON.stringify(countries, null, 2), (err) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        console.log("Successfully written data to file");
-        
-      });
       var time = dayjs().toISOString();
       const final = new EmbedBuilder()
         .setColor('#8EC2F2')
