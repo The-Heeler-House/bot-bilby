@@ -1,30 +1,30 @@
-console.log("Init!");
 const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 var http = require('http');
 const { MessageActionRow, MessageButton } = require('discord.js');
-http.createServer(function(req, res) {
-  res.write("I'm alive?");
+var dayjs = require('dayjs-with-plugins')
+
+http.createServer(function (req, res) {
+  res.write("I'm alive");
   res.end();
 }).listen(8080);
 // Require the necessary discord.js classes
 const {
   Client,
   Intents,
-  Collection
+  Collection,
+  GatewayIntentBits,
 } = require('discord.js');
-
 // Create a new client instance
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
-console.log("started!");
 // Loading commands from the commands folder
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-const TOKEN = process.env.TOKEN;
+const TOKEN = process.env['TOKEN'];
 
 // Edit your TEST_GUILD_ID here in the env file for development
 const TEST_GUILD_ID = undefined;
@@ -57,15 +57,9 @@ client.once('ready', () => {
           },
         );
         console.log('Successfully registered application commands globally');
+ 
 
-
-        client.user.setActivity('with Daddy Robot!', { type: 'PLAYING' });
-
-        const defaultChannel = client.channels.cache.get('1012812013795295233');
-        setInterval(function() {
-          defaultChannel.send("Disboard Bump Reminder! Remember to \`/bump\`!") //send it to whatever channel the bot has permissions to send on
-        }, 120 * 60 * 1000);
-
+  client.user.setActivity('in Scotland with the Terriers', { type: 'PLAYING' });
       } else {
         await rest.put(
           Routes.applicationGuildCommands(CLIENT_ID, TEST_GUILD_ID), {
@@ -76,64 +70,47 @@ client.once('ready', () => {
 
       }
     } catch (error) {
-      if (error) {console.error(error);
-      client.channels.cache.get('966921162804301824').send("<@640921495245422632>");
-      client.channels.cache.get('966921162804301824').send(error);}
+      if (error) console.error(error);
     }
   })();
 });
 
 client.on('interactionCreate', async interaction => {
-  if (!interaction.isCommand())
+  if (!interaction.isCommand() && !interaction.isContextMenu()){
+    console.log("other called");
     return;
+  }
   const command = client.commands.get(interaction.commandName);
-  if (!command) return;
+  if (!command){
+    return;
+  }
   try {
     await command.execute(interaction);
 
   } catch (error) {
-    if (error) {console.error(error);
-    client.channels.cache.get('966921162804301824').send("<@640921495245422632>");
-    client.channels.cache.get('966921162804301824').send(error);}
+    if (error) console.error(error);
     await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
   }
 });
 
 client.on('messageCreate', message => {
-  console.log(message.author.tag + ": " + message.content);
-
-  if (message.content.toLowerCase().includes('bilby, hello')) {
-    message.channel.send("Hi! How are you?");
-  }
-  else if (message.content.toLowerCase().includes('bilby, how are you')) {
-    message.channel.send("I'm great! You?");
-  }
-  else if (message.content.toLowerCase().includes('bilby, hi')) {
-    message.channel.send("I'm great! You?");
-  }
-  else if (message.content.toLowerCase().includes('bilby, help')) {
-    message.channel.send("All commands are slash commands now! Type `/` to see what commands you can use!");
-  } else if (message.content.toLowerCase().includes('bilby,')) {
-    message.channel.send("You no longer need to call me to run a command! Just type `/` to see what commands you can use!");
-  }
+console.log(message.content);
+ 
+if (message.content.toLowerCase().includes('bilby, hello')){
+ message.channel.send("Hi! How are you?");
+ }
+else if (message.content.toLowerCase().includes('bilby, how are you')){
+ message.channel.send("I'm great! You?");
+ }
+ else if (message.content.toLowerCase().includes('bilby, hi')){
+ message.channel.send("I'm great! You?");
+ }
+ else if (message.content.toLowerCase().includes('bilby, help')){
+ message.channel.send("All commands are slash commands now! Type `/` to see what commands you can use!");
+ } else if (message.content.toLowerCase().includes('bilby,')){
+ message.channel.send("You no longer need to call me to run a command! Just type `/` to see what commands you can use!");
+ }
 });
-client.on('messageDelete', message => {
-  try {
-  message.attachments.forEach(attachment => {
-    const image = attachment.proxyURL;
-    const footer = image.substring(image.length - 6);
-    client.channels.cache.get('961201095038873630').send({   files: [{
-      attachment: image,
-      name: footer
-    }], content : "File sent by <@" + message.author.id + "> deleted in <#" + message.channel.id + ">"});
-  })
-} catch (error) {
-  if (error){ console.error(error);
-  client.channels.cache.get('966921162804301824').send("<@640921495245422632>");
-  client.channels.cache.get('966921162804301824').send(error);}
-}
-});
-
 
 
 // Login to Discord with your client's token
