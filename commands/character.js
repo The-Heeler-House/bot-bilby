@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed, MessageActionRow, MessageSelectMenu, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageActionRow, MessageSelectMenu, MessageButton } = require('discord.js');
 var dayjs = require('dayjs-with-plugins')
 const axios = require("axios");
 const cheerio = require("cheerio");
@@ -72,7 +72,6 @@ var regex = /<br\s*[\/]?>/gi;
       // Logs countries array to the console
       console.dir(countries);
       // Write countries array in countries.json file
-      /*
       fs.writeFile("coutries.json", JSON.stringify(countries, null, 2), (err) => {
         if (err) {
           console.error(err);
@@ -81,9 +80,8 @@ var regex = /<br\s*[\/]?>/gi;
         console.log("Successfully written data to file");
         
       });
-      */
       var time = dayjs().toISOString();
-      const final = new MessageEmbed()
+      const final = new EmbedBuilder()
         .setColor('#8EC2F2')
         .setTitle($(".page-header__title").text())
         .setURL(url)
@@ -98,20 +96,20 @@ var regex = /<br\s*[\/]?>/gi;
       }
       
       if (!(breed.text() === "")) {
-        final.addField('Breed', breed.text(), true
-        )
+        final.addFields({name:'Breed', value: breed.text(), inline: true
+                        })
       }
       if (!(gender.text() === "") && gender.text().substring(0, 1) == "F") {
-        final.addField('Gender', "Female", true
-        )
+        final.addFields({name: 'Gender', value: "Female", inline: true
+                        })
       }
             if (!(gender.text() === "") && gender.text().substring(0, 1) == "M") {
-        final.addField('Gender', "Male", true
-        )
+        final.addFields({name: 'Gender', value: "Male", inline: true
+                        })
       }
       if (!(age.text() === "")) {
-        final.addField('Age', age.text(), true
-        )
+        final.addFields({name: 'Age', value: age.text(), inline: true
+                        })
       }
       interaction.reply({ embeds: [final] });
     } catch (err) {
