@@ -58,8 +58,12 @@ client.once('ready', () => {
         );
         console.log('Successfully registered application commands globally');
  
+        client.user.setActivity('with Daddy Robot!', { type: 'PLAYING' });
 
-  client.user.setActivity('in Scotland with the Terriers', { type: 'PLAYING' });
+        const defaultChannel = client.channels.cache.get('1012812013795295233');
+        setInterval(function() {
+          defaultChannel.send("Disboard Bump Reminder! Remember to \`/bump\`!") //send it to whatever channel the bot has permissions to send on
+        }, 120 * 60 * 1000);
       } else {
         await rest.put(
           Routes.applicationGuildCommands(CLIENT_ID, TEST_GUILD_ID), {
