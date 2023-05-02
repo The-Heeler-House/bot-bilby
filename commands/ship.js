@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed, MessageActionRow, MessageSelectMenu, MessageButton } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const char = require('../chars.js')
 
 module.exports = {
@@ -15,9 +15,9 @@ module.exports = {
         .setDescription('The name of the second character. OPTIONAL.')
         .setRequired(false)),
   async execute(interaction) {
-    const row = new MessageActionRow()
+    const row = new ActionRowBuilder()
       .addComponents(
-        new MessageSelectMenu()
+        new StringSelectMenuBuilder()
           .setCustomId('select1')
           .setPlaceholder('Bluey\'s Family...')
           .addOptions([
@@ -34,9 +34,9 @@ module.exports = {
             { label: 'Mort', value: '69', }
           ]),
       );
-    const row1 = new MessageActionRow()
+    const row1 = new ActionRowBuilder()
       .addComponents(
-        new MessageSelectMenu()
+        new StringSelectMenuBuilder()
           .setCustomId('select2')
           .setPlaceholder('Kids...')
           .addOptions([
@@ -67,9 +67,9 @@ module.exports = {
           ]),
 
       );
-    const row2 = new MessageActionRow()
+    const row2 = new ActionRowBuilder()
       .addComponents(
-        new MessageSelectMenu()
+        new StringSelectMenuBuilder()
           .setCustomId('select3')
           .setPlaceholder('Adult Males...')
           .addOptions([
@@ -95,9 +95,9 @@ module.exports = {
           ]),
 
       );
-    const row3 = new MessageActionRow()
+    const row3 = new ActionRowBuilder()
       .addComponents(
-        new MessageSelectMenu()
+        new StringSelectMenuBuilder()
           .setCustomId('select4')
           .setPlaceholder('Adult Females...')
           .addOptions([
@@ -127,13 +127,13 @@ module.exports = {
           ]),
 
       );
-    const row4 = new MessageActionRow()
+    const row4 = new ActionRowBuilder()
       .addComponents(
-        new MessageButton()
+        new ButtonBuilder()
           .setCustomId('shipper')
           .setLabel('Ship!')
           .setDisabled(true)
-          .setStyle('PRIMARY'),
+          .setStyle(ButtonStyle.Primary),
       );
     var action1 = null;
     var action2 = null;
@@ -156,9 +156,9 @@ module.exports = {
     } else if ((action1 != null) && (action2 == null)) {
       message.edit({ content: `Select the second character to ship!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
     }
-    const collector = message.createMessageComponentCollector({ componentType: 'SELECT_MENU', time: 100000 });
+    const collector = message.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 100000 });
     console.log(1);
-    collector.on('collect', i => {
+    collector.on('collect', async i => {
       if (i.user.id === interaction.user.id) {
         if (action1 == null) {
           action1 = i.values[0];
@@ -171,29 +171,28 @@ module.exports = {
           row2.components[0].setDisabled(true);
           row3.components[0].setDisabled(true);
           row4.components[0].setDisabled(false);
-          i.update({ content: `Click the button below to ship!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
+          await i.update({ content: `Click the button below to ship!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
         } else {
-          i.update({ content: `Select the second character to ship!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
+          await i.update({ content: `Select the second character to ship!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
         }
-
       } else {
-        i.reply({ content: `These buttons aren't for you!`, ephemeral: true });
+        await i.reply({ content: `These buttons aren't for you!`, ephemeral: true });
       }
     });
 
     collector.on('end', collected => {
       console.log(`Collected ${collected.size} interactions.`);
-
     });
-    const collector1 = message.createMessageComponentCollector({ componentType: 'BUTTON', time: 100000 });
+
+    const collector1 = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 100000 });
     console.log(3);
-    collector1.on('collect', i => {
+    collector1.on('collect', async i => {
       if (i.user.id === interaction.user.id) {
-        i.reply({ content: `${deter(action1 - 1, action2 - 1)}` });
+        await i.reply({ content: `${deter(action1 - 1, action2 - 1)}` });
         collector.emit('end', collector.collected);
         collector1.emit('end', collector1.collected);
       } else {
-        i.reply({ content: `These buttons aren't for you!`, ephemeral: true });
+        await i.reply({ content: `These buttons aren't for you!`, ephemeral: true });
       }
     });
 
@@ -236,6 +235,7 @@ module.exports = {
         message.edit({ content: `This command timed out!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
       }
     });
+
     function finder(str, strArray) {
       for (var j = 0; j < strArray.length; j++) {
         if (strArray[j].name.toLowerCase().replace('\'', '').replace('\’', '') === (str.toLowerCase().replace('\'', '').replace('\’', ''))) {
