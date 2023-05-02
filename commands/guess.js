@@ -45,7 +45,7 @@ module.exports = {
             var desc = "";
             for (let i = 0; i < topLeaderboard.length; i++) {
                 const player = topLeaderboard[i];
-                desc += `${i + 1}. ${player.user}: ${player.score}/20\n`;
+                desc += `${i + 1}. ${player.user}: ${player.score} Episodes\n`;
             }
             leaderboardEmbed.setDescription(desc);
             interaction.reply({ embeds: [leaderboardEmbed] });
@@ -73,6 +73,7 @@ module.exports = {
             let score = 0;
             let remainingLives = 3;
             let currNum = 0;
+            let timer = 10000;
             let currentEpisode;
 
             // start the game loop
@@ -103,13 +104,14 @@ module.exports = {
 
                 // wait for the user's answer
                 try {
-                    const answerMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
+                    const answerMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
                     const answer = answerMessage.first().content;
 
                     // if the user's answer matches the episode name, increment the score
                     if (answer.toLowerCase() === currentEpisode.name.toLowerCase()) {
                         score++;
                         await interaction.channel.send('Correct!');
+                        timer -= 100;
                         // ask the next question after a short delay to avoid flooding the channel
                         setTimeout(() => {
                             askQuestion(interaction);
@@ -117,17 +119,18 @@ module.exports = {
                     } else {
                         // if the user's answer is incorrect and no hint has been given yet, ask for more information
                         const hintOption = await interaction.channel.send('Incorrect! Would you like to ask for the season number, episode number, or both (s/e/b)? Type any other letter to exit the game.');
-                        const hintMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
+                        const hintMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
                         const option = hintMessage.first().content.toLowerCase();
 
                         if (option === 's') {
                             await interaction.channel.send(`Season ${currentEpisode.season}`);
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
+                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
                             const retryAnswer = retryMessage.first().content;
 
                             if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
                                 score += 0.5;
                                 await interaction.channel.send('Correct! (With Hint)');
+                                timer -= 100;
                                 // ask the next question after a short delay to avoid flooding the channel
                                 setTimeout(() => {
                                     askQuestion(interaction);
@@ -143,12 +146,13 @@ module.exports = {
                             }
                         } else if (option === 'e') {
                             await interaction.channel.send(`Episode ${currentEpisode.episode}`);
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
+                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
                             const retryAnswer = retryMessage.first().content;
 
                             if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
                                 score += 0.5;
                                 await interaction.channel.send('Correct! (With Hint)');
+                                timer -= 100;
                                 // ask the next question after a short delay to avoid flooding the channel
                                 setTimeout(() => {
                                     askQuestion(interaction);
@@ -164,12 +168,13 @@ module.exports = {
                             }
                         } else if (option === 'b') {
                             await interaction.channel.send(`Season ${currentEpisode.season}, Episode ${currentEpisode.episode}`);
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
+                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
                             const retryAnswer = retryMessage.first().content;
 
                             if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
                                 score += 0.5;
                                 await interaction.channel.send('Correct! (With Hint)');
+                                timer -= 100;
                                 // ask the next question after a short delay to avoid flooding the channel
                                 setTimeout(() => {
                                     askQuestion(interaction);
@@ -196,7 +201,7 @@ module.exports = {
                 }
             }
             async function endGame(interaction, score) {
-                interaction.channel.send(`Game over! Your score is ${score}/20.`);
+                interaction.channel.send(`Game over! Your score is ${score} episodes guessed.`);
                 saveScore('<@' + interaction.user.id + '>', score);
                 const topLeaderboard = await getTopLeaderboard();
                 console.log(topLeaderboard);
@@ -206,7 +211,7 @@ module.exports = {
                 var desc = "";
                 for (let i = 0; i < topLeaderboard.length; i++) {
                     const player = topLeaderboard[i];
-                    desc += `${i + 1}. ${player.user}: ${player.score}/20\n`;
+                    desc += `${i + 1}. ${player.user}: ${player.score} Episodes\n`;
                 }
                 leaderboardEmbed.setDescription(desc);
                 interaction.channel.send({ embeds: [leaderboardEmbed] });
