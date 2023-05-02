@@ -10,6 +10,6 @@ module.exports = {
         .setRequired(true)),
   async execute(interaction) {
     var path = '../eightball/' + Math.floor(Math.random() * 20 + 1) + '.png'
-    interaction.reply({ files: [path] });
+    await interaction.reply({ files: [path] });
   },
 };
