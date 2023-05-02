@@ -73,7 +73,7 @@ module.exports = {
             let score = 0;
             let remainingLives = 3;
             let currNum = 0;
-            let timer = 10000;
+            let timer = 12500;
             let currentEpisode;
 
             // start the game loop
