@@ -103,10 +103,10 @@ var regex = /<br\s*[\/]?>/gi;
         final.addFields({name: 'Age', value: age.text(), inline: true
                         })
       }
-      await interaction.reply({ embeds: [final] });
+      await interaction.editReply({ embeds: [final] });
     } catch (err) {
       console.error(err);
-      await interaction.reply({ content: "404" });
+      await interaction.editReply({ content: "404" });
     }
 
   }
