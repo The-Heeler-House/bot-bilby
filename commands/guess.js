@@ -103,7 +103,7 @@ module.exports = {
 
                 // wait for the user's answer
                 try {
-                    const answerMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 7500, errors: ['time'] });
+                    const answerMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
                     const answer = answerMessage.first().content;
 
                     // if the user's answer matches the episode name, increment the score
@@ -117,12 +117,12 @@ module.exports = {
                     } else {
                         // if the user's answer is incorrect and no hint has been given yet, ask for more information
                         const hintOption = await interaction.channel.send('Incorrect! Would you like to ask for the season number, episode number, or both (s/e/b)? Type any other letter to exit the game.');
-                        const hintMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 7500, errors: ['time'] });
+                        const hintMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
                         const option = hintMessage.first().content.toLowerCase();
 
                         if (option === 's') {
                             await interaction.channel.send(`Season ${currentEpisode.season}`);
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 7500, errors: ['time'] });
+                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
                             const retryAnswer = retryMessage.first().content;
 
                             if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
@@ -143,7 +143,7 @@ module.exports = {
                             }
                         } else if (option === 'e') {
                             await interaction.channel.send(`Episode ${currentEpisode.episode}`);
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 7500, errors: ['time'] });
+                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
                             const retryAnswer = retryMessage.first().content;
 
                             if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
@@ -164,7 +164,7 @@ module.exports = {
                             }
                         } else if (option === 'b') {
                             await interaction.channel.send(`Season ${currentEpisode.season}, Episode ${currentEpisode.episode}`);
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 7500, errors: ['time'] });
+                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: 12500, errors: ['time'] });
                             const retryAnswer = retryMessage.first().content;
 
                             if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
