@@ -6,7 +6,7 @@ module.exports = {
     .setName('changelog')
     .setDescription('See what\'s new with Bot Bilby.'),
   async execute(interaction) {
-
+    
     await interaction.reply({
       embeds: [
         {

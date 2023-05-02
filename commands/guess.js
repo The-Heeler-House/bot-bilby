@@ -51,7 +51,7 @@ module.exports = {
             interaction.reply({ embeds: [leaderboardEmbed] });
         } else {
             // read the text file
-            const text = fs.readFileSync(path.join('../episodeDesc.txt'), 'utf-8');
+            const text = fs.readFileSync(path.join('../src/episodeDesc.txt'), 'utf-8');
 
             // define a regular expression to match each episode
             const regex = /^S(\d+) E(\d+) · (.+)$([\s\S]+?)^$/gm;

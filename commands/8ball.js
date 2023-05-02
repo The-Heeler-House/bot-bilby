@@ -9,7 +9,7 @@ module.exports = {
         .setDescription('The question you want to ask the magic 8-ball.')
         .setRequired(true)),
   async execute(interaction) {
-    var path = '../eightball/' + Math.floor(Math.random() * 20 + 1) + '.png'
+    var path = '../src/eightball/' + Math.floor(Math.random() * 20 + 1) + '.png'
     await interaction.reply({ files: [path] });
   },
 };
