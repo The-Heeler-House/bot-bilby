@@ -191,7 +191,7 @@ module.exports = {
                 } catch (err) {
                     // reveal the answer and move on to the next question
                     remainingLives--;
-                    await interaction.channel.send(`Time's up! You have ${remainingLives} lives remaining.`);
+                    await interaction.channel.send(`Time's up! The answer is ${currentEpisode.name}. You have ${remainingLives} lives remaining.`);
                     askQuestion(interaction);
                 }
             }
