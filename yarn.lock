@@ -196,7 +196,7 @@ dayjs-with-plugins@0.0.4:
   dependencies:
     debug "^4.1.1"
 
-dayjs@*, dayjs@^1.11.0:
+dayjs@^1.11.0:
   version "1.11.7"
   resolved "https://registry.npmjs.org/dayjs/-/dayjs-1.11.7.tgz"
   integrity sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==
