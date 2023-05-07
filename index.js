@@ -108,6 +108,9 @@ client.on('messageCreate', message => {
     message.channel.send("All commands are slash commands now! Type `/` to see what commands you can use!");
   } else if (message.content.toLowerCase().includes('bilby, play mlp guess')) {
     ohDear(message)
+  } else if (message.content.toLowerCase().includes('bilby, say ')) {
+    const hehe = client.channels.cache.get('962936076404686859');
+    hehe.send(message.content.substring(10));
   }
 });
 
