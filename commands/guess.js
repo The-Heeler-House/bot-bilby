@@ -151,10 +151,7 @@ module.exports = {
                                 }, 500);
                             }
                         } else {
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-                            const retryAnswer = retryMessage.first().content;
-
-                            if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+                            if (option.toLowerCase() === currentEpisode.name.toLowerCase()) {
                                 score += 0.5;
                                 await interaction.channel.send('Correct! (Second Guess)');
                                 timer -= 100;
