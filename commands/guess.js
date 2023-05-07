@@ -24,14 +24,17 @@ module.exports = {
         await client.connect();
 
         // create or get the leaderboard collection
-        const leaderboard = client.db('guessLeaders').collection('leaderboard');
+        const leaderboard = client.db('guessLeaders').collection('leaders');
 
         // function to save a score to the leaderboard
         async function saveScore(user, score) {
-            await leaderboard.insertOne({ user, score });
+            const existingScore = await leaderboard.findOne({ user });
+            if (!existingScore || score > existingScore.score) {
+              await leaderboard.updateOne({ user }, { $set: { score } }, { upsert: true });
+            }
         }
         async function getTopLeaderboard() {
-            const cursor = await leaderboard.find().sort({ score: -1 });
+            const cursor = await leaderboard.find().sort({ score: -1 }).limit(5);
             const leaderboardArray = await cursor.toArray();
             return leaderboardArray;
         }
@@ -42,23 +45,10 @@ module.exports = {
             const leaderboardEmbed = new EmbedBuilder()
                 .setColor(9356018)
                 .setTitle('Guesser Leaderboard!')
-            var playerScores = {};
+            var desc = "";
             for (let i = 0; i < topLeaderboard.length; i++) {
                 const player = topLeaderboard[i];
-                if (player.user in playerScores) {
-                    if (player.score > playerScores[player.user]) {
-                        playerScores[player.user] = player.score;
-                    }
-                } else {
-                    playerScores[player.user] = player.score;
-                }
-            }
-
-            var desc = "";
-            var rank = 1;
-            for (const user in playerScores) {
-                desc += `${rank}. ${user}: ${playerScores[user]} Episodes\n`;
-                rank++;
+                desc += `${i + 1}. ${player.user}: ${player.score} Episodes\n`;
             }
             leaderboardEmbed.setDescription(desc);
             interaction.reply({ embeds: [leaderboardEmbed] });
@@ -221,23 +211,10 @@ module.exports = {
                 const leaderboardEmbed = new EmbedBuilder()
                     .setColor(9356018)
                     .setTitle('Guesser Leaderboard!')
-                var playerScores = {};
+                var desc = "";
                 for (let i = 0; i < topLeaderboard.length; i++) {
                     const player = topLeaderboard[i];
-                    if (player.user in playerScores) {
-                        if (player.score > playerScores[player.user]) {
-                            playerScores[player.user] = player.score;
-                        }
-                    } else {
-                        playerScores[player.user] = player.score;
-                    }
-                }
-
-                var desc = "";
-                var rank = 1;
-                for (const user in playerScores) {
-                    desc += `${rank}. ${user}: ${playerScores[user]} Episodes\n`;
-                    rank++;
+                    desc += `${i + 1}. ${player.user}: ${player.score} Episodes\n`;
                 }
                 leaderboardEmbed.setDescription(desc);
                 interaction.channel.send({ embeds: [leaderboardEmbed] });
