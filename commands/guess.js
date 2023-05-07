@@ -31,7 +31,7 @@ module.exports = {
             await leaderboard.insertOne({ user, score });
         }
         async function getTopLeaderboard() {
-            const cursor = await leaderboard.find().sort({ score: -1 }).limit(5);
+            const cursor = await leaderboard.find().sort({ score: -1 });
             const leaderboardArray = await cursor.toArray();
             return leaderboardArray;
         }
