@@ -34,7 +34,7 @@ module.exports = {
             }
         }
         async function getTopLeaderboard() {
-            const cursor = await leaderboard.find().sort({ score: -1 }).limit(5);
+            const cursor = await leaderboard.find().sort({ score: -1 }).limit(10);
             const leaderboardArray = await cursor.toArray();
             return leaderboardArray;
         }
