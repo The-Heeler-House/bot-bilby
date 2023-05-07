@@ -121,55 +121,14 @@ module.exports = {
                         }, 500);
                     } else {
                         // if the user's answer is incorrect and no hint has been given yet, ask for more information
-                        const hintOption = await interaction.channel.send('Incorrect! Would you like to ask for the season number, episode number, or both (s/e/b)? Type any other letter to exit the game.');
+                        const hintOption = await interaction.channel.send('Incorrect! Would you like to ask for a hint or exit the game? (h/e). Otherwise, guess again below!');
                         const hintMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
                         const option = hintMessage.first().content.toLowerCase();
 
-                        if (option === 's') {
-                            await interaction.channel.send(`Season ${currentEpisode.season}`);
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-                            const retryAnswer = retryMessage.first().content;
-
-                            if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
-                                score += 0.5;
-                                await interaction.channel.send('Correct! (With Hint)');
-                                timer -= 100;
-                                // ask the next question after a short delay to avoid flooding the channel
-                                setTimeout(() => {
-                                    askQuestion(interaction);
-                                }, 500);
-                            } else {
-                                // reveal the answer and move on to the next question
-                                remainingLives--;
-                                await interaction.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
-                                // ask the next question after a short delay to avoid flooding the channel
-                                setTimeout(() => {
-                                    askQuestion(interaction);
-                                }, 500);
-                            }
-                        } else if (option === 'e') {
-                            await interaction.channel.send(`Episode ${currentEpisode.episode}`);
-                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-                            const retryAnswer = retryMessage.first().content;
-
-                            if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
-                                score += 0.5;
-                                await interaction.channel.send('Correct! (With Hint)');
-                                timer -= 100;
-                                // ask the next question after a short delay to avoid flooding the channel
-                                setTimeout(() => {
-                                    askQuestion(interaction);
-                                }, 500);
-                            } else {
-                                // reveal the answer and move on to the next question
-                                remainingLives--;
-                                await interaction.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
-                                // ask the next question after a short delay to avoid flooding the channel
-                                setTimeout(() => {
-                                    askQuestion(interaction);
-                                }, 500);
-                            }
-                        } else if (option === 'b') {
+                        if (option === 'e') {
+                            await endGame(interaction, score);
+                            return;
+                        } else if (option === 'h') {
                             await interaction.channel.send(`Season ${currentEpisode.season}, Episode ${currentEpisode.episode}`);
                             const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
                             const retryAnswer = retryMessage.first().content;
@@ -192,8 +151,26 @@ module.exports = {
                                 }, 500);
                             }
                         } else {
-                            await endGame(interaction, score);
-                            return;
+                            const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
+                            const retryAnswer = retryMessage.first().content;
+
+                            if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+                                score += 0.5;
+                                await interaction.channel.send('Correct! (Second Guess)');
+                                timer -= 100;
+                                // ask the next question after a short delay to avoid flooding the channel
+                                setTimeout(() => {
+                                    askQuestion(interaction);
+                                }, 500);
+                            } else {
+                                // reveal the answer and move on to the next question
+                                remainingLives--;
+                                await interaction.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
+                                // ask the next question after a short delay to avoid flooding the channel
+                                setTimeout(() => {
+                                    askQuestion(interaction);
+                                }, 500);
+                            }
                         }
                     }
                 } catch (err) {
