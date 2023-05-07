@@ -42,10 +42,23 @@ module.exports = {
             const leaderboardEmbed = new EmbedBuilder()
                 .setColor(9356018)
                 .setTitle('Guesser Leaderboard!')
-            var desc = "";
+            var playerScores = {};
             for (let i = 0; i < topLeaderboard.length; i++) {
                 const player = topLeaderboard[i];
-                desc += `${i + 1}. ${player.user}: ${player.score} Episodes\n`;
+                if (player.user in playerScores) {
+                    if (player.score > playerScores[player.user]) {
+                        playerScores[player.user] = player.score;
+                    }
+                } else {
+                    playerScores[player.user] = player.score;
+                }
+            }
+
+            var desc = "";
+            var rank = 1;
+            for (const user in playerScores) {
+                desc += `${rank}. ${user}: ${playerScores[user]} Episodes\n`;
+                rank++;
             }
             leaderboardEmbed.setDescription(desc);
             interaction.reply({ embeds: [leaderboardEmbed] });
@@ -208,10 +221,23 @@ module.exports = {
                 const leaderboardEmbed = new EmbedBuilder()
                     .setColor(9356018)
                     .setTitle('Guesser Leaderboard!')
-                var desc = "";
+                var playerScores = {};
                 for (let i = 0; i < topLeaderboard.length; i++) {
                     const player = topLeaderboard[i];
-                    desc += `${i + 1}. ${player.user}: ${player.score} Episodes\n`;
+                    if (player.user in playerScores) {
+                        if (player.score > playerScores[player.user]) {
+                            playerScores[player.user] = player.score;
+                        }
+                    } else {
+                        playerScores[player.user] = player.score;
+                    }
+                }
+
+                var desc = "";
+                var rank = 1;
+                for (const user in playerScores) {
+                    desc += `${rank}. ${user}: ${playerScores[user]} Episodes\n`;
+                    rank++;
                 }
                 leaderboardEmbed.setDescription(desc);
                 interaction.channel.send({ embeds: [leaderboardEmbed] });
