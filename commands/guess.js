@@ -96,7 +96,9 @@ module.exports = {
             }
             leaderboardEmbed.setDescription(desc);
             interaction.reply({ embeds: [leaderboardEmbed] });
-        } else if (interaction.options.getSubcommand() === 'multiplayer') {
+        } 
+        /** 
+        else if (interaction.options.getSubcommand() === 'multiplayer') {
             let scores = {};
             let currNum = 0;
             let timer = 12500;
@@ -144,7 +146,9 @@ module.exports = {
                     }
                 }
             });
-        } else {
+        } 
+        */
+        else {
             // initialize the game state
             let score = 0;
             let remainingLives = 3;
