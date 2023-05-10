@@ -98,19 +98,15 @@ client.on('messageCreate', message => {
 
   if (message.content.toLowerCase().includes('bilby, hello')) {
     message.channel.send("Hi! How are you?");
-  }
-  else if (message.content.toLowerCase().includes('bilby, how are you')) {
-    message.channel.send("I'm great! You?");
-  }
-  else if (message.content.toLowerCase().includes('bilby, hi')) {
-    message.channel.send("I'm great! You?");
-  } else if (message.content.toLowerCase().includes('bilby, help')) {
-    message.channel.send("All commands are slash commands now! Type `/` to see what commands you can use!");
   } else if (message.content.toLowerCase().includes('bilby, play mlp guess')) {
     ohDear(message)
   } else if (message.content.toLowerCase().includes('bilby, say ')) {
     const hehe = client.channels.cache.get('962936076404686859');
     hehe.send(message.content.substring(10));
+  } else if (message.content.toLowerCase().includes('bilby, hide')) {
+    client.user.setStatus('invisible');
+  } else if (message.content.toLowerCase().includes('bilby, unhide')) {
+    client.user.setStatus('online');
   }
 });
 

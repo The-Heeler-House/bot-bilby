@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MongoClient } = require('mongodb');
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -12,6 +12,10 @@ module.exports = {
             subcommand
                 .setName('play')
                 .setDescription('Can you guess the Bluey episode title just from it\'s description?'))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('multiplayer')
+                .setDescription('Play a live multipayer guessing game with your friends!'))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('leaders')
@@ -30,13 +34,53 @@ module.exports = {
         async function saveScore(user, score) {
             const existingScore = await leaderboard.findOne({ user });
             if (!existingScore || score > existingScore.score) {
-              await leaderboard.updateOne({ user }, { $set: { score } }, { upsert: true });
+                await leaderboard.updateOne({ user }, { $set: { score } }, { upsert: true });
             }
         }
         async function getTopLeaderboard() {
             const cursor = await leaderboard.find().sort({ score: -1 }).limit(10);
             const leaderboardArray = await cursor.toArray();
             return leaderboardArray;
+        }
+
+        // read the text file
+        //const text = fs.readFileSync(path.join('../src/episodeDesc.txt'), 'utf-8');
+        const text = fs.readFileSync(path.join('./episodeDesc.txt'), 'utf-8');
+
+        // define a regular expression to match each episode
+        const regex = /^S(\d+) E(\d+) · (.+)$([\s\S]+?)^$/gm;
+
+        // create an array to store the episode information
+        const episodes = [];
+
+        // iterate over each match of the regular expression
+        let match;
+        while ((match = regex.exec(text))) {
+            const season = match[1];
+            const episode = match[2];
+            const name = match[3];
+            const description = match[4].trim();
+            episodes.push({ season, episode, name, description });
+        }
+
+        // shuffle function
+        function shuffle(array) {
+            let currentIndex = array.length,
+                randomIndex;
+
+            // While there remain elements to shuffle.
+            while (currentIndex != 0) {
+
+                // Pick a remaining element.
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                // And swap it with the current element.
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]
+                ];
+            }
+            return array;
         }
 
         if (interaction.options.getSubcommand() === 'leaders') {
@@ -52,26 +96,55 @@ module.exports = {
             }
             leaderboardEmbed.setDescription(desc);
             interaction.reply({ embeds: [leaderboardEmbed] });
+        } else if (interaction.options.getSubcommand() === 'multiplayer') {
+            let scores = {};
+            let currNum = 0;
+            let timer = 12500;
+            let currentEpisode;
+
+            // start the game loop
+            shuffle(episodes);
+
+            // builds welcome message
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('join')
+                        .setLabel('Join Game')
+                        .setDisabled(false)
+                        .setStyle(ButtonStyle.Success),
+                )
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('leave')
+                        .setLabel('Leave Game')
+                        .setDisabled(false)
+                        .setStyle(ButtonStyle.Danger),
+                )
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('start')
+                        .setLabel('Begin!')
+                        .setDisabled(false)
+                        .setStyle(ButtonStyle.Primary),
+                );
+            var users = ["<@" + interaction.user.id + "> (Host)"];
+            var userID = [interaction.user.id];
+            // message
+            const message = await interaction.reply({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row], fetchReply: true });
+            const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 100000 });
+            collector.on('collect', async i => {
+                if (collector.customId === 'join'){
+                    if (!userID.inludes(interaction.user.id)) {
+                        users.push("<@" + interaction.user.id + ">")
+                        userID.push(interaction.user.id)
+                        await i.update({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row]})
+                    } else {
+                        await i.reply({ content: `You have already joined the game!`, ephemeral: true });
+                    }
+                }
+            });
         } else {
-            // read the text file
-            const text = fs.readFileSync(path.join('../src/episodeDesc.txt'), 'utf-8');
-
-            // define a regular expression to match each episode
-            const regex = /^S(\d+) E(\d+) · (.+)$([\s\S]+?)^$/gm;
-
-            // create an array to store the episode information
-            const episodes = [];
-
-            // iterate over each match of the regular expression
-            let match;
-            while ((match = regex.exec(text))) {
-                const season = match[1];
-                const episode = match[2];
-                const name = match[3];
-                const description = match[4].trim();
-                episodes.push({ season, episode, name, description });
-            }
-
             // initialize the game state
             let score = 0;
             let remainingLives = 3;
@@ -192,25 +265,6 @@ module.exports = {
                 }
                 leaderboardEmbed.setDescription(desc);
                 interaction.channel.send({ embeds: [leaderboardEmbed] });
-            }
-
-            function shuffle(array) {
-                let currentIndex = array.length,
-                    randomIndex;
-
-                // While there remain elements to shuffle.
-                while (currentIndex != 0) {
-
-                    // Pick a remaining element.
-                    randomIndex = Math.floor(Math.random() * currentIndex);
-                    currentIndex--;
-
-                    // And swap it with the current element.
-                    [array[currentIndex], array[randomIndex]] = [
-                        array[randomIndex], array[currentIndex]
-                    ];
-                }
-                return array;
             }
         }
     }
