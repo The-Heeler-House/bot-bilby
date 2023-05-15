@@ -85,7 +85,6 @@ module.exports = {
 
         if (interaction.options.getSubcommand() === 'leaders') {
             const topLeaderboard = await getTopLeaderboard();
-            console.log(topLeaderboard);
             const leaderboardEmbed = new EmbedBuilder()
                 .setColor(9356018)
                 .setTitle('Guesser Leaderboard!')
@@ -96,9 +95,7 @@ module.exports = {
             }
             leaderboardEmbed.setDescription(desc);
             interaction.reply({ embeds: [leaderboardEmbed] });
-        } 
-        /** 
-        else if (interaction.options.getSubcommand() === 'multiplayer') {
+        } else if (interaction.options.getSubcommand() === 'multiplayer') {
             let scores = {};
             let currNum = 0;
             let timer = 12500;
@@ -131,24 +128,121 @@ module.exports = {
                         .setStyle(ButtonStyle.Primary),
                 );
             var users = ["<@" + interaction.user.id + "> (Host)"];
-            var userID = [interaction.user.id];
+            var userID = [[interaction.user.id, 0]];
+            var onlyID = [interaction.user.id];
             // message
             const message = await interaction.reply({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row], fetchReply: true });
-            const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 100000 });
+            const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 200000 });
             collector.on('collect', async i => {
-                if (collector.customId === 'join'){
-                    if (!userID.inludes(interaction.user.id)) {
-                        users.push("<@" + interaction.user.id + ">")
-                        userID.push(interaction.user.id)
-                        await i.update({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row]})
+                if (i.customId === 'join') {
+                    if (!onlyID.includes(i.user.id)) {
+                        users.push("<@" + i.user.id + ">")
+                        userID.push([i.user.id, 0])
+                        onlyID.push(i.user.id)
+                        await i.update({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row] })
                     } else {
                         await i.reply({ content: `You have already joined the game!`, ephemeral: true });
                     }
+                } else if (i.customId === 'leave') {
+                    var location = onlyID.indexOf(i.user.id)
+                    if (location != -1) {
+                        if (i.user.id != interaction.user.id) {
+                            userID.splice(location, 1)
+                            onlyID.splice(location, 1)
+                            users.splice(location, 1)
+                            await i.update({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row] })
+                        } else {
+                            await i.reply({ content: `The host cannot leave!`, ephemeral: true });
+                        }
+                    } else {
+                        await i.reply({ content: `You have not joined the game!`, ephemeral: true })
+                    }
+                } else if (i.customId === 'start') {
+                    if (i.user.id == interaction.user.id){
+                    row.components[0].setDisabled(true);
+                    row.components[1].setDisabled(true);
+                    row.components[2].setDisabled(true);
+                    await i.update({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row] })
+                    await interaction.channel.send("Starting Game! To end the game, type `endgame` as the host.");
+
+                    var currNum = 0;
+                    var timer = 12500;
+                    var currentEpisode;
+
+                    // start the game loop
+                    shuffle(episodes);
+                    askQuestion(interaction);
+
+                    async function askQuestion(interaction) {
+                        // if there are no remaining questions, end the game
+                        if (currNum === 20) {
+                            await endGame(interaction, userID);
+                            return;
+                        }
+
+                        // select the next episode and decrement the remainingLives counter
+                        currentEpisode = episodes.pop();
+                        currNum++;
+
+                        // send the episode description as a question
+                        await interaction.channel.send(`Question ${currNum}: ${currentEpisode.description}`);
+
+                        // create a filter to only listen to the user's next message in the same channel
+                        const multiFilter = (message) => onlyID.includes(message.author.id) && message.channel.id === interaction.channel.id;
+                        var correct = false;
+                        const answerMessage = interaction.channel.createMessageCollector({ filter: multiFilter, time: timer });
+                        answerMessage.on('collect', m => {
+                            const answer = m.content;
+                            const id = m.author.id;
+                            // if the user's answer matches the episode name, increment the score
+                            if (answer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+                                interaction.channel.send('Correct! <@' + id + '> receives 1 point!');
+                                var location = userID.findIndex(inner => inner.indexOf(id) >= 0);
+                                userID[location][1] += 1
+                                timer -= 100
+                                // ask the next question after a short delay to avoid flooding the channel
+                                correct = true;
+                                answerMessage.stop()
+                                setTimeout(() => {
+                                    askQuestion(interaction);
+                                }, 500);
+                            } else if (answer.toLowerCase() === 'endgame' && id == interaction.user.id) {
+                                correct = true;
+                                answerMessage.stop()
+                                endGame(interaction, userID);
+                            }
+                        })
+                        answerMessage.on('end', collected => {
+                            if (!correct) {
+                                interaction.channel.send(`Time's up! The answer is ${currentEpisode.name}. No one gains a point!`);
+                                setTimeout(() => {
+                                    askQuestion(interaction);
+                                }, 500);
+                            }
+                        });
+                    }
+                    async function endGame(interaction, scores) {
+                        const leaderboardEmbed = new EmbedBuilder()
+                            .setColor(9356018)
+                            .setTitle('Multiplayer Guesser Results!')
+                        var desc = "";
+
+                        scores.sort((a, b) => b[1] - a[1]);
+                        interaction.channel.send(`Game over! The winner is: <@` + scores[0][0] + '>!');
+
+                        for (let i = 0; i < scores.length; i++) {
+                            const player = scores[i];
+                            desc += `${i + 1}. <@${player[0]}>: ${player[1]} Episodes\n`;
+                        }
+                        leaderboardEmbed.setDescription(desc);
+                        interaction.channel.send({ embeds: [leaderboardEmbed] });
+                    }
+                } else {
+                    await i.reply({ content: `Only the host can start the game!`, ephemeral: true });
+                }
                 }
             });
-        } 
-        */
-        else {
+        } else {
             // initialize the game state
             let score = 0;
             let remainingLives = 3;
@@ -251,14 +345,15 @@ module.exports = {
                     // reveal the answer and move on to the next question
                     remainingLives--;
                     await interaction.channel.send(`Time's up! The answer is ${currentEpisode.name}. You have ${remainingLives} lives remaining.`);
-                    askQuestion(interaction);
+                    setTimeout(() => {
+                        askQuestion(interaction);
+                    }, 500);
                 }
             }
             async function endGame(interaction, score) {
                 interaction.channel.send(`Game over! Your score is ${score} episodes guessed.`);
                 saveScore('<@' + interaction.user.id + '>', score);
                 const topLeaderboard = await getTopLeaderboard();
-                console.log(topLeaderboard);
                 const leaderboardEmbed = new EmbedBuilder()
                     .setColor(9356018)
                     .setTitle('Guesser Leaderboard!')

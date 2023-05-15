@@ -157,7 +157,6 @@ module.exports = {
       message.edit({ content: `Select the second character to ship!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
     }
     const collector = message.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 100000 });
-    console.log(1);
     collector.on('collect', async i => {
       if (i.user.id === interaction.user.id) {
         if (action1 == null) {
@@ -185,7 +184,6 @@ module.exports = {
     });
 
     const collector1 = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 100000 });
-    console.log(3);
     collector1.on('collect', async i => {
       if (i.user.id === interaction.user.id) {
         await i.reply({ content: `${deter(action1 - 1, action2 - 1)}` });
@@ -197,7 +195,7 @@ module.exports = {
     });
 
     collector1.on('end', collected => {
-      console.log(`Collected interactions.`);
+      console.log(`Collected ${collected.size} interactions.`);
       if (collected.size == 0 && action1 == null && action2 == null) {
         row.components[0].setDisabled(true);
         row1.components[0].setDisabled(true);
@@ -239,7 +237,6 @@ module.exports = {
     function finder(str, strArray) {
       for (var j = 0; j < strArray.length; j++) {
         if (strArray[j].name.toLowerCase().replace('\'', '').replace('\’', '') === (str.toLowerCase().replace('\'', '').replace('\’', ''))) {
-          console.log(j);
           return j + 1;
 
         }

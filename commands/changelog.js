@@ -12,7 +12,7 @@ module.exports = {
         {
           "title": "Bot Changelog",
           "color": 9356018,
-          "description": "- New episode guesser feature!.\n- New chatbot features: Bilby, hello! Bilby, how are you?\n- Revamped ship command, complete with a new character picker.\n- Deprecated the rarely used tiermaker commands.\n- Search Blueypedia inside of Discord with the new Character command!\n- More commands coming soon!",
+          "description": "- New episode guesser feature!.\n- New multiplayer episode guesser!\n- Revamped ship command, complete with a new character picker.\n- Deprecated the rarely used tiermaker commands.\n- Search Blueypedia inside of Discord with the new Character command!\n- More commands coming soon!",
           "timestamp": "2022-01-03",
           "author": {
             "name": "Bot Bilby 2.3.0",
