@@ -30,6 +30,7 @@ module.exports = {
             { label: 'Uncle Stripe', value: '40', },
             { label: 'Aunt Trixie', value: '41', },
             { label: 'Radley', value: '63', },
+            { label: 'Frisky', value: '84', },
             { label: 'Nana', value: '44', },
             { label: 'Mort', value: '69', }
           ]),
@@ -105,10 +106,12 @@ module.exports = {
             { label: 'Honey\'s Mum', value: '8', },
             { label: 'Juniper\'s Mum', value: '9', },
             { label: 'Coco\'s Mum', value: '10', },
+            { label: 'Terrier\'s Mum', value: '85', },
             { label: 'Indy\'s Mum', value: '11', },
             { label: 'Chloe\'s Mum', value: '12', },
             { label: 'Jean-Luc\'s Mum', value: '13', },
             { label: 'Snickers\' Mum', value: '14', },
+            { label: 'Jack\'s Mum', value: '60', },
             { label: 'Wendy', value: '42', },
             { label: 'Calypso', value: '45', },
             { label: 'Doctor', value: '50', },
@@ -117,13 +120,11 @@ module.exports = {
             { label: 'Checkout Lady', value: '53', },
             { label: 'Vet Corgi', value: '54', },
             { label: 'Mrs. Retriever', value: '56', },
-            { label: 'Jack\'s Mum', value: '60', },
             { label: 'Bella', value: '65', },
             { label: 'Checkout Dog', value: '67', },
             { label: 'Pony Lady', value: '80', },
             { label: 'Sadie', value: '82', },
-            { label: 'Shanelle', value: '83', },
-            { label: 'Frisky', value: '84', }
+            { label: 'Shanelle', value: '83', }
           ]),
 
       );
