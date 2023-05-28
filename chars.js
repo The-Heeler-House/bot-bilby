@@ -550,7 +550,7 @@ const char = [
     age: "adult",
     negative: ["family_bluey"],
     parent: ["cool"]
-  }
+  },
   {
     name: "Terrier's Mum",
     gender: "female",
