@@ -132,7 +132,7 @@ module.exports = {
             var onlyID = [interaction.user.id];
             // message
             const message = await interaction.reply({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row], fetchReply: true });
-            const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 200000 });
+            const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 600000 });
             collector.on('collect', async i => {
                 if (i.customId === 'join') {
                     if (!onlyID.includes(i.user.id)) {
@@ -241,6 +241,12 @@ module.exports = {
                     await i.reply({ content: `Only the host can start the game!`, ephemeral: true });
                 }
                 }
+            });
+            collector.on('end', collected => {
+                row.components[0].setDisabled(true);
+                row.components[1].setDisabled(true);
+                row.components[2].setDisabled(true);
+                interaction.editReply({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row] })
             });
         } else {
             // initialize the game state

@@ -2,24 +2,27 @@ const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 var http = require('http');
-const { MessageActionRow, MessageButton } = require('discord.js');
 var dayjs = require('dayjs-with-plugins')
 
 http.createServer(function (req, res) {
   res.write("I'm alive");
   res.end();
 }).listen(8080);
+
 // Require the necessary discord.js classes
 const {
   Client,
   Intents,
   Collection,
   GatewayIntentBits,
+  ActivityType,
 } = require('discord.js');
+
 // Create a new client instance
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessageReactions]
 });
+
 // Loading commands from the commands folder
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -58,7 +61,10 @@ client.once('ready', () => {
         );
         console.log('Successfully registered application commands globally');
 
-        client.user.setActivity('with Daddy Robot!', { type: 'PLAYING' });
+        client.user.setPresence({
+          activities: [{ name: `a rugby game!`, type: ActivityType.Competing }],
+          status: 'dnd',
+        });
 
         const defaultChannel = client.channels.cache.get('1012812013795295233');
         setInterval(function () {
