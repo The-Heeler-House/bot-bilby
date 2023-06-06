@@ -137,10 +137,10 @@ module.exports = {
                     if (!randomWord.includes(letter)) {
                         attempts++;
                         if (attempts >= stages.length) {
-                            hangmanMessage.edit(stages[attempts - 1] + 'Game Over! You lost.\nThe word was: ' + randomWord);
                             finished = true;
-                            letterCollector.stop();
+                            hangmanMessage.edit(stages[attempts - 1] + 'Game Over! You lost.\nThe word was: ' + randomWord);
                             letterCollector2.stop();
+                            letterCollector.stop();
                         } else {
                             hangmanMessage.edit(stages[attempts]);
                         }
@@ -150,10 +150,10 @@ module.exports = {
                     gameMessage.edit(updatedMessage);
 
                     if (!updatedMessage.includes("__\\_")) {
-                        hangmanMessage.edit(stages[attempts] + 'Congratulations! You won!');
                         finished = true;
-                        letterCollector.stop();
+                        hangmanMessage.edit(stages[attempts] + 'Congratulations! You won!');
                         letterCollector2.stop();
+                        letterCollector.stop();
                     }
                 }
             });
@@ -174,6 +174,55 @@ module.exports = {
                         if (attempts >= stages.length) {
                             finished = true;
                             hangmanMessage.edit(stages[attempts - 1] + 'Game Over! You lost.\nThe word was: ' + randomWord);
+                            letterCollector.stop();
+                            letterCollector2.stop();
+                        } else {
+                            hangmanMessage.edit(stages[attempts]);
+                        }
+                    }
+
+                    const updatedMessage = generateMessage(randomWord, guessedLetters);
+                    gameMessage.edit(updatedMessage);
+
+                    if (!updatedMessage.includes("__\\_")) {
+                        finished = true;
+                        hangmanMessage.edit(stages[attempts] + 'Congratulations! You won!');
+                        letterCollector.stop();
+                        letterCollector2.stop();
+                    }
+                }
+            });
+        } else {
+            await interaction.reply({
+                content: 'Starting a Bluey themed hangman game! The bot will read all reactions. Winstreaks will not be reset.',
+            });
+
+            const hangmanMessage = await interaction.channel.send(stages[0]);
+
+            const gameMessage = await interaction.channel.send(generateMessage(randomWord, []));
+            nextLetter(gameMessage, 0, letters);
+            const gameMessage2 = await interaction.channel.send("** **")
+            nextLetter(gameMessage2, 0, letters2);
+
+
+            const letterFilter = (reaction, user) => reaction.message.id === gameMessage.id && (letters).includes(reaction.emoji.name) && user.id !== "775186735185264641";
+            const letterCollector = gameMessage.createReactionCollector({ filter: letterFilter, time: 600000 });
+
+            const letterFilter2 = (reaction, user) => reaction.message.id === gameMessage2.id && (letters2).includes(reaction.emoji.name) && user.id !== "775186735185264641";
+            const letterCollector2 = gameMessage2.createReactionCollector({ filter: letterFilter2, time: 600000 });
+
+            var finished = false;
+            letterCollector.on('collect', (reaction, user) => {
+                const emoji = reaction.emoji.name;
+                const letter = alpha[letters.indexOf(emoji)];
+                if (!guessedLetters.includes(letter)) {
+                    guessedLetters.push(letter);
+
+                    if (!randomWord.includes(letter)) {
+                        attempts++;
+                        if (attempts >= stages.length) {
+                            finished = true;
+                            hangmanMessage.edit(stages[attempts - 1] + 'Game Over! You lost.\nThe word was: ' + randomWord);
                             letterCollector2.stop();
                             letterCollector.stop();
                         } else {
@@ -192,54 +241,8 @@ module.exports = {
                     }
                 }
             });
-        } else {
-            await interaction.reply({
-                content: 'Starting a Bluey themed hangman game! The bot will read all reactions. Winstreaks will not be reset.',
-            });
-
-            const hangmanMessage = await interaction.channel.send(stages[0]);
-
-            const gameMessage = await interaction.channel.send(generateMessage(randomWord, []));
-            nextLetter(gameMessage, 0, letters);
-            const gameMessage2 = await interaction.channel.send("** **")
-            nextLetter(gameMessage2, 0, letters2);
-
-
-            const letterFilter = (reaction, user) => reaction.message.id === gameMessage.id && (letters).includes(reaction.emoji.name);
-            const letterCollector = gameMessage.createReactionCollector({ filter: letterFilter, time: 600000 });
-
-            const letterFilter2 = (reaction, user) => reaction.message.id === gameMessage2.id && (letters2).includes(reaction.emoji.name);
-            const letterCollector2 = gameMessage2.createReactionCollector({ filter: letterFilter2, time: 600000 });
-
-            var finished = false;
-            letterCollector.on('collect', (reaction, user) => {
-                const emoji = reaction.emoji.name;
-                const letter = alpha[letters.indexOf(emoji)];
-                if (!guessedLetters.includes(letter)) {
-                    guessedLetters.push(letter);
-
-                    if (!randomWord.includes(letter)) {
-                        attempts++;
-                        if (attempts >= stages.length) {
-                            hangmanMessage.edit(stages[attempts - 1] + 'Game Over! You lost.\nThe word was: ' + randomWord);
-                            finished = true;
-                            letterCollector.stop();
-                        } else {
-                            hangmanMessage.edit(stages[attempts]);
-                        }
-                    }
-
-                    const updatedMessage = generateMessage(randomWord, guessedLetters);
-                    gameMessage.edit(updatedMessage);
-
-                    if (!updatedMessage.includes("__\\_")) {
-                        hangmanMessage.edit(stages[attempts] + 'Congratulations! You won!');
-                        finished = true;
-                        letterCollector.stop();
-                    }
-                }
-            });
             letterCollector.on('end', () => {
+                letterCollector2.stop();
                 if (!finished) {
                     hangmanMessage.edit(stages[attempts] + 'Game Over! Time ran out.\nThe word was: ' + randomWord);
                 }
@@ -253,7 +256,9 @@ module.exports = {
                     if (!randomWord.includes(letter)) {
                         attempts++;
                         if (attempts >= stages.length) {
+                            finished = true;
                             hangmanMessage.edit(stages[attempts - 1] + 'Game Over! You lost.\nThe word was: ' + randomWord);
+                            letterCollector.stop();
                             letterCollector2.stop();
                         } else {
                             hangmanMessage.edit(stages[attempts]);
@@ -264,7 +269,9 @@ module.exports = {
                     gameMessage.edit(updatedMessage);
 
                     if (!updatedMessage.includes("__\\_")) {
+                        finished = true;
                         hangmanMessage.edit(stages[attempts] + 'Congratulations! You won!');
+                        letterCollector.stop();
                         letterCollector2.stop();
                     }
                 }
