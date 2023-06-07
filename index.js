@@ -99,9 +99,15 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-client.on('messageCreate', message => {
+client.on('messageCreate', async message => {
   console.log(message.content);
+  if (message.mentions.roles.has("960044331572547654")) {
+    const staffChatChannel = await client.channels.fetch("1079596899335680000");
 
+    // Send the message link to the #staff-chat channel
+    const messageLink = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`;
+    staffChatChannel.send(`Moderator ping detected!\n${messageLink}`);
+  }
   if (message.content.toLowerCase().includes('bilby, hello')) {
     message.channel.send("Hi! How are you?");
   } else if (message.content.toLowerCase().includes('bilby, play mlp guess')) {
