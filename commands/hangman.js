@@ -157,12 +157,6 @@ module.exports = {
                     }
                 }
             });
-            letterCollector.on('end', () => {
-                letterCollector2.stop();
-                if (!finished) {
-                    hangmanMessage.edit(stages[attempts] + 'Game Over! Time ran out.\nThe word was: ' + randomWord);
-                }
-            });
             letterCollector2.on('collect', (reaction, user) => {
                 const emoji = reaction.emoji.name;
                 const letter = alpha2[letters2.indexOf(emoji)];
@@ -239,12 +233,6 @@ module.exports = {
                         letterCollector2.stop();
                         letterCollector.stop();
                     }
-                }
-            });
-            letterCollector.on('end', () => {
-                letterCollector2.stop();
-                if (!finished) {
-                    hangmanMessage.edit(stages[attempts] + 'Game Over! Time ran out.\nThe word was: ' + randomWord);
                 }
             });
             letterCollector2.on('collect', (reaction, user) => {
