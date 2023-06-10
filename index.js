@@ -17,10 +17,11 @@ const {
   GatewayIntentBits,
   ActivityType,
 } = require('discord.js');
+const { joinVoiceChannel } = require('@discordjs/voice');
 
 // Create a new client instance
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessageReactions]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildVoiceStates]
 });
 
 // Loading commands from the commands folder
@@ -52,33 +53,33 @@ client.once('ready', () => {
   }).setToken(TOKEN);
   (async () => {
     try {
-      if (!TEST_GUILD_ID) {
+      // Registering the commands in the server
+      await rest.put(
+        Routes.applicationCommands(CLIENT_ID), {
+        body: commands
+      },
+      );
+      console.log('Successfully registered application commands globally');
 
-        await rest.put(
-          Routes.applicationCommands(CLIENT_ID), {
-          body: commands
-        },
-        );
-        console.log('Successfully registered application commands globally');
+      // Set the bot's status
+      client.user.setPresence({
+        activities: [{ name: `a rugby game!`, type: ActivityType.Competing }],
+        status: 'dnd',
+      });
 
-        client.user.setPresence({
-          activities: [{ name: `a rugby game!`, type: ActivityType.Competing }],
-          status: 'dnd',
-        });
+      const vChannel = client.channels.cache.get('1031750969203114035');
+      const connection = joinVoiceChannel({
+        channelId: vChannel.id,
+        guildId: vChannel.guild.id,
+        adapterCreator: vChannel.guild.voiceAdapterCreator,
+        selfDeaf: false
+      });
 
-        const defaultChannel = client.channels.cache.get('1012812013795295233');
-        setInterval(function () {
-          defaultChannel.send("Disboard Bump Reminder! Remember to \`/bump\`!") //send it to whatever channel the bot has permissions to send on
-        }, 120 * 60 * 1000);
-      } else {
-        await rest.put(
-          Routes.applicationGuildCommands(CLIENT_ID, TEST_GUILD_ID), {
-          body: commands
-        },
-        );
-        console.log('Successfully registered application commands for development guild');
-
-      }
+      // Bump reminder
+      const defaultChannel = client.channels.cache.get('1012812013795295233');
+      setInterval(function () {
+        defaultChannel.send("Disboard Bump Reminder! Remember to \`/bump\`!") //send it to whatever channel the bot has permissions to send on
+      }, 120 * 60 * 1000);
     } catch (error) {
       if (error) console.error(error);
     }
@@ -108,40 +109,58 @@ client.on('messageCreate', async message => {
     const messageLink = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`;
     staffChatChannel.send(`Moderator ping detected!\n${messageLink}`);
   }
-  if (message.content.toLowerCase().includes('bilby, hello')) {
+  if (message.content.toLowerCase() == ('bilby, hello')) {
     message.channel.send("Hi! How are you?");
-  } else if (message.content.toLowerCase().includes('bilby, play mlp guess')) {
+  } else if (message.content.toLowerCase() == ('bilby, play mlp guess')) {
     ohDear(message)
   } else if (message.content.toLowerCase().includes('bilby, say ')) {
     const hehe = client.channels.cache.get('962936076404686859');
     hehe.send(message.content.substring(10));
-  } else if (message.content.toLowerCase().includes('bilby, hide')) {
+  } else if (message.content.toLowerCase() == ('bilby, type')) {
+    const hehe = client.channels.cache.get('962936076404686859');
+    count = 100;
+    for (let i = 0; i < count; i++) {
+      hehe.sendTyping();
+      if (i < count - 1) {
+        await sleep(7000);
+      }
+    }
+    async function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+  } else if (message.content.toLowerCase() == ('bilby, hide')) {
     client.user.setStatus('invisible');
-  } else if (message.content.toLowerCase().includes('bilby, unhide')) {
+  } else if (message.content.toLowerCase() == ('bilby, unhide')) {
     client.user.setStatus('online');
-  } else if (message.content.toLowerCase().includes('bilby, unicorse')) {
+  } else if (message.content.toLowerCase() == ('bilby, unicorse')) {
     try {
       await client.user.setUsername('Unicorse');
       await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957037365055568/bluey-unicorse.jpg?width=930&height=930');
     } catch (error) {
       console.error(error);
-      message.channel.send(`Error setting username and avatar for 'Unicorse'`);
+      if (error) {
+        message.channel.send(`Error setting username and avatar for 'Unicorse'`);
+      }
     }
-  } else if (message.content.toLowerCase().includes('bilby, bilby')) {
+  } else if (message.content.toLowerCase() == ('bilby, bilby')) {
     try {
       await client.user.setUsername('Bot Bilby');
       await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957197717491712/ffdc2bcc0289671061d73f94e497e498.png?width=512&height=512');
     } catch (error) {
       console.error(error);
-      message.channel.send(`Error setting username and avatar for 'Bot Bilby'`);
+      if (error) {
+        message.channel.send(`Error setting username and avatar for 'Bot Bilby'`);
+      }
     }
-  } else if (message.content.toLowerCase().includes('bilby, peppa')) {
+  } else if (message.content.toLowerCase() == ('bilby, peppa')) {
     try {
       await client.user.setUsername('Peppa Pig');
       await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957290478706698/unnamed.jpg?width=930&height=930');
     } catch (error) {
       console.error(error);
-      message.channel.send(`Error setting username and avatar for 'Peppa Pig'`);
+      if (error) {
+        message.channel.send(`Error setting username and avatar for 'Peppa Pig'`);
+      }
     }
   }
 
@@ -320,5 +339,5 @@ client.on('messageCreate', async message => {
     }
   }
 });
-  // Login to Discord with your client's token
+// Login to Discord with your client's token
 client.login(TOKEN);

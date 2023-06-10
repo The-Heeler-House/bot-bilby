@@ -1,5 +1,5 @@
 {
-  "name": "Bot-Bilby-new",
+  "name": "Bot-Bilby-Heeler-House",
   "version": "1.0.0",
   "main": "index.js",
   "repository": {
@@ -16,12 +16,14 @@
   "dependencies": {
     "@discordjs/builders": "^1.2.0",
     "@discordjs/rest": "^0.3.0",
+    "@discordjs/voice": "^0.16.0",
     "axios": "^0.26.1",
     "cheerio": "^1.0.0-rc.10",
     "dayjs": "^1.11.0",
     "dayjs-with-plugins": "0.0.4",
     "discord-api-types": "^0.31.1",
     "discord.js": "^14.3.0",
+    "libsodium-wrappers": "^0.7.11",
     "mongodb": "^5.3.0"
   },
   "devDependencies": {
