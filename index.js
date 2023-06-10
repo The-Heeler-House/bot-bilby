@@ -134,12 +134,12 @@ client.on('messageCreate', async message => {
     client.user.setStatus('online');
   } else if (message.content.toLowerCase() == ('bilby, unicorse')) {
     try {
-      await client.user.setUsername('Unicorse');
-      await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957037365055568/bluey-unicorse.jpg?width=930&height=930');
+      await client.user.setUsername('Evil Unicorse');
+      await client.user.setAvatar('https://media.discordapp.net/attachments/1078179472680956035/1116969936468844544/EvilUnicorse.png?width=930&height=930');
     } catch (error) {
       console.error(error);
       if (error) {
-        message.channel.send(`Error setting username and avatar for 'Unicorse'`);
+        message.channel.send(`Error setting username and avatar for 'Evil Unicorse'`);
       }
     }
   } else if (message.content.toLowerCase() == ('bilby, bilby')) {
