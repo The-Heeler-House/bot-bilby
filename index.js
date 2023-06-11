@@ -67,7 +67,7 @@ client.once('ready', () => {
         status: 'dnd',
       });
 
-      const vChannel = client.channels.cache.get('1031750969203114035');
+      const vChannel = client.channels.cache.get('1017264556172640277');
       const connection = joinVoiceChannel({
         channelId: vChannel.id,
         guildId: vChannel.guild.id,
@@ -136,30 +136,33 @@ client.on('messageCreate', async message => {
     try {
       await client.user.setUsername('Evil Unicorse');
       await client.user.setAvatar('https://media.discordapp.net/attachments/1078179472680956035/1116969936468844544/EvilUnicorse.png?width=930&height=930');
+      message.channel.send(`Set avatar and username to 'Evil Unicorse'`);
     } catch (error) {
       console.error(error);
       if (error) {
-        message.channel.send(`Error setting username and avatar for 'Evil Unicorse'`);
+        message.channel.send(`Error setting username and avatar for 'Evil Unicorse. Try again later.'`);
       }
     }
   } else if (message.content.toLowerCase() == ('bilby, bilby')) {
     try {
       await client.user.setUsername('Bot Bilby');
       await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957197717491712/ffdc2bcc0289671061d73f94e497e498.png?width=512&height=512');
+      message.channel.send(`Set avatar and username to 'Bot Bilby'`);
     } catch (error) {
       console.error(error);
       if (error) {
-        message.channel.send(`Error setting username and avatar for 'Bot Bilby'`);
+        message.channel.send(`Error setting username and avatar for 'Bot Bilby. Try again later.'`);
       }
     }
   } else if (message.content.toLowerCase() == ('bilby, peppa')) {
     try {
       await client.user.setUsername('Peppa Pig');
       await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957290478706698/unnamed.jpg?width=930&height=930');
+      message.channel.send(`Set avatar and username to 'Peppa Pig'`);
     } catch (error) {
       console.error(error);
       if (error) {
-        message.channel.send(`Error setting username and avatar for 'Peppa Pig'`);
+        message.channel.send(`Error setting username and avatar for 'Peppa Pig. Try again later.'`);
       }
     }
   }
