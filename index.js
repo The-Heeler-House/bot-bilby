@@ -67,12 +67,13 @@ client.once('ready', () => {
         status: 'dnd',
       });
 
-      const vChannel = client.channels.cache.get('1017264556172640277');
+      const vChannel = client.channels.cache.get('1031750969203114035');
       const connection = joinVoiceChannel({
         channelId: vChannel.id,
         guildId: vChannel.guild.id,
         adapterCreator: vChannel.guild.voiceAdapterCreator,
-        selfDeaf: false
+        selfDeaf: false,
+        selfMute: true
       });
 
       // Bump reminder
