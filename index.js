@@ -174,7 +174,7 @@ client.on('messageCreate', async message => {
       }
     }
   } else if (message.content.toLowerCase() == ('bilby, devstats')) {
-    trackedMessage.originalMessage.channel.send(`For Jalen: ${trackedMessages.size} (Bot Dev Purposes)`);
+    message.channel.send(`For Jalen: ${trackedMessages.size} (Bot Dev Purposes)`);
   }
 });
 
