@@ -4,6 +4,8 @@ var dayjs = require('dayjs-with-plugins')
 const axios = require("axios");
 const cheerio = require("cheerio");
 const fs = require("fs");
+const logger = require('../logger.js');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('character')
@@ -21,7 +23,7 @@ module.exports = {
 
     // URL of the page we want to scrape
     const url = "https://blueypedia.fandom.com/wiki/" + chara;
-    console.log(url);
+    logger.bilby(url);
     const countries = [];
     try {
       // Fetch HTML of the page we want to scrape
@@ -62,7 +64,7 @@ var regex = /<br\s*[\/]?>/gi;
         // Select the text content of a and span elements
         // Store the textcontent in the above object
         var lol = $(el).text();
-        console.log(lol);
+        logger.bilby(lol);
         lol = lol.replace(/\n/g, '');
         if (lol != "\n" && lol != "" && lol.length != 0) {
 
@@ -71,7 +73,7 @@ var regex = /<br\s*[\/]?>/gi;
         // Populate countries array with country data
       });
       // Logs countries array to the console
-      console.dir(countries);
+      logger.bilby(countries);
       var time = dayjs().toISOString();
       const final = new EmbedBuilder()
         .setColor('#8EC2F2')
@@ -105,7 +107,7 @@ var regex = /<br\s*[\/]?>/gi;
       }
       await interaction.editReply({ embeds: [final] });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       await interaction.editReply({ content: "404" });
     }
 

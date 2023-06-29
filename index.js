@@ -3,6 +3,7 @@ const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 var http = require('http');
 var dayjs = require('dayjs-with-plugins')
+const logger = require('./logger.js');
 
 http.createServer(function (req, res) {
   res.write("I'm alive");
@@ -42,10 +43,12 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
+const trackedMessages = new Map(); 
+
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
 
-  console.log('Ready!');
+  logger.command('Ready!');
   // Registering the commands in the client
   const CLIENT_ID = client.user.id;
   const rest = new REST({
@@ -59,13 +62,14 @@ client.once('ready', () => {
         body: commands
       },
       );
-      console.log('Successfully registered application commands globally');
+      logger.command('Successfully registered application commands globally');
 
       // Set the bot's status
       client.user.setPresence({
         activities: [{ name: `a rugby game!`, type: ActivityType.Competing }],
         status: 'dnd',
       });
+      logger.command('Successfully set bot status');
 
       const vChannel = client.channels.cache.get('1031750969203114035');
       const connection = joinVoiceChannel({
@@ -76,39 +80,42 @@ client.once('ready', () => {
         selfMute: true
       });
 
+      global.devChannel = client.channels.cache.get("966921162804301824")
+
       // Bump reminder
       const defaultChannel = client.channels.cache.get('1012812013795295233');
       setInterval(function () {
         defaultChannel.send("Disboard Bump Reminder! Remember to \`/bump\`!") //send it to whatever channel the bot has permissions to send on
+        logger.bilby('Bump reminder sent');
       }, 120 * 60 * 1000);
     } catch (error) {
-      if (error) console.error(error);
+      if (error) logger.error(error);
     }
   })();
 });
 
+// Interaction handler
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) {
-    console.log("other called");
+    logger.command(`Non-command interaction called`);
     return;
   }
   const command = client.commands.get(interaction.commandName);
   try {
+    logger.command(`Command ${interaction.commandName} called`);
     await command.execute(interaction);
   } catch (error) {
-    if (error) console.error(error);
+    if (error) logger.error(error);
     await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
   }
 });
 
+// Message handler
 client.on('messageCreate', async message => {
-  console.log(message.content);
-  if (message.mentions.roles.has("960044331572547654")) {
-    const staffChatChannel = await client.channels.fetch("1079596899335680000");
-
-    // Send the message link to the #staff-chat channel
-    const messageLink = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`;
-    staffChatChannel.send(`Moderator ping detected!\n${messageLink}`);
+  if (message.content === ""){
+    logger.message(`(${message.author.username}) ATTACHMENT`);
+  } else {
+    logger.message(`(${message.author.username}) ${message.content}`);
   }
   if (message.content.toLowerCase() == ('bilby, hello')) {
     message.channel.send("Hi! How are you?");
@@ -139,7 +146,7 @@ client.on('messageCreate', async message => {
       await client.user.setAvatar('https://media.discordapp.net/attachments/1078179472680956035/1116969936468844544/EvilUnicorse.png?width=930&height=930');
       message.channel.send(`Set avatar and username to 'Evil Unicorse'`);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       if (error) {
         message.channel.send(`Error setting username and avatar for 'Evil Unicorse. Try again later.'`);
       }
@@ -150,7 +157,7 @@ client.on('messageCreate', async message => {
       await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957197717491712/ffdc2bcc0289671061d73f94e497e498.png?width=512&height=512');
       message.channel.send(`Set avatar and username to 'Bot Bilby'`);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       if (error) {
         message.channel.send(`Error setting username and avatar for 'Bot Bilby. Try again later.'`);
       }
@@ -161,187 +168,271 @@ client.on('messageCreate', async message => {
       await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957290478706698/unnamed.jpg?width=930&height=930');
       message.channel.send(`Set avatar and username to 'Peppa Pig'`);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       if (error) {
         message.channel.send(`Error setting username and avatar for 'Peppa Pig. Try again later.'`);
       }
     }
+  } else if (message.content.toLowerCase() == ('bilby, devstats')) {
+    trackedMessage.originalMessage.channel.send(`For Jalen: ${trackedMessages.size} (Bot Dev Purposes)`);
   }
+});
 
+// Mod ping handler
+client.on('messageCreate', async message => {
+  if (message.mentions.roles.has("960044331572547654") || message.mentions.roles.has("960044331572547654")) {
+    const staffChatChannel = await client.channels.fetch("1079596899335680000");
+    // Send the message link to the #staff-chat channel
+    const messageLink = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`;
+    staffChatChannel.send(`Moderator ping detected!\n${messageLink}`);
+  }
+});
 
-  async function ohDear(message) {
-    const text = fs.readFileSync(('../src/episodeDescMLP.txt'), 'utf-8');
+// Message link handler
+client.on('messageCreate', async message => {
+  // Check if the message has any message links
+  const messageLinks = message.content.match(/https?:\/\/discord\.com\/channels\/\d+\/\d+\/\d+/g);
 
-    // define a regular expression to match each episode
-    const regex = /^S(\d+) E(\d+) · (.+)$([\s\S]+?)^$/gm;
-
-    // create an array to store the episode information
-    const episodes = [];
-
-    // iterate over each match of the regular expression
-    let match;
-    while ((match = regex.exec(text))) {
-      const season = match[1];
-      const episode = match[2];
-      const name = match[3];
-      const description = match[4].trim();
-      episodes.push({ season, episode, name, description });
-    }
-
-    // initialize the game state
-    let score = 0;
-    let remainingLives = 3;
-    let currNum = 0;
-    let timer = 12500;
-    let currentEpisode;
-
-    // start the game loop
-    shuffle(episodes);
-
-    // send a welcome message to the user
-    await message.channel.send('Welcome to the game! I will give you an episode description, and you reply with the episode title! You have three lives, how much episodes can you name?');
-
-    // ask the first question
-    askQuestion(message);
-
-    async function askQuestion(message) {
-      // if there are no remaining questions, end the game
-      if (remainingLives === 0) {
-        await endGame(message, score);
-        return;
-      }
-
-      // select the next episode and decrement the remainingLives counter
-      currentEpisode = episodes.pop();
-      currNum++;
-
-      // send the episode description as a question
-      await message.channel.send(`Question ${currNum}: ${currentEpisode.description}`);
-
-      // create a filter to only listen to the user's next message in the same channel
-      const filter = (message1) => message1.author.id === message.author.id && message1.channel.id === message.channel.id;
-
-      // wait for the user's answer
+  if (messageLinks) {
+    for (const link of messageLinks) {
+      // Extract channel ID and message ID from the link
+      const [, guildId, channelId, messageId] = link.match(/https?:\/\/discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)/);
+      
+      const channel = await client.channels.fetch(channelId);
+      if (!channel) continue; // Skip if the channel is not available
+      if (message.author.bot) continue; // Skip if the message author is a bot
+      if (message.channel.id != '1079596899335680000') continue; // Skip if the channel is not #staff
+      
       try {
-        const answerMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-        const answer = answerMessage.first().content;
-
-        // if the user's answer matches the episode name, increment the score
-        if (answer.toLowerCase() === currentEpisode.name.toLowerCase()) {
-          score++;
-          await message.channel.send('Correct!');
-          timer -= 100;
-          // ask the next question after a short delay to avoid flooding the channel
-          setTimeout(() => {
-            askQuestion(message);
-          }, 500);
-        } else {
-          // if the user's answer is incorrect and no hint has been given yet, ask for more information
-          const hintOption = await message.channel.send('Incorrect! Would you like to ask for the season number, episode number, or both (s/e/b)? Type any other letter to exit the game.');
-          const hintMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-          const option = hintMessage.first().content.toLowerCase();
-
-          if (option === 's') {
-            await message.channel.send(`Season ${currentEpisode.season}`);
-            const retryMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-            const retryAnswer = retryMessage.first().content;
-
-            if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
-              score += 0.5;
-              await message.channel.send('Correct! (With Hint)');
-              timer -= 100;
-              // ask the next question after a short delay to avoid flooding the channel
-              setTimeout(() => {
-                askQuestion(message);
-              }, 500);
-            } else {
-              // reveal the answer and move on to the next question
-              remainingLives--;
-              await message.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
-              // ask the next question after a short delay to avoid flooding the channel
-              setTimeout(() => {
-                askQuestion(message);
-              }, 500);
-            }
-          } else if (option === 'e') {
-            await message.channel.send(`Episode ${currentEpisode.episode}`);
-            const retryMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-            const retryAnswer = retryMessage.first().content;
-
-            if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
-              score += 0.5;
-              await message.channel.send('Correct! (With Hint)');
-              timer -= 100;
-              // ask the next question after a short delay to avoid flooding the channel
-              setTimeout(() => {
-                askQuestion(message);
-              }, 500);
-            } else {
-              // reveal the answer and move on to the next question
-              remainingLives--;
-              await message.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
-              // ask the next question after a short delay to avoid flooding the channel
-              setTimeout(() => {
-                askQuestion(message);
-              }, 500);
-            }
-          } else if (option === 'b') {
-            await message.channel.send(`Season ${currentEpisode.season}, Episode ${currentEpisode.episode}`);
-            const retryMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-            const retryAnswer = retryMessage.first().content;
-
-            if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
-              score += 0.5;
-              await message.channel.send('Correct! (With Hint)');
-              timer -= 100;
-              // ask the next question after a short delay to avoid flooding the channel
-              setTimeout(() => {
-                askQuestion(message);
-              }, 500);
-            } else {
-              // reveal the answer and move on to the next question
-              remainingLives--;
-              await message.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
-              // ask the next question after a short delay to avoid flooding the channel
-              setTimeout(() => {
-                askQuestion(message);
-              }, 500);
-            }
-          } else {
-            await endGame(message, score);
-            return;
-          }
-        }
-      } catch (err) {
-        // reveal the answer and move on to the next question
-        remainingLives--;
-        await message.channel.send(`Time's up! The answer is ${currentEpisode.name}. You have ${remainingLives} lives remaining.`);
-        askQuestion(message);
+        const linkedMessage = await channel.messages.fetch(messageId);
+        
+        // Store the message information for tracking
+        const trackedMessage = {
+          originalMessage: message,
+          originalLink: link,
+          guildId,
+          channelId,
+          messageId,
+          content: linkedMessage.content,
+          author: linkedMessage.author.tag,
+          timestamp: Date.now() // Add timestamp to track when the message was linked
+        };
+        
+        logger.command("New linked message: " + trackedMessage.content);
+        const newChannel = await client.channels.fetch("966921162804301824")
+        newChannel.send(`New linked message added.`);
+        // Add the tracked message to the map
+        trackedMessages.set(trackedMessage.messageId, trackedMessage);
+      } catch (error) {
+        logger.error(error);
       }
-    }
-    async function endGame(message, score) {
-      message.channel.send(`Game over! Your score is ${score} episodes guessed.`);
-    }
-
-    function shuffle(array) {
-      let currentIndex = array.length,
-        randomIndex;
-
-      // While there remain elements to shuffle.
-      while (currentIndex != 0) {
-
-        // Pick a remaining element.
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-
-        // And swap it with the current element.
-        [array[currentIndex], array[randomIndex]] = [
-          array[randomIndex], array[currentIndex]
-        ];
-      }
-      return array;
     }
   }
 });
+client.on('messageDelete', async deletedMessage => {
+  for (const [messageId, trackedMessage] of trackedMessages) {
+    const currentTime = Date.now();
+    const timeElapsed = currentTime - trackedMessage.timestamp;
+    const expirationTime = 2 * 24 * 60 * 60 * 1000; // 2 days in milliseconds
+
+    if (timeElapsed >= expirationTime) {
+      // Remove the expired tracked message from the map
+      const check = trackedMessages.delete(messageId);
+      if (check) {
+        logger.command(`Tracked message (${messageId}) has expired and was removed from the map.`);
+      }
+    } else if (messageId === deletedMessage.id) {
+      // Notify the channel about the deletion
+      const channel = await client.channels.fetch("961201095038873630")
+      const newMessage = await channel.awaitMessages({ max: 1, time: 30000, errors: ['time'] })
+      messageLink = `https://discord.com/channels/${channel.guildId}/${channel.id}/${newMessage.first().id}`;
+
+      const notification = `The linked message by <@${deletedMessage.author.id}> was deleted. Deleted Message: ${messageLink}.`;
+      finalMessage = await trackedMessage.originalMessage.reply(notification);
+      finalMessage.suppressEmbeds(true)
+
+      // Remove the deleted tracked message from the map
+      check = trackedMessages.delete(messageId);
+      if (check) {
+        logger.command(`Tracked message (${deletedMessage.id}) was deleted and was removed from the map.`);
+      }
+    }
+  }
+});
+
 // Login to Discord with your client's token
 client.login(TOKEN);
+
+async function ohDear(message) {
+  const text = fs.readFileSync(('../src/episodeDescMLP.txt'), 'utf-8');
+
+  // define a regular expression to match each episode
+  const regex = /^S(\d+) E(\d+) · (.+)$([\s\S]+?)^$/gm;
+
+  // create an array to store the episode information
+  const episodes = [];
+
+  // iterate over each match of the regular expression
+  let match;
+  while ((match = regex.exec(text))) {
+    const season = match[1];
+    const episode = match[2];
+    const name = match[3];
+    const description = match[4].trim();
+    episodes.push({ season, episode, name, description });
+  }
+
+  // initialize the game state
+  let score = 0;
+  let remainingLives = 3;
+  let currNum = 0;
+  let timer = 12500;
+  let currentEpisode;
+
+  // start the game loop
+  shuffle(episodes);
+
+  // send a welcome message to the user
+  await message.channel.send('Welcome to the game! I will give you an episode description, and you reply with the episode title! You have three lives, how much episodes can you name?');
+
+  // ask the first question
+  askQuestion(message);
+
+  async function askQuestion(message) {
+    // if there are no remaining questions, end the game
+    if (remainingLives === 0) {
+      await endGame(message, score);
+      return;
+    }
+
+    // select the next episode and decrement the remainingLives counter
+    currentEpisode = episodes.pop();
+    currNum++;
+
+    // send the episode description as a question
+    await message.channel.send(`Question ${currNum}: ${currentEpisode.description}`);
+
+    // create a filter to only listen to the user's next message in the same channel
+    const filter = (message1) => message1.author.id === message.author.id && message1.channel.id === message.channel.id;
+
+    // wait for the user's answer
+    try {
+      const answerMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
+      const answer = answerMessage.first().content;
+
+      // if the user's answer matches the episode name, increment the score
+      if (answer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+        score++;
+        await message.channel.send('Correct!');
+        timer -= 100;
+        // ask the next question after a short delay to avoid flooding the channel
+        setTimeout(() => {
+          askQuestion(message);
+        }, 500);
+      } else {
+        // if the user's answer is incorrect and no hint has been given yet, ask for more information
+        const hintOption = await message.channel.send('Incorrect! Would you like to ask for the season number, episode number, or both (s/e/b)? Type any other letter to exit the game.');
+        const hintMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
+        const option = hintMessage.first().content.toLowerCase();
+
+        if (option === 's') {
+          await message.channel.send(`Season ${currentEpisode.season}`);
+          const retryMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
+          const retryAnswer = retryMessage.first().content;
+
+          if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+            score += 0.5;
+            await message.channel.send('Correct! (With Hint)');
+            timer -= 100;
+            // ask the next question after a short delay to avoid flooding the channel
+            setTimeout(() => {
+              askQuestion(message);
+            }, 500);
+          } else {
+            // reveal the answer and move on to the next question
+            remainingLives--;
+            await message.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
+            // ask the next question after a short delay to avoid flooding the channel
+            setTimeout(() => {
+              askQuestion(message);
+            }, 500);
+          }
+        } else if (option === 'e') {
+          await message.channel.send(`Episode ${currentEpisode.episode}`);
+          const retryMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
+          const retryAnswer = retryMessage.first().content;
+
+          if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+            score += 0.5;
+            await message.channel.send('Correct! (With Hint)');
+            timer -= 100;
+            // ask the next question after a short delay to avoid flooding the channel
+            setTimeout(() => {
+              askQuestion(message);
+            }, 500);
+          } else {
+            // reveal the answer and move on to the next question
+            remainingLives--;
+            await message.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
+            // ask the next question after a short delay to avoid flooding the channel
+            setTimeout(() => {
+              askQuestion(message);
+            }, 500);
+          }
+        } else if (option === 'b') {
+          await message.channel.send(`Season ${currentEpisode.season}, Episode ${currentEpisode.episode}`);
+          const retryMessage = await message.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
+          const retryAnswer = retryMessage.first().content;
+
+          if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+            score += 0.5;
+            await message.channel.send('Correct! (With Hint)');
+            timer -= 100;
+            // ask the next question after a short delay to avoid flooding the channel
+            setTimeout(() => {
+              askQuestion(message);
+            }, 500);
+          } else {
+            // reveal the answer and move on to the next question
+            remainingLives--;
+            await message.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
+            // ask the next question after a short delay to avoid flooding the channel
+            setTimeout(() => {
+              askQuestion(message);
+            }, 500);
+          }
+        } else {
+          await endGame(message, score);
+          return;
+        }
+      }
+    } catch (err) {
+      // reveal the answer and move on to the next question
+      remainingLives--;
+      await message.channel.send(`Time's up! The answer is ${currentEpisode.name}. You have ${remainingLives} lives remaining.`);
+      askQuestion(message);
+    }
+  }
+  async function endGame(message, score) {
+    message.channel.send(`Game over! Your score is ${score} episodes guessed.`);
+  }
+
+  function shuffle(array) {
+    let currentIndex = array.length,
+      randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+
+      // Pick a remaining element.
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+
+      // And swap it with the current element.
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]
+      ];
+    }
+    return array;
+  }
+}

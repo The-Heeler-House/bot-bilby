@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const char = require('../chars.js')
+const logger = require('../logger.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -181,7 +182,7 @@ module.exports = {
     });
 
     collector.on('end', collected => {
-      console.log(`Collected ${collected.size} interactions.`);
+      logger.bilby(`Collected ${collected.size} interactions.`);
     });
 
     const collector1 = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 100000 });
@@ -196,7 +197,7 @@ module.exports = {
     });
 
     collector1.on('end', collected => {
-      console.log(`Collected ${collected.size} interactions.`);
+      logger.bilby(`Collected ${collected.size} interactions.`);
       if (collected.size == 0 && action1 == null && action2 == null) {
         row.components[0].setDisabled(true);
         row1.components[0].setDisabled(true);

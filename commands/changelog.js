@@ -15,7 +15,7 @@ module.exports = {
           "description": "- New episode guesser feature!.\n- New multiplayer episode guesser!\n- Revamped ship command, complete with a new character picker.\n- Deprecated the rarely used tiermaker commands.\n- Search Blueypedia inside of Discord with the new Character command!\n- More commands coming soon!",
           "timestamp": "2022-01-03",
           "author": {
-            "name": "Bot Bilby 2.3.0",
+            "name": "Bot Bilby 2.3.1",
             "url": "",
             "icon_url": "https://cdn.discordapp.com/avatars/537583059348750336/22e5087eb405782afccab3e635c7df91.png?size=64"
           },
