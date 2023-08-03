@@ -22,7 +22,7 @@ const { joinVoiceChannel } = require('@discordjs/voice');
 
 // Create a new client instance
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildVoiceStates]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessageTyping, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers]
 });
 
 // Loading commands from the commands folder
@@ -53,7 +53,7 @@ client.once('ready', () => {
   const CLIENT_ID = client.user.id;
   const rest = new REST({
     version: '9'
-  }).setToken(TOKEN);
+  }).setToken(TOKEN); 
   (async () => {
     try {
       // Registering the commands in the server
@@ -175,8 +175,57 @@ client.on('messageCreate', async message => {
     }
   } else if (message.content.toLowerCase() == ('bilby, devstats')) {
     message.channel.send(`For Jalen: ${trackedMessages.size} (Bot Dev Purposes)`);
-  }
+  } else if (message.content.toLowerCase() == ('bilby, script')) {
+    script()
+  } else if (message.content.toLowerCase() == ('highr, sleep')) {
+    // get current time in Britain
+    var d = new Date();
+    var n = d.getUTCHours();
+    var ampm = n >= 12 ? 'PM' : 'AM';
+    if (n === 0) {
+        n = 12; // Convert 0 to 12 AM
+    } else if (n > 12) {
+        n -= 12; // Convert to 12-hour format
+    }
+    // if it's between 11pm and 7am
+    if (n >= 11 || n <= 7) {
+        message.channel.send("Highr go to bed smh it's currently " + n + ":00 " + ampm + " in Britain");
+    } else {
+        message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":00 " + ampm + " in Britain");
+    } 
+}
 });
+
+async function script() {
+  const guild = client.guilds.cache.get('959534476520730724');
+  const channel = guild.channels.cache.get('966921162804301824');
+  const heelerEvent = await guild.scheduledEvents.fetch('1130197680904220768');
+  const users = await heelerEvent.fetchSubscribers(withMember=true);
+  const userCollection = users.map(user => user.member);
+  console.log(users);
+  const jsonData = {
+    version: 1,
+    characters: []
+  };
+  
+  for (const user of userCollection) {
+    const character = {
+      name: user.nickname,
+      gender_select: "n",
+      pronoun_str: "",
+      image: {
+        url: user.avatarURL()
+      },
+      tags: []
+    };
+    
+    jsonData.characters.push(character);
+  }
+  
+  const jsonStr = JSON.stringify(jsonData, null, 2);
+  fs.writeFileSync('output.json', jsonStr);
+  channel.send({files: ["/workspaces/Bot-Bilby-Heeler-House/output.json"]});
+}
 
 // Mod ping handler
 client.on('messageCreate', async message => {
