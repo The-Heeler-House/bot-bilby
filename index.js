@@ -18,7 +18,9 @@ const {
   GatewayIntentBits,
   ActivityType,
 } = require('discord.js');
-const { joinVoiceChannel } = require('@discordjs/voice');
+const { 
+  joinVoiceChannel,
+} = require('@discordjs/voice');
 
 // Create a new client instance
 const client = new Client({
@@ -49,6 +51,7 @@ const trackedMessages = new Map();
 client.once('ready', () => {
 
   logger.command('Ready!');
+  global.devChannel = client.channels.cache.get("966921162804301824")
   // Registering the commands in the client
   const CLIENT_ID = client.user.id;
   const rest = new REST({
@@ -79,9 +82,8 @@ client.once('ready', () => {
         selfDeaf: false,
         selfMute: true
       });
-
-      global.devChannel = client.channels.cache.get("966921162804301824")
-
+      logger.command('Joined voice channel');
+      
       // Bump reminder
       const defaultChannel = client.channels.cache.get('1012812013795295233');
       setInterval(function () {
@@ -92,7 +94,7 @@ client.once('ready', () => {
       if (error) logger.error(error);
     }
   })();
-});
+}); 
 
 // Interaction handler
 client.on('interactionCreate', async interaction => {
