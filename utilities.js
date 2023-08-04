@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { createAudioResource, StreamType } = require('@discordjs/voice');
+const logger = require('./logger.js');
 
 let currentIndex = 0;
 
@@ -24,6 +25,7 @@ function createResources() {
         resources.push(createAudioResource(`${__dirname}/Album/${file}`, {
             inputType: StreamType.Arbitrary,
         }));
+        logger.command(`Created audio resource for ${file}`);
     }
 }
 function getResources() {
