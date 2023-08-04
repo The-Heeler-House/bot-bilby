@@ -182,7 +182,7 @@ client.on('messageCreate', async message => {
   } else if (message.content.toLowerCase() == ('highr, sleep')) {
     // get current time in Britain
     var d = new Date();
-    var n = d.getUTCHours();
+    var n = d.getBSTHours();
     var ampm = n >= 12 ? 'PM' : 'AM';
     if (n === 0) {
         n = 12; // Convert 0 to 12 AM
