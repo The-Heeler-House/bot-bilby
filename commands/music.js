@@ -28,7 +28,7 @@ module.exports = {
     }
     if (interaction.options.getSubcommand() === 'play') {
       const checkingConnection = getVoiceConnection(interaction.guildId);
-      if (checkingConnection.state.subscription != null){ 
+      if (checkingConnection.state.subscription != null){
         await interaction.reply('I\'m already playing something!');
         return;
       }
@@ -48,7 +48,7 @@ module.exports = {
       player.play(resources[currentIndex]);
       // play the next song when the current one ends, restarting the album when the last song is finished
       player.on(AudioPlayerStatus.Idle, () => {
-        if (currentIndex < resources.length - 1) { 
+        if (currentIndex < resources.length - 1) {
           setIndex(currentIndex + 1);
         } else {
           setIndex(0);
@@ -57,11 +57,11 @@ module.exports = {
         }
         currentIndex = getIndex();
         player.play(resources[currentIndex]);
-        interaction.channel.send(`Now playing: ${files[currentIndex]}`);
+        interaction.channel.send(`Now playing: ${files[currentIndex].slice(0, -4)}`);
       });
 
       // say the name of the song (should be the file name without the extension)
-      await interaction.reply(`Now playing: ${files[currentIndex]}`);
+      await interaction.reply(`Now playing: ${files[currentIndex].slice(0, -4)}`);
     } else if (interaction.options.getSubcommand() === 'skip') {
 
       const connection = getVoiceConnection(interaction.guildId);
@@ -81,7 +81,7 @@ module.exports = {
       currentIndex = getIndex();
       console.log(currentIndex)
       player.play(resources[currentIndex]);
-      await interaction.reply(`Now playing: ${files[currentIndex]}`);
+      await interaction.reply(`Now playing: ${files[currentIndex].slice(0, -4)}`);
     } else if (interaction.options.getSubcommand() === 'stop') {
       // stops the player and disconnects from the voice channel
       const connection = getVoiceConnection(interaction.guildId);
