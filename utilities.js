@@ -21,7 +21,7 @@ function createResources() {
 
     // create an array of audio resources
     for (const file of files) {
-        resources.push(createAudioResource(`/workspaces/Bot-Bilby-Heeler-House/Album/${file}`, {
+        resources.push(createAudioResource(`/opt/render/project/src/Album/${file}`, {
             inputType: StreamType.Arbitrary,
         }));
     }

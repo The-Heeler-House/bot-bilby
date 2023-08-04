@@ -182,7 +182,7 @@ client.on('messageCreate', async message => {
   } else if (message.content.toLowerCase() == ('highr, sleep')) {
     // get current time in Britain
     var d = new Date();
-    var n = d.getBSTHours();
+    var n = d.getUTCHours() + 1;
     var ampm = n >= 12 ? 'PM' : 'AM';
     if (n === 0) {
         n = 12; // Convert 0 to 12 AM
@@ -195,7 +195,7 @@ client.on('messageCreate', async message => {
     } else {
         message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":00 " + ampm + " in Britain");
     } 
-}
+  }
 });
 
 async function script() {
