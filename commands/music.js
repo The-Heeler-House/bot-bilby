@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed, MessageActionRow, MessageSelectMenu, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageActionRow, MessageSelectMenu, MessageButton } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, getVoiceConnection, entersState, StreamType } = require('@discordjs/voice');
 const fs = require('fs');
 const path = require('path');
@@ -16,26 +16,37 @@ module.exports = {
     .addSubcommand(subcommand =>
 		subcommand
 			.setName('play')
-			.setDescription('Starts the album!'))
+			.setDescription('Starts playing the Bluey Album.')
+      .addNumberOption(option =>
+        option.setName('track')
+          .setDescription('The track number you want to play. Default is start of album.')
+          .setRequired(false),
+        ))
 	  .addSubcommand(subcommand =>
 		subcommand
 			.setName('skip')
-			.setDescription('Skips the current song!'))
+			.setDescription('Skips the current song.'))
     .addSubcommand(subcommand =>
-        subcommand
-            .setName('stop')
-            .setDescription('Stops the album!')),
+    subcommand
+      .setName('stop')
+      .setDescription('Stops the album.'))
+    .addSubcommand(subcommand =>
+    subcommand
+      .setName('list')
+      .setDescription('Lists all the songs in the album')),
   async execute(interaction) {
     if (interaction.member.voice.channelId != '1017264556172640277' && interaction.member.voice.channelId != '1087252823445606461' && interaction.member.voice.channelId != '961064255921197156' && interaction.member.voice.channelId != '961495071478386698') {
       await interaction.reply('You must be in a general VC to use this command!');
       return;
     }
     if (interaction.options.getSubcommand() === 'play') {
-      const checkingConnection = getVoiceConnection(interaction.guildId);
-      if (checkingConnection.state.subscription != null){
-        await interaction.reply('I\'m already playing something!');
-        return;
+      var trackNumber = interaction.options.getNumber('track');
+      if (trackNumber != null && trackNumber > 0 && trackNumber <= files.length) {
+        setIndex(trackNumber - 1);
+      } else {
+        setIndex(0);
       }
+
       const connection = joinVoiceChannel({
         channelId: interaction.member.voice.channelId,
         guildId: interaction.guildId, 
@@ -43,7 +54,6 @@ module.exports = {
       });
       const player = createAudioPlayer(); 
       connection.subscribe(player);
-      setIndex(0);
       currentIndex = getIndex();
       // play the first song
       player.play(createAudioResource(directoryPath + '/' + files[currentIndex], {
@@ -99,12 +109,24 @@ module.exports = {
       const vChannel = interaction.client.channels.cache.get('1031750969203114035');
       const newConnection = joinVoiceChannel({
         channelId: vChannel.id, 
-        guildId: vChannel.guild.id,
+        guildId: vChannel.guild.id, 
         adapterCreator: vChannel.guild.voiceAdapterCreator,
         selfDeaf: false,
         selfMute: true
       });
       console.log('Joined voice channel');
+    } else if (interaction.options.getSubcommand() === 'list') {
+      // lists all the songs in the album
+      var desc = 'All the songs in the album:\n';
+      const embed = new EmbedBuilder()
+        .setColor(9356018)
+        .setTitle('Bluey the Album')
+        .setThumbnail('https://media.discordapp.net/attachments/966921162804301824/1136888535991996516/Bluey-The-Album.png?width=930&height=930')
+      for (var i = 0; i < files.length; i++) {
+        desc += `${files[i].slice(0, -4)}\n`;
+      }
+      embed.setDescription(desc);
+      await interaction.reply({ embeds: [embed] });
     }
   }
 };
