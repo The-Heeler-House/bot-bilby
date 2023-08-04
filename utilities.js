@@ -1,7 +1,3 @@
-// number.js
-const fs = require('fs');
-const path = require('path');
-const { createAudioResource, StreamType } = require('@discordjs/voice');
 const logger = require('./logger.js');
 
 let currentIndex = 0;
@@ -14,8 +10,6 @@ function getIndex() {
 }
 
 let resources = [];
-const directoryPath = path.join(__dirname, './Album');
-const files = fs.readdirSync(directoryPath);
 
 function createResources() {
     resources = [];
@@ -33,9 +27,6 @@ function getResources() {
 }
 
 module.exports = {
-    files,
     getIndex,
     setIndex,
-    createResources,
-    getResources,
 };

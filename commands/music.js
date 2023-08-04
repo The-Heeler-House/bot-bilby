@@ -3,8 +3,11 @@ const { MessageEmbed, MessageActionRow, MessageSelectMenu, MessageButton } = req
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, getVoiceConnection, entersState, StreamType } = require('@discordjs/voice');
 const fs = require('fs');
 const path = require('path');
-const { files, getIndex, setIndex, createResources, getResources } = require('../utilities.js');
+const { getIndex, setIndex } = require('../utilities.js');
 const logger = require('../logger.js');
+
+const directoryPath = path.join(__dirname, '../Album');
+const files = fs.readdirSync(directoryPath);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -42,24 +45,21 @@ module.exports = {
       connection.subscribe(player);
       setIndex(0);
       currentIndex = getIndex();
-      createResources();
-      var resources = getResources();
-      logger.command("Length of resources: " + resources.length); 
-      
       // play the first song
-      player.play(resources[currentIndex]);
+      player.play(createAudioResource(directoryPath + '/' + files[currentIndex], {
+        inputType: StreamType.Arbitrary,
+      }));
       // play the next song when the current one ends, restarting the album when the last song is finished
       player.on(AudioPlayerStatus.Idle, () => {
-        if (currentIndex < resources.length - 1) { 
+        if (currentIndex < files.length - 1) { 
           setIndex(currentIndex + 1);
         } else {
           setIndex(0);
-          createResources();
-          resources = getResources();
         }
         currentIndex = getIndex();
-        logger.command("Length of resources: " + resources.length); 
-        player.play(resources[currentIndex]);
+        player.play(createAudioResource(directoryPath + '/' + files[currentIndex], {
+          inputType: StreamType.Arbitrary,
+        }));
         interaction.channel.send(`Now playing: ${files[currentIndex].slice(0, -4)}`);
       });
 
@@ -72,19 +72,17 @@ module.exports = {
         await interaction.reply('I\'m not playing anything!');
         return;
       }
-      var resources = getResources();
-      const player = connection.state.subscription.player;
-      if (currentIndex < resources.length - 1) {
+      const player = connection.state.subscription.player; 
+      if (currentIndex < files.length - 1) {
         setIndex(currentIndex + 1);
       } else {
         setIndex(0); 
-        createResources();
-        resources = getResources(); 
       }
       currentIndex = getIndex();
-      console.log(currentIndex)
-      logger.command("Length of resources: " + resources.length); 
-      player.play(resources[currentIndex]);
+      console.log(currentIndex) 
+      player.play(createAudioResource(directoryPath + '/' + files[currentIndex], {
+        inputType: StreamType.Arbitrary,
+      }));
       await interaction.reply(`Now playing: ${files[currentIndex].slice(0, -4)}`);
     } else if (interaction.options.getSubcommand() === 'stop') {
       // stops the player and disconnects from the voice channel
@@ -100,7 +98,7 @@ module.exports = {
 
       const vChannel = interaction.client.channels.cache.get('1031750969203114035');
       const newConnection = joinVoiceChannel({
-        channelId: vChannel.id,
+        channelId: vChannel.id, 
         guildId: vChannel.guild.id,
         adapterCreator: vChannel.guild.voiceAdapterCreator,
         selfDeaf: false,
