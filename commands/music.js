@@ -26,7 +26,7 @@ module.exports = {
             .setName('stop')
             .setDescription('Stops the album!')),
   async execute(interaction) {
-    if (interaction.member.voice.channelId != '1017264556172640277' && interaction.member.voice.channelId != '1087252823445606461' && interaction.member.voice.channelId != '961064255921197156') {
+    if (interaction.member.voice.channelId != '1017264556172640277' && interaction.member.voice.channelId != '1087252823445606461' && interaction.member.voice.channelId != '961064255921197156' && interaction.member.voice.channelId != '961495071478386698') {
       await interaction.reply('You must be in a general VC to use this command!');
       return;
     }
