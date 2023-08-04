@@ -4,6 +4,7 @@ const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerSta
 const fs = require('fs');
 const path = require('path');
 const { files, getIndex, setIndex, createResources, getResources } = require('../utilities.js');
+const logger = require('../logger.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -43,12 +44,13 @@ module.exports = {
       currentIndex = getIndex();
       createResources();
       var resources = getResources();
-
+      logger.command("Length of resources: " + resources.length); 
+      
       // play the first song
       player.play(resources[currentIndex]);
       // play the next song when the current one ends, restarting the album when the last song is finished
       player.on(AudioPlayerStatus.Idle, () => {
-        if (currentIndex < resources.length - 1) {
+        if (currentIndex < resources.length - 1) { 
           setIndex(currentIndex + 1);
         } else {
           setIndex(0);
@@ -56,6 +58,7 @@ module.exports = {
           resources = getResources();
         }
         currentIndex = getIndex();
+        logger.command("Length of resources: " + resources.length); 
         player.play(resources[currentIndex]);
         interaction.channel.send(`Now playing: ${files[currentIndex].slice(0, -4)}`);
       });
@@ -80,6 +83,7 @@ module.exports = {
       }
       currentIndex = getIndex();
       console.log(currentIndex)
+      logger.command("Length of resources: " + resources.length); 
       player.play(resources[currentIndex]);
       await interaction.reply(`Now playing: ${files[currentIndex].slice(0, -4)}`);
     } else if (interaction.options.getSubcommand() === 'stop') {

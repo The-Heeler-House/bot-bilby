@@ -21,7 +21,7 @@ function createResources() {
 
     // create an array of audio resources
     for (const file of files) {
-        resources.push(createAudioResource(`/opt/render/project/src/Album/${file}`, {
+        resources.push(createAudioResource(`${__dirname}/Album/${file}`, {
             inputType: StreamType.Arbitrary,
         }));
     }
