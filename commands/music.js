@@ -12,11 +12,11 @@ const files = fs.readdirSync(directoryPath);
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('music')
-    .setDescription('"Bluey the Album" music player!')
+    .setDescription('Bluey Album music player!')
     .addSubcommand(subcommand =>
 		subcommand
 			.setName('play')
-			.setDescription('Starts playing the Bluey Album.')
+			.setDescription('Starts playing the first two Bluey Albums.')
       .addNumberOption(option =>
         option.setName('track')
           .setDescription('The track number you want to play. Default is start of album.')
@@ -29,11 +29,11 @@ module.exports = {
     .addSubcommand(subcommand =>
     subcommand
       .setName('stop')
-      .setDescription('Stops the album.'))
+      .setDescription('Stops the albums.'))
     .addSubcommand(subcommand =>
     subcommand
       .setName('list')
-      .setDescription('Lists all the songs in the album')),
+      .setDescription('Lists all the songs in the two albums')),
   async execute(interaction) {
     if (interaction.member.voice.channelId != '1017264556172640277' && interaction.member.voice.channelId != '1087252823445606461' && interaction.member.voice.channelId != '961064255921197156' && interaction.member.voice.channelId != '961495071478386698') {
       await interaction.reply('You must be in a general VC to use this command!');
