@@ -70,7 +70,8 @@ module.exports = {
         player.play(createAudioResource(directoryPath + '/' + files[currentIndex], {
           inputType: StreamType.Arbitrary,
         }));
-        interaction.channel.send(`Now playing: ${files[currentIndex].slice(0, -4)}`);
+        const botChannel = interaction.client.channels.cache.get('1012812013795295233');
+        botChannel.send(`Now playing: ${files[currentIndex].slice(0, -4)}`);
       });
 
       // say the name of the song (should be the file name without the extension)
