@@ -183,17 +183,18 @@ client.on('messageCreate', async message => {
     // get current time in Britain
     var d = new Date();
     var n = d.getUTCHours() + 1;
+    var m = d.getUTCMinutes();
     var ampm = n >= 12 ? 'PM' : 'AM';
     if (n === 0) {
         n = 12; // Convert 0 to 12 AM
     } else if (n > 12) {
         n -= 12; // Convert to 12-hour format
     }
-    // if it's between 11pm and 7am
-    if (n >= 11 || n <= 7) {
-        message.channel.send("Highr go to bed smh it's currently " + n + ":00 " + ampm + " in Britain");
+    // if it's between 11pm and 6am
+    if (n >= 11 || n <= 6) {
+        message.channel.send("Highr go to bed smh it's currently " + n + ":" + m + " " + ampm + " in Britain");
     } else {
-        message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":00 " + ampm + " in Britain");
+        message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":" + m + " " + ampm + " in Britain");
     } 
   }
 });
