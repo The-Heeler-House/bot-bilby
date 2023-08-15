@@ -145,18 +145,18 @@ module.exports = {
     if (interaction.options.getString('character2') != null) {
       var action2 = await finder(interaction.options.getString('character2'), char);
     }
-    const message = await interaction.reply({ content: 'Select the first character to ship!\nYour selection: **TBA** and **TBA**.', components: [row, row1, row2, row3, row4], fetchReply: true });
+    const message = await interaction.reply({ content: 'Select the first character!\nYour selection: **TBA** and **TBA**.', components: [row, row1, row2, row3, row4], fetchReply: true });
     if ((action1 != null) && (action2 != null)) {
       row.components[0].setDisabled(true);
       row1.components[0].setDisabled(true);
       row2.components[0].setDisabled(true);
       row3.components[0].setDisabled(true);
       row4.components[0].setDisabled(false);
-      message.edit({ content: `Click the button below to ship!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
+      message.edit({ content: `Click the button below to check friendship strength!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
     } else if ((action1 == null) && (action2 != null)) {
-      message.edit({ content: `Select the first character to ship!\nYour selection: **TBA** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
+      message.edit({ content: `Select the first character!\nYour selection: **TBA** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
     } else if ((action1 != null) && (action2 == null)) {
-      message.edit({ content: `Select the second character to ship!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
+      message.edit({ content: `Select the second character!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
     }
     const collector = message.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 100000 });
     collector.on('collect', async i => {
@@ -172,9 +172,9 @@ module.exports = {
           row2.components[0].setDisabled(true);
           row3.components[0].setDisabled(true);
           row4.components[0].setDisabled(false);
-          await i.update({ content: `Click the button below to ship!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
+          await i.update({ content: `Click the button below to check friendship strength!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
         } else {
-          await i.update({ content: `Select the second character to ship!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
+          await i.update({ content: `Select the second character!\nYour selection: **${char[action1 - 1].name}** and **TBA**.`, components: [row, row1, row2, row3, row4] });
         }
       } else {
         await i.reply({ content: `These buttons aren't for you!`, ephemeral: true });
@@ -211,7 +211,7 @@ module.exports = {
         row2.components[0].setDisabled(true);
         row3.components[0].setDisabled(true);
         row4.components[0].setDisabled(true);
-        message.edit({ content: `Your ship result is below!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
+        message.edit({ content: `Your friendship strength result is below!\nYour selection: **${char[action1 - 1].name}** and **${char[action2 - 1].name}**.`, components: [row, row1, row2, row3, row4] });
       } else if (collected.size == 0 && action2 != null && action1 != null) {
         row.components[0].setDisabled(true);
         row1.components[0].setDisabled(true);
