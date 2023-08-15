@@ -133,7 +133,7 @@ module.exports = {
       .addComponents(
         new ButtonBuilder()
           .setCustomId('shipper')
-          .setLabel('Ship!')
+          .setLabel('Friendship Strength!')
           .setDisabled(true)
           .setStyle(ButtonStyle.Primary),
       );
