@@ -5,8 +5,8 @@ const logger = require('../logger.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('ship')
-    .setDescription('Ships two characters. You can specify characters to ship, or none to bring up our character picker!')
+    .setName('friendship')
+    .setDescription('Check two character\'s friendship strength! Are they besties or enemies?')
     .addStringOption(option =>
       option.setName('character1')
         .setDescription('The name of the first character. OPTIONAL.')
@@ -269,17 +269,14 @@ module.exports = {
 
       if (a.parent && b.parent) {
         if (a.parent[0] == b.parent[0]) {
-          ary.push(random(["They're already together!"]));
+          ary.push(random(["Married couples for life!!"]));
           return ary.join(" ")
         }
       };
 
       if (a.age != b.age) {
         ary.push(random([
-          "Take a seat over there.",
-          "Cannot permit that!",
-          "Bit far a part in age?",
-          "Stay away from that ship!"
+          "They don't have a friend bond, but they do have mutual respect."
         ]));
 
         return ary.join(" ")
@@ -287,33 +284,23 @@ module.exports = {
 
       if ((true == a.negative.includes("family_bluey")) && (true == b.negative.includes("family_bluey"))) {
         ary.push(random([
-          "That's certainly a creepy ship.",
-          "Incest is not an okay request.",
-          "Ew, no.",
-          "It's forbidden love."
+          "The family bond is truly special!"
         ]))
 
         return ary.join(" ")
       };
 
-      if (a.gender == b.gender) {
-        ary.push(random([
-          "Interesting ship...",
-          "A taste for slash I see?",
-          "Creative ship."
-        ]))
-      };
       if ([a_name, b_name].join("").length % 2 == 0) {
         ary.push(random([
-          "What can I say, it's sheer destiny for them.",
+          "Best friends forever!",
           "They'd be perfect together <3.",
-          "I agree, that would work."
+          "They finish each other's sentences!"
         ]));
       } else {
         ary.push(random([
           "Woudn't work out.",
-          "Can't recommend it.",
-          "Don't think they were made for each other."
+          "The friendship won't last forever. :(",
+          "Their bond doesn't click."
         ]));
 
       };
