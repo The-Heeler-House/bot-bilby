@@ -215,7 +215,7 @@ client.on('messageCreate', async message => {
         }
       });
       var mailOptions = {
-        from: 'heelerhouseofficial@gmail.com',
+        from: '\"The Heeler House\" <heelerhouseofficial@gmail.com>',
         to: emailAddress,
         subject: 'Heeler House Verification Code',
         text: `Your verification code is ${fourDigitVerificationCode}.`
