@@ -202,15 +202,16 @@ client.on('messageCreate', async message => {
         message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":" + m + " " + ampm + " in Britain");
     } 
   } else if (message.content.toLowerCase().includes('bilby, verify ')) {
-    emailAddress = message.content.substring(14);
-    fourDigitVerificationCode = Math.floor(1000 + Math.random() * 9000);
+    const emailAddress = message.content.substring(14);
+    const fourDigitVerificationCode = Math.floor(1000 + Math.random() * 9000);
     if (emailAddress.includes('@')) {
       message.channel.send(`Verifying ${emailAddress}...`);
+      const password = process.env['EMAIL_PASSWORD'];
       var transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
           user: 'heelerhouseofficial@gmail.com',
-          pass: process.env['EMAIL_PASSWORD']
+          pass: password
         }
       });
       var mailOptions = {
