@@ -203,40 +203,52 @@ client.on('messageCreate', async message => {
     }
   } else if (message.content.toLowerCase().includes('bilby, verify ')) {
     const emailAddress = message.content.substring(14);
-    const fourDigitVerificationCode = Math.floor(1000 + Math.random() * 9000);
+    const fiveDigitVerificationCode = Math.floor(10000 + Math.random() * 90000);
+    const spacedVerificationCode = fiveDigitVerificationCode.toString().split('').join(' ');
+
     if (emailAddress.includes('@')) {
-      const emailAddress = message.content.substring(14);
-      const fiveDigitVerificationCode = Math.floor(10000 + Math.random() * 90000);
-      if (emailAddress.includes('@')) {
-        message.channel.send(`Verifying ${emailAddress}...`);
-        const password = process.env['EMAIL_PASSWORD'];
-        var transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: 'heelerhouseofficial@gmail.com',
-            pass: password
-          }
-        });
-        var mailOptions = {
-          from: '\"The Heeler House\" <heelerhouseofficial@gmail.com>',
-          to: emailAddress,
-          subject: 'Heeler House Verification Code',
-          text: `This is a message from The Heeler House Staff team.\n\n<# <**${fiveDigitVerificationCode}** #> is your verification code. Do not share this code with anyone but the staff team.\n\nA staff member will never DM you asking for this code, only share it in your verification ticket.\n\nIf you did not request this code, you can safely disregard this email.`
-        };
-        transporter.sendMail(mailOptions, function (error, info) {
-          if (error) {
-            message.channel.send(`Error sending verification email. Try again later.`);
-            devChannel.send(`\`\`\`${error}\`\`\``);
-          } else {
-            message.channel.send(`Verification email sent to ${emailAddress}.`);
-            verifyChannel = client.channels.cache.get('1148063416079097959');
-            verifyChannel.send(`The code sent to ${emailAddress} is <**${fiveDigitVerificationCode}**>.`);
-          }
-        });
-      }
-      else {
-        message.channel.send(`Invalid email address.`);
-      }
+      message.channel.send(`Verifying ${emailAddress}...`);
+      const password = process.env['EMAIL_PASSWORD'];
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'heelerhouseofficial@gmail.com',
+          pass: password
+        }
+      });
+      var mailOptions = {
+        from: '\"The Heeler House\" <heelerhouseofficial@gmail.com>',
+        to: emailAddress,
+        subject: 'Heeler House Verification Code',
+        text: `
+      This is a message from The Heeler House Staff team.
+
+      <${spacedVerificationCode}> is your verification code. Do not share this code with anyone but the staff team.
+
+      A staff member will never DM you asking for this code, only share it in your verification ticket.
+
+      If you did not request this code, you can safely disregard this email.
+    `,
+        html: `
+      <p>This is a message from The Heeler House Staff team.</p></br>
+      <p>&lt;<strong>${spacedVerificationCode}</strong>&gt; is your verification code. Do not share this code with anyone but the staff team.</p></br>
+      <p>A staff member will never DM you asking for this code, only share it in your verification ticket.</p></br>
+      <p>If you did not request this code, you can safely disregard this email.</p>
+    `
+      };
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          message.channel.send(`Error sending verification email. Try again later.`);
+          devChannel.send(`\`\`\`${error}\`\`\``);
+        } else {
+          message.channel.send(`Verification email sent to ${emailAddress}.`);
+          verifyChannel = client.channels.cache.get('1148063416079097959');
+          verifyChannel.send(`The code sent to ${emailAddress} is <${spacedVerificationCode}>.`);
+        }
+      });
+    }
+    else {
+      message.channel.send(`Invalid email address.`);
     }
   }
 });
