@@ -18,7 +18,7 @@ const {
   GatewayIntentBits,
   ActivityType,
 } = require('discord.js');
-const { 
+const {
   joinVoiceChannel,
 } = require('@discordjs/voice');
 
@@ -45,7 +45,7 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-const trackedMessages = new Map(); 
+const trackedMessages = new Map();
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
@@ -56,7 +56,7 @@ client.once('ready', () => {
   const CLIENT_ID = client.user.id;
   const rest = new REST({
     version: '9'
-  }).setToken(TOKEN); 
+  }).setToken(TOKEN);
   (async () => {
     try {
       // Registering the commands in the server
@@ -83,7 +83,7 @@ client.once('ready', () => {
         selfMute: true
       });
       logger.command('Joined voice channel');
-      
+
       // Bump reminder
       const defaultChannel = client.channels.cache.get('1012812013795295233');
       setInterval(function () {
@@ -94,7 +94,7 @@ client.once('ready', () => {
       if (error) logger.error(error);
     }
   })();
-}); 
+});
 
 // Interaction handler
 client.on('interactionCreate', async interaction => {
@@ -114,7 +114,7 @@ client.on('interactionCreate', async interaction => {
 
 // Message handler
 client.on('messageCreate', async message => {
-  if (message.content === ""){
+  if (message.content === "") {
     logger.message(`(${message.author.username}) ATTACHMENT`);
   } else {
     logger.message(`(${message.author.username}) ${message.content}`);
@@ -186,53 +186,57 @@ client.on('messageCreate', async message => {
     var m = d.getUTCMinutes();
 
     if (m < 10) {
-        m = "0" + m;
+      m = "0" + m;
     }
 
     var ampm = n >= 12 ? 'PM' : 'AM';
     if (n === 0) {
-        n = 12; // Convert 0 to 12 AM
+      n = 12; // Convert 0 to 12 AM
     } else if (n > 12) {
-        n -= 12; // Convert to 12-hour format
+      n -= 12; // Convert to 12-hour format
     }
     // if it's between 11pm and 6am
     if (n >= 11 || n <= 6) {
-        message.channel.send("Highr go to bed smh it's currently " + n + ":" + m + " " + ampm + " in Britain");
+      message.channel.send("Highr go to bed smh it's currently " + n + ":" + m + " " + ampm + " in Britain");
     } else {
-        message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":" + m + " " + ampm + " in Britain");
-    } 
+      message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":" + m + " " + ampm + " in Britain");
+    }
   } else if (message.content.toLowerCase().includes('bilby, verify ')) {
     const emailAddress = message.content.substring(14);
     const fourDigitVerificationCode = Math.floor(1000 + Math.random() * 9000);
     if (emailAddress.includes('@')) {
-      message.channel.send(`Verifying ${emailAddress}...`);
-      const password = process.env['EMAIL_PASSWORD'];
-      var transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: 'heelerhouseofficial@gmail.com',
-          pass: password
-        }
-      });
-      var mailOptions = {
-        from: '\"The Heeler House\" <heelerhouseofficial@gmail.com>',
-        to: emailAddress,
-        subject: 'Heeler House Verification Code',
-        text: `Your verification code is ${fourDigitVerificationCode}.`
-      };
-      transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-          message.channel.send(`Error sending verification email. Try again later.`);
-          devChannel.send(`\`\`\`${error}\`\`\``);
-        } else {
-          message.channel.send(`Verification email sent to ${emailAddress}.`);
-          verifyChannel = client.channels.cache.get('1148063416079097959');
-          verifyChannel.send(`The code sent to ${emailAddress} is ${fourDigitVerificationCode}.`);
-        }
+      const emailAddress = message.content.substring(14);
+      const fiveDigitVerificationCode = Math.floor(10000 + Math.random() * 90000);
+      if (emailAddress.includes('@')) {
+        message.channel.send(`Verifying ${emailAddress}...`);
+        const password = process.env['EMAIL_PASSWORD'];
+        var transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: 'heelerhouseofficial@gmail.com',
+            pass: password
+          }
+        });
+        var mailOptions = {
+          from: '\"The Heeler House\" <heelerhouseofficial@gmail.com>',
+          to: emailAddress,
+          subject: 'Heeler House Verification Code',
+          text: `This is a message from The Heeler House Staff team.\n\n<# <**${fiveDigitVerificationCode}** #> is your verification code. Do not share this code with anyone but the staff team.\n\nA staff member will never DM you asking for this code, only share it in your verification ticket.\n\nIf you did not request this code, you can safely disregard this email.`
+        };
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            message.channel.send(`Error sending verification email. Try again later.`);
+            devChannel.send(`\`\`\`${error}\`\`\``);
+          } else {
+            message.channel.send(`Verification email sent to ${emailAddress}.`);
+            verifyChannel = client.channels.cache.get('1148063416079097959');
+            verifyChannel.send(`The code sent to ${emailAddress} is <**${fiveDigitVerificationCode}**>.`);
+          }
+        });
       }
-      );
-    } else {
-      message.channel.send(`Invalid email address.`);
+      else {
+        message.channel.send(`Invalid email address.`);
+      }
     }
   }
 });
@@ -241,14 +245,14 @@ async function script() {
   const guild = client.guilds.cache.get('959534476520730724');
   const channel = guild.channels.cache.get('966921162804301824');
   const heelerEvent = await guild.scheduledEvents.fetch('1130197680904220768');
-  const users = await heelerEvent.fetchSubscribers(withMember=true);
+  const users = await heelerEvent.fetchSubscribers(withMember = true);
   const userCollection = users.map(user => user.member);
   console.log(users);
   const jsonData = {
     version: 1,
     characters: []
   };
-  
+
   for (const user of userCollection) {
     const character = {
       name: user.nickname,
@@ -259,13 +263,13 @@ async function script() {
       },
       tags: []
     };
-    
+
     jsonData.characters.push(character);
   }
-  
+
   const jsonStr = JSON.stringify(jsonData, null, 2);
   fs.writeFileSync('output.json', jsonStr);
-  channel.send({files: ["/workspaces/Bot-Bilby-Heeler-House/output.json"]});
+  channel.send({ files: ["/workspaces/Bot-Bilby-Heeler-House/output.json"] });
 }
 
 // Mod ping handler
@@ -287,15 +291,15 @@ client.on('messageCreate', async message => {
     for (const link of messageLinks) {
       // Extract channel ID and message ID from the link
       const [, guildId, channelId, messageId] = link.match(/https?:\/\/discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)/);
-      
+
       const channel = await client.channels.fetch(channelId);
       if (!channel) continue; // Skip if the channel is not available
       if (message.author.bot) continue; // Skip if the message author is a bot
       if (message.channel.id != '1079596899335680000') continue; // Skip if the channel is not #staff
-      
+
       try {
         const linkedMessage = await channel.messages.fetch(messageId);
-        
+
         // Store the message information for tracking
         const trackedMessage = {
           originalMessage: message,
@@ -307,7 +311,7 @@ client.on('messageCreate', async message => {
           author: linkedMessage.author.tag,
           timestamp: Date.now() // Add timestamp to track when the message was linked
         };
-        
+
         logger.command("New linked message: " + trackedMessage.content);
         const newChannel = await client.channels.fetch("966921162804301824")
         newChannel.send(`New linked message added.`);
