@@ -2,7 +2,7 @@ const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 var http = require('http');
-var dayjs = require('dayjs-with-plugins')
+var nodemailer = require('nodemailer');
 const logger = require('./logger.js');
 
 http.createServer(function (req, res) {
@@ -184,6 +184,11 @@ client.on('messageCreate', async message => {
     var d = new Date();
     var n = d.getUTCHours() + 1;
     var m = d.getUTCMinutes();
+
+    if (m < 10) {
+        m = "0" + m;
+    }
+
     var ampm = n >= 12 ? 'PM' : 'AM';
     if (n === 0) {
         n = 12; // Convert 0 to 12 AM
@@ -196,6 +201,35 @@ client.on('messageCreate', async message => {
     } else {
         message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":" + m + " " + ampm + " in Britain");
     } 
+  } else if (message.content.toLowerCase().includes('bilby, verify ')) {
+    emailAddress = message.content.substring(13);
+    fourDigitVerificationCode = Math.floor(1000 + Math.random() * 9000);
+    if (emailAddress.includes('@')) {
+      message.channel.send(`Verifying ${emailAddress}...`);
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'heelerhouseofficial@gmail.com',
+          pass: process.env['EMAIL_PASSWORD']
+        }
+      });
+      var mailOptions = {
+        from: 'heelerhouseofficial@gmail.com',
+        to: emailAddress,
+        subject: 'Heeler House Verification Code',
+        text: `Your verification code is ${fourDigitVerificationCode}.`
+      };
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          message.channel.send(`Error sending verification email. Try again later.`);
+        } else {
+          message.channel.send(`Verification email sent to ${emailAddress}.`);
+        }
+      }
+      );
+    } else {
+      message.channel.send(`Invalid email address.`);
+    }
   }
 });
 
