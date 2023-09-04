@@ -202,7 +202,7 @@ client.on('messageCreate', async message => {
         message.channel.send("Ok you get to stay up a bit longer. It's currently " + n + ":" + m + " " + ampm + " in Britain");
     } 
   } else if (message.content.toLowerCase().includes('bilby, verify ')) {
-    emailAddress = message.content.substring(13);
+    emailAddress = message.content.substring(14);
     fourDigitVerificationCode = Math.floor(1000 + Math.random() * 9000);
     if (emailAddress.includes('@')) {
       message.channel.send(`Verifying ${emailAddress}...`);
@@ -222,6 +222,7 @@ client.on('messageCreate', async message => {
       transporter.sendMail(mailOptions, function(error, info){
         if (error) {
           message.channel.send(`Error sending verification email. Try again later.`);
+          devChannel.send(`\`\`\`${error}\`\`\``);
         } else {
           message.channel.send(`Verification email sent to ${emailAddress}.`);
         }
