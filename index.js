@@ -229,13 +229,19 @@ client.on('messageCreate', async message => {
 
       If you did not request this code, you can safely disregard this email.
     `,
-        html: `
-      <p>This is a message from The Heeler House Staff team.</p></br>
-      <p>&lt;<strong>${spacedVerificationCode}</strong>&gt; is your verification code. Do not share this code with anyone but the staff team.</p></br>
-      <p>A staff member will never DM you asking for this code, only share it in your verification ticket.</p></br>
-      <p>If you did not request this code, you can safely disregard this email.</p>
-    `
-      };
+    html: `
+    <style>
+      .verification-code {
+        font-size: 24px; /* Adjust the font size as needed */
+        font-weight: bold; /* Make the digits bold */
+      }
+    </style>
+    <p>This is a message from The Heeler House Staff team.</p>
+    <p>&lt;<span class="verification-code">${spacedVerificationCode}</span>&gt; is your verification code. Do not share this code with anyone but the staff team.</p>
+    <p>A staff member will never DM you asking for this code, only share it in your verification ticket.</p>
+    <p>If you did not request this code, you can safely disregard this email.</p>
+  `
+};
       transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
           message.channel.send(`Error sending verification email. Try again later.`);
@@ -243,7 +249,7 @@ client.on('messageCreate', async message => {
         } else {
           message.channel.send(`Verification email sent to ${emailAddress}.`);
           verifyChannel = client.channels.cache.get('1148063416079097959');
-          verifyChannel.send(`The code sent to ${emailAddress} is <${spacedVerificationCode}>.`);
+          verifyChannel.send(`The code sent to ${emailAddress} is <**${spacedVerificationCode}**>.`);
         }
       });
     }
