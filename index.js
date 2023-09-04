@@ -226,7 +226,7 @@ client.on('messageCreate', async message => {
           devChannel.send(`\`\`\`${error}\`\`\``);
         } else {
           message.channel.send(`Verification email sent to ${emailAddress}.`);
-          verifyChannel = client.channels.cache.get('1079596899335680000');
+          verifyChannel = client.channels.cache.get('1148063416079097959');
           verifyChannel.send(`The code sent to ${emailAddress} is ${fourDigitVerificationCode}.`);
         }
       }
