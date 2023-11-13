@@ -182,7 +182,7 @@ client.on('messageCreate', async message => {
   } else if (message.content.toLowerCase() == ('highr, sleep')) {
     // get current time in Britain
     var d = new Date();
-    var n = d.getUTCHours() + 1;
+    var n = d.getUTCHours();
     var m = d.getUTCMinutes();
 
     if (m < 10) {
