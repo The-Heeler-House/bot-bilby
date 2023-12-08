@@ -15,8 +15,8 @@ module.exports = {
         const prompt = interaction.options.getString('prompt');
 
         // Send a success message to the user via DM
-        await interaction.reply({ content: `You are now registered for the Secret Santa event!` });
-
+        await interaction.reply({ content: `You are now registered for the Secret Santa event with the prompt: ${prompt}`, ephemeral: true });
+        await interaction.channel.send({ content: `Thank you for registering for the Secret Santa event!`});
         // Get the staff channel where the event details will be sent
         const staffChannel = interaction.guild.channels.cache.find(channel => channel.name === 'secretsanta-list');
 
