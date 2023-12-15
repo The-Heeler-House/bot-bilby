@@ -229,7 +229,7 @@ client.on('messageCreate', async message => {
 
       If you did not request this code, you can safely disregard this email.
     `,
-    html: `
+        html: `
     <style>
       .verification-code {
         font-size: 24px; /* Adjust the font size as needed */
@@ -241,7 +241,7 @@ client.on('messageCreate', async message => {
     <p>A staff member will never DM you asking for this code, only share it in your verification ticket.</p>
     <p>If you did not request this code, you can safely disregard this email.</p>
   `
-};
+      };
       transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
           message.channel.send(`Error sending verification email. Try again later.`);
@@ -260,37 +260,17 @@ client.on('messageCreate', async message => {
 });
 
 async function script() {
-  const guild = client.guilds.cache.get('959534476520730724');
-  const channel = guild.channels.cache.get('966921162804301824');
-  const heelerEvent = await guild.scheduledEvents.fetch('1130197680904220768');
-  const users = await heelerEvent.fetchSubscribers(withMember = true);
-  const userCollection = users.map(user => user.member);
-  console.log(users);
-  const jsonData = {
-    version: 1,
-    characters: []
-  };
-
-  for (const user of userCollection) {
-    const character = {
-      name: user.nickname,
-      gender_select: "n",
-      pronoun_str: "",
-      image: {
-        url: user.avatarURL()
-      },
-      tags: []
-    };
-
-    jsonData.characters.push(character);
-  }
-
-  const jsonStr = JSON.stringify(jsonData, null, 2);
-  fs.writeFileSync('output.json', jsonStr);
-  channel.send({ files: ["/workspaces/Bot-Bilby-Heeler-House/output.json"] });
 }
 
-// Mod ping handler
+// Function to shuffle an array randomly
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 client.on('messageCreate', async message => {
   if (message.mentions.roles.has("960044331572547654") || message.mentions.roles.has("960044331572547654")) {
     const staffChatChannel = await client.channels.fetch("1079596899335680000");
