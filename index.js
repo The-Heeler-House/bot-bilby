@@ -13,7 +13,6 @@ http.createServer(function (req, res) {
 // Require the necessary discord.js classes
 const {
   Client,
-  Intents,
   Collection,
   GatewayIntentBits,
   ActivityType,
@@ -33,8 +32,7 @@ const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('
 
 const TOKEN = process.env['TOKEN'];
 
-// Edit your TEST_GUILD_ID here in the env file for development
-const TEST_GUILD_ID = undefined;
+const HEELER_HOUSE_SERVER = undefined;
 
 // Creating a collection for commands in client
 client.commands = new Collection();
@@ -46,6 +44,8 @@ for (const file of commandFiles) {
 }
 
 const trackedMessages = new Map();
+
+var joinGate = true;
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
@@ -74,15 +74,15 @@ client.once('ready', () => {
       });
       logger.command('Successfully set bot status');
 
-      const vChannel = client.channels.cache.get('1031750969203114035');
-      const connection = joinVoiceChannel({
-        channelId: vChannel.id,
-        guildId: vChannel.guild.id,
-        adapterCreator: vChannel.guild.voiceAdapterCreator,
-        selfDeaf: false,
-        selfMute: true
-      });
-      logger.command('Joined voice channel');
+      // const vChannel = client.channels.cache.get('1031750969203114035');
+      // joinVoiceChannel({
+      //   channelId: vChannel.id,
+      //   guildId: vChannel.guild.id,
+      //   adapterCreator: vChannel.guild.voiceAdapterCreator,
+      //   selfDeaf: false,
+      //   selfMute: true
+      // });
+      // logger.command('Joined voice channel');
 
       // Bump reminder
       const defaultChannel = client.channels.cache.get('1012812013795295233');
@@ -179,6 +179,14 @@ client.on('messageCreate', async message => {
     message.channel.send(`For Jalen: ${trackedMessages.size} (Bot Dev Purposes)`);
   } else if (message.content.toLowerCase() == ('bilby, script')) {
     script()
+  } else if (message.content.toLowerCase() == ('bilby, togglegate')) {
+    if (joinGate) {
+      joinGate = false;
+      message.channel.send(`Join gate toggled off`);
+    } else {
+      joinGate = true;
+      message.channel.send(`Join gate toggled on`);
+    }
   } else if (message.content.toLowerCase() == ('highr, sleep')) {
     // get current time in Britain
     var d = new Date();
@@ -270,6 +278,19 @@ function shuffleArray(array) {
   }
   return array;
 }
+
+// check all new users, and kick them if the account age is less then 5 days
+client.on('guildMemberAdd', async member => {
+  if (!joinGate) {
+    return;
+  }
+  const accountAge = Date.now() - member.user.createdTimestamp;
+  const fiveDays = 432000000;
+  if (accountAge < fiveDays) {
+    member.send(`Welcome to The Heeler House! Unfortunately, your account is too new to join the server. Please try again in a few days. If you believe this is a mistake, please contact a staff member.`);
+    member.kick('Account age is less than 5 days');
+  }
+});
 
 client.on('messageCreate', async message => {
   if (message.mentions.roles.has("960044331572547654") || message.mentions.roles.has("960044331572547654")) {
