@@ -106,16 +106,6 @@ module.exports = {
       player.stop();
       connection.destroy();
       await interaction.reply('Stopping "Bluey the Album"!');
-
-      const vChannel = interaction.client.channels.cache.get('1031750969203114035');
-      const newConnection = joinVoiceChannel({
-        channelId: vChannel.id, 
-        guildId: vChannel.guild.id, 
-        adapterCreator: vChannel.guild.voiceAdapterCreator,
-        selfDeaf: false,
-        selfMute: true
-      });
-      console.log('Joined voice channel');
     } else if (interaction.options.getSubcommand() === 'list') {
       // lists all the songs in the album
       var desc = 'All the songs in the album:\n';

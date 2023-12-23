@@ -20,6 +20,7 @@ const {
 const {
   joinVoiceChannel,
 } = require('@discordjs/voice');
+const muteroulette = require('./commands/muteroulette.js');
 
 // Create a new client instance
 const client = new Client({
@@ -187,6 +188,8 @@ client.on('messageCreate', async message => {
       joinGate = true;
       message.channel.send(`Join gate toggled on`);
     }
+  } else if (message.content.toLowerCase() == ('bilby, muteroulette')) {
+    muteroulette.disabledTime = 0;
   } else if (message.content.toLowerCase() == ('highr, sleep')) {
     // get current time in Britain
     var d = new Date();
@@ -377,7 +380,7 @@ client.on('messageDelete', async deletedMessage => {
 client.login(TOKEN);
 
 async function ohDear(message) {
-  const text = fs.readFileSync(('../src/episodeDescMLP.txt'), 'utf-8');
+  const text = fs.readFileSync(('./episodeDescMLP.txt'), 'utf-8');
 
   // define a regular expression to match each episode
   const regex = /^S(\d+) E(\d+) · (.+)$([\s\S]+?)^$/gm;
