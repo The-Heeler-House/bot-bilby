@@ -88,7 +88,7 @@ module.exports = {
             }
 
             // get a random number between 1 and 100
-            const randomNumber = Math.floor(Math.random() * 100) + 1;
+            const randomNumber = 50;
 
             // 1-5: mute for 10 minutes
             if (randomNumber <= 5) {
@@ -535,23 +535,36 @@ module.exports = {
                 await interaction.reply({ content: `You landed on ${randomNumber}. ${giftMessage[Math.floor(Math.random() * giftMessage.length)]}` });
                 await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                 const filter = m => m.author.id === interaction.user.id;
-                const selectedUserMessages = await interaction.channel.awaitMessages({ filter, max: 1, time: 15000 });
+                const selectedUserMessages = await interaction.channel.awaitMessages({ filter, max: 1, time: 120000 })
+                if (selectedUserMessages.size === 0) {
+                    await interaction.channel.send('You did not select a user! Gift wasted.');
+                    return;
+                }
                 const user = selectedUserMessages.first().content.split(' ')[0].slice(2, -1);
-                if (user == null) {
+
+                var discordUser = null;
+                try {
+                    discordUser = await interaction.guild.members.fetch(user);
+                } catch (error) {
                     await interaction.channel.send('You must mention a user! Gift wasted.');
                     return;
                 }
+
                 const giftedUser = await users.findOne({ user: user });
                 if (giftedUser == null) {
                     await interaction.channel.send('That user has not run the mute roulette yet! Gift wasted.');
                     return;
                 }
-                if (giftedUser === interaction.member.id) {
+                if (giftedUser.user === interaction.member.id) {
                     await interaction.channel.send('You cannot gift yourself! Gift wasted.');
                     return;
                 }
-                await interaction.channel.send(`You have selected ${user.username}! What powerup do you want to gift them? You can choose from \`Shield\`, \`Double Trouble\`, \`Raise the Stakes\`, and \`Fifty-Fifty\`.`);
-                const powerupMessages = await interaction.channel.awaitMessages({ filter, max: 1, time: 15000 });
+                await interaction.channel.send(`You have selected ${discordUser.nickname || discordUser.user.globalName || discordUser.user.username}! What powerup do you want to gift them? You can choose from \`Shield\`, \`Double Trouble\`, \`Raise the Stakes\`, and \`Fifty-Fifty\`.`);
+                const powerupMessages = await interaction.channel.awaitMessages({ filter, max: 1, time: 120000 })
+                if (powerupMessages.size === 0) {
+                    await interaction.channel.send('You did not select a powerup! Gift wasted.');
+                    return;
+                }
                 var powerup = powerupMessages.first().content.toLowerCase();
                 if (powerup !== 'shield' && powerup !== 'double trouble' && powerup !== 'raise the stakes' && powerup !== 'fifty-fifty') {
                     await interaction.channel.send('You must choose a valid powerup! Gift wasted.');
