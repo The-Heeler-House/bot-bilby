@@ -88,7 +88,7 @@ module.exports = {
             }
 
             // get a random number between 1 and 100
-            const randomNumber = 50;
+            const randomNumber = Math.floor(Math.random() * 100) + 1;
 
             // 1-5: mute for 10 minutes
             if (randomNumber <= 5) {
