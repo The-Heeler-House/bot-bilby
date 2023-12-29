@@ -67,6 +67,56 @@ module.exports = {
             if (powerUps.includes('Fifty-Fifty')) {
                 const randomNumber = Math.floor(Math.random() * 2) + 1;
                 if (randomNumber === 1) {
+
+                    // checks if the user has a shield powerup
+                    if (powerUps.includes('Shield')) {
+                        const shieldMessage = [
+                            'Because of your `Fifty-Fifty` powerup, you landed on heads! You have been protected by your `Shield` powerup!',
+                        ]
+                        await interaction.reply({ content: `${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
+
+                        await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, powerUps: powerUps.filter(powerUp => powerUp !== 'Shield'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
+                        return;
+                    }
+
+                    // checks if the user has a double trouble powerup
+                    if (powerUps.includes('Double Trouble')) {
+                        const doubleMessage = [
+                            'Because of your `Fifty-Fifty` powerup, you landed on heads! You have been muted for 2 hours because of your `Double Trouble` powerup!',
+                        ]
+                        await interaction.reply({ content: `${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
+                        await interaction.member.timeout(7200000)
+                            .catch(async error => {
+                                await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
+                            });
+                        await users.updateOne({ user: interaction.member.id }, { $set: { numMutesTotal: numMutesTotal + 1, numAllTotal: numAllTotal + 1, powerUps: powerUps.filter(powerUp => powerUp !== 'Double Trouble'), mutePercentage: Math.round(((numMutesTotal + 1) / (numAllTotal + 1)) * 100) } });
+                        return;
+                    }
+
+                    // checks if the user has a raise the stakes powerup
+                    if (powerUps.includes('Raise the Stakes')) {
+                        const randomNumber2 = Math.floor(Math.random() * 2) + 1;
+                        if (randomNumber2 === 1) {
+                            const muteRaiseMessage = [
+                                'Because of your `Fifty-Fifty` powerup, you landed on heads! You have been muted for 2 hours because of your `Raise the Stakes` powerup!',
+                            ]
+                            await interaction.reply({ content: `${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
+                            await interaction.member.timeout(7200000)
+                                .catch(async error => {
+                                    await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
+                                });
+                            await users.updateOne({ user: interaction.member.id }, { $set: { numMutesTotal: numMutesTotal + 1, numAllTotal: numAllTotal + 1, powerUps: powerUps.filter(powerUp => powerUp !== 'Raise the Stakes'), mutePercentage: Math.round(((numMutesTotal + 1) / (numAllTotal + 1)) * 100) } });
+                            return;
+                        } else {
+                            const noMuteMessage = [
+                                'Because of your `Fifty-Fifty` powerup, you landed on heads, but you had a `Raise the Stakes` powerup, so you were protected!',
+                            ]
+                            await interaction.reply({ content: `${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
+                            await users.updateOne({ user: interaction.member.id }, { $pull: { powerUps: 'Raise the Stakes' }, $set: { numAllTotal: numAllTotal + 1, powerUps: powerUps.filter(powerUp => powerUp !== 'Raise the Stakes'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
+                            return;
+                        }
+                    }
+
                     const fiftyFiftyMessage = [
                         'Because of your `Fifty-Fifty` powerup, you landed on heads! You have been muted for 1 hour!',
                     ]
