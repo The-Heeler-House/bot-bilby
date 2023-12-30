@@ -476,6 +476,11 @@ module.exports = {
                 }
             }
 
+            // if they have a raise the stakes powerup, remove it
+            if (powerUps.includes('Raise the Stakes')) {
+                await users.updateOne({ user: interaction.member.id }, { $set: { powerUps: powerUps.filter(powerUp => powerUp !== 'Raise the Stakes') } });
+            }
+
             // 22-26: Get a shield powerup
             if (randomNumber <= 26) {
                 const shieldMessage = [
