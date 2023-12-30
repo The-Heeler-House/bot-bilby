@@ -580,7 +580,8 @@ module.exports = {
                     powerup = 'Fifty-Fifty';
                 }
                 await interaction.channel.send(`You have selected ${powerup}! Powerup gifted!`);
-                await users.updateOne({ user: user.id }, { $set: { powerUps: [...giftedUser.powerUps, powerup] } });
+                await users.updateOne({ user: user }, { $set: { powerUps: [...giftedUser.powerUps, powerup] } });
+                await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
 
                 return; 
             }
