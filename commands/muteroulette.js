@@ -75,7 +75,7 @@ module.exports = {
                         .catch(async error => {
                             await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
                         });
-                    await users.updateOne({ user: interaction.member.id }, { $set: { numMutesTotal: numMutesTotal + 1, numAllTotal: numAllTotal + 1, powerUps: powerUps.filter(powerUp => powerUp !== 'Fifty-Fifty'), mutePercentage: Math.round(((numMutesTotal + 1) / (numAllTotal + 1)) * 100) } });
+                    await users.updateOne({ user: interaction.member.id }, { $set: { numMutesTotal: numMutesTotal + 1, numAllTotal: numAllTotal + 1, numStreak: 0, numMaxStreak: Math.max(numMaxStreak, 0), powerUps: powerUps.filter(powerUp => powerUp !== 'Fifty-Fifty'), mutePercentage: Math.round(((numMutesTotal + 1) / (numAllTotal + 1)) * 100) } });
                     return;
                 } else {
                     const fiftyFiftyMessage = [
