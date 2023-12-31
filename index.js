@@ -4,6 +4,7 @@ const { Routes } = require('discord-api-types/v9');
 var http = require('http');
 var nodemailer = require('nodemailer');
 const logger = require('./logger.js');
+require('dotenv').config();
 
 http.createServer(function (req, res) {
   res.write("I'm alive");
