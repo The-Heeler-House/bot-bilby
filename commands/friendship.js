@@ -145,7 +145,7 @@ module.exports = {
     if (interaction.options.getString('character2') != null) {
       var action2 = await finder(interaction.options.getString('character2'), char);
     }
-    const message = await interaction.editReply({ content: 'Select the first character!\nYour selection: **TBA** and **TBA**.', components: [row, row1, row2, row3, row4], fetchReply: true });
+    const message = await interaction.reply({ content: 'Select the first character!\nYour selection: **TBA** and **TBA**.', components: [row, row1, row2, row3, row4], fetchReply: true });
     if ((action1 != null) && (action2 != null)) {
       row.components[0].setDisabled(true);
       row1.components[0].setDisabled(true);

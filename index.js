@@ -107,7 +107,6 @@ client.on('interactionCreate', async interaction => {
   const command = client.commands.get(interaction.commandName);
   try {
     logger.command(`Command ${interaction.commandName} called`);
-    await interaction.deferReply();
     await command.execute(interaction);
   } catch (error) {
     if (error) logger.error(error);

@@ -57,6 +57,6 @@ module.exports = {
 
     const attachment = new AttachmentBuilder(canvasCard.toBuffer(), 'bingo.png');
     
-    await interaction.editReply({ content: '<:Bluey:965545191270400000> Bluey, <:Bingo:965564211642105867> Bingo! A Bingo card to play along to while you watch episodes of Bluey!\nThis card is for <@' + interaction.user.id + '>.', files: [attachment] });
+    await interaction.reply({ content: '<:Bluey:965545191270400000> Bluey, <:Bingo:965564211642105867> Bingo! A Bingo card to play along to while you watch episodes of Bluey!\nThis card is for <@' + interaction.user.id + '>.', files: [attachment] });
   }
 };

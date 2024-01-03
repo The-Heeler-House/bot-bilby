@@ -36,7 +36,7 @@ module.exports = {
       .setDescription('Lists all the songs in the two albums')),
   async execute(interaction) {
     if (interaction.member.voice.channelId != '1017264556172640277' && interaction.member.voice.channelId != '1087252823445606461' && interaction.member.voice.channelId != '961064255921197156' && interaction.member.voice.channelId != '961495071478386698') {
-      await interaction.editReply('You must be in a general VC to use this command!');
+      await interaction.reply('You must be in a general VC to use this command!');
       return;
     }
     if (interaction.options.getSubcommand() === 'play') {
@@ -75,12 +75,12 @@ module.exports = {
       });
 
       // say the name of the song (should be the file name without the extension)
-      await interaction.editReply(`Now playing: ${files[currentIndex].slice(0, -4)}`);
+      await interaction.reply(`Now playing: ${files[currentIndex].slice(0, -4)}`);
     } else if (interaction.options.getSubcommand() === 'skip') {
 
       const connection = getVoiceConnection(interaction.guildId);
       if (connection.state.subscription == null){
-        await interaction.editReply('I\'m not playing anything!');
+        await interaction.reply('I\'m not playing anything!');
         return;
       }
       const player = connection.state.subscription.player; 
@@ -94,18 +94,18 @@ module.exports = {
       player.play(createAudioResource(directoryPath + '/' + files[currentIndex], {
         inputType: StreamType.Arbitrary,
       }));
-      await interaction.editReply(`Now playing: ${files[currentIndex].slice(0, -4)}`);
+      await interaction.reply(`Now playing: ${files[currentIndex].slice(0, -4)}`);
     } else if (interaction.options.getSubcommand() === 'stop') {
       // stops the player and disconnects from the voice channel
       const connection = getVoiceConnection(interaction.guildId);
       if (connection.state.subscription == null){ 
-        await interaction.editReply('I\'m not playing anything!');
+        await interaction.reply('I\'m not playing anything!');
         return; 
       }
       const player = connection.state.subscription.player;
       player.stop();
       connection.destroy();
-      await interaction.editReply('Stopping "Bluey the Album"!');
+      await interaction.reply('Stopping "Bluey the Album"!');
     } else if (interaction.options.getSubcommand() === 'list') {
       // lists all the songs in the album
       var desc = 'All the songs in the album:\n';
@@ -117,7 +117,7 @@ module.exports = {
         desc += `${files[i].slice(0, -4)}\n`;
       }
       embed.setDescription(desc);
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed] });
     }
   }
 };

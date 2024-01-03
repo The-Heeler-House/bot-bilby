@@ -16,6 +16,7 @@ module.exports = {
         .setRequired(true)),
   async execute(interaction) {
     var chara = await interaction.options.getString('character');
+    await interaction.deferReply();
     // Loading the dependencies. We don't need pretty
     // because we shall not log html to the terminal
     chara.replace(" ", "_");
