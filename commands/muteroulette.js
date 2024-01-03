@@ -3,6 +3,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { exec } = require('child_process');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const { MongoClient } = require('mongodb');
+const logger = require('../logger.js');
 
 var disabledTime = 0;
 module.exports = {
@@ -27,6 +28,7 @@ module.exports = {
         const uri = 'mongodb+srv://heelerhouse:2007Lj76727191@cluster0.7ynqt27.mongodb.net/?retryWrites=true&w=majority';
         const client = new MongoClient(uri);
         await client.connect();
+        logger.bilby('Connected to database!');
 
         const users = client.db('muteroulette').collection('users');
         if (interaction.options.getSubcommand() === 'play') {
@@ -90,6 +92,8 @@ module.exports = {
 
             // get a random number between 1 and 100
             const randomNumber = Math.floor(Math.random() * 100) + 1;
+
+            logger.bilby(randomNumber);
 
             // 1-5: mute for 10 minutes
             if (randomNumber <= 5) {
@@ -591,7 +595,7 @@ module.exports = {
 
                 return; 
             }
-
+            logger.bilby("normal roll");
             const normalMessage = [
                 'Normal roll!',
                 'Nothing happened!',
