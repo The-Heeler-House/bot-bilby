@@ -29,9 +29,9 @@ module.exports = {
       'For real life? Godly Luck.'
     ])
     if (target != null) {
-      await interaction.reply({ content: '<@' + target + '>\'s fortune: ' + fortune });
+      await interaction.editReply({ content: '<@' + target + '>\'s fortune: ' + fortune });
     } else {
-      await interaction.reply({ content: 'Your fortune: ' + fortune });
+      await interaction.editReply({ content: 'Your fortune: ' + fortune });
     }
   }
 };

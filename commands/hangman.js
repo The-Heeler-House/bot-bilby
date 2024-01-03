@@ -109,7 +109,7 @@ module.exports = {
         let attempts = 0;
 
         if (interaction.options.getSubcommand() === 'play') {
-            await interaction.reply({
+            await interaction.editReply({
                 content: 'Starting a Bluey themed hangman game! The game master is <@' + interaction.user.id + '>. The game will only read the game master\'s reactions.',
             });
 
@@ -187,7 +187,7 @@ module.exports = {
                 }
             });
         } else {
-            await interaction.reply({
+            await interaction.editReply({
                 content: 'Starting a Bluey themed hangman game! The bot will read all reactions. Winstreaks will not be reset.',
             });
 

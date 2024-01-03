@@ -50,13 +50,13 @@ module.exports = {
 
             // check if the user ran the command within the last 10 seconds
             if (currentTime - lastTime < 10000) {
-                await interaction.reply({ content: `You must wait ${Math.round((10000 - (currentTime - lastTime)) / 1000)} seconds before using this command again!`, ephemeral: true });
+                await interaction.editReply({ content: `You must wait ${Math.round((10000 - (currentTime - lastTime)) / 1000)} seconds before using this command again!`, ephemeral: true });
                 return;
             }
 
             // if disabled time under 10 mintues 
             if (currentTime - disabledTime < 600000) {
-                await interaction.reply({ content: 'This command is disabled for 10 minutes!' });
+                await interaction.editReply({ content: 'This command is disabled for 10 minutes!' });
                 return;
             }
 
@@ -70,7 +70,7 @@ module.exports = {
                     const fiftyFiftyMessage = [
                         'Because of your `Fifty-Fifty` powerup, you landed on heads! You have been muted for 1 hour!',
                     ]
-                    await interaction.reply({ content: `${fiftyFiftyMessage[Math.floor(Math.random() * fiftyFiftyMessage.length)]}` });
+                    await interaction.editReply({ content: `${fiftyFiftyMessage[Math.floor(Math.random() * fiftyFiftyMessage.length)]}` });
                     await interaction.member.timeout(3600000)
                         .catch(async error => {
                             await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -81,7 +81,7 @@ module.exports = {
                     const fiftyFiftyMessage = [
                         'Because of your `Fifty-Fifty` powerup, you landed on tails! You got off easy.',
                     ]
-                    await interaction.reply({ content: `${fiftyFiftyMessage[Math.floor(Math.random() * fiftyFiftyMessage.length)]}` });
+                    await interaction.editReply({ content: `${fiftyFiftyMessage[Math.floor(Math.random() * fiftyFiftyMessage.length)]}` });
                     await users.updateOne({ user: interaction.member.id }, { $pull: { powerUps: 'Fifty-Fifty' }, $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                     return;
                 }
@@ -97,7 +97,7 @@ module.exports = {
                     const shieldMessage = [
                         'You landed on a 10 minutes mute, but you had a `Shield` powerup, so you were protected!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
                     await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Shield'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                     return;
                 }
@@ -107,7 +107,7 @@ module.exports = {
                     const doubleMessage = [
                         'You landed on a 10 minute mute, but you had a `Double Trouble` powerup, so your mute time was doubled!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
                     await interaction.member.timeout(1200000)
                         .catch(async error => {
                             await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -123,7 +123,7 @@ module.exports = {
                         const muteRaiseMessage = [
                             'You landed on a 10 minute mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
                         await interaction.member.timeout(1200000)
                             .catch(async error => {
                                 await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -134,7 +134,7 @@ module.exports = {
                         const noMuteMessage = [
                             'Without the `Raise the Stakes` powerup, this would have been a 10 minute mute!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
                         await users.updateOne({ user: interaction.member.id }, { $pull: { powerUps: 'Raise the Stakes' }, $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                         return;
                     }
@@ -146,7 +146,7 @@ module.exports = {
                     'Not too bad.',
                     'You got off easy.',
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. You have been muted for 10 minutes! ${tenMinuteMuteMessage[Math.floor(Math.random() * tenMinuteMuteMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. You have been muted for 10 minutes! ${tenMinuteMuteMessage[Math.floor(Math.random() * tenMinuteMuteMessage.length)]}` });
                 await interaction.member.timeout(600000)
                     .catch(async error => {
                         await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -162,7 +162,7 @@ module.exports = {
                     const shieldMessage = [
                         'You landed on a 30 minute mute, but you had a `Shield` powerup, so you were protected!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
                     await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Shield'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                     return;
                 }
@@ -172,7 +172,7 @@ module.exports = {
                     const doubleMessage = [
                         'You landed on a 30 minute mute, but you had a `Double Trouble` powerup, so your mute time was doubled!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
                     await interaction.member.timeout(3600000)
                         .catch(async error => {
                             await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -188,7 +188,7 @@ module.exports = {
                         const muteRaiseMessage = [
                             'You landed on a 30 minute mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
                         await interaction.member.timeout(3600000)
                             .catch(async error => {
                                 await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -199,7 +199,7 @@ module.exports = {
                         const noMuteMessage = [
                             'Without the `Raise the Stakes` powerup, this would have been a 30 minute mute!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
                         await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Raise the Stakes'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                         return;
                     }
@@ -212,7 +212,7 @@ module.exports = {
                     'U can watch 4 entire episodes of Bluey in that time.',
                     'Tsk Tsk Tsk.'
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. You have been muted for 30 minutes! ${thirtyMinuteMuteMessage[Math.floor(Math.random() * thirtyMinuteMuteMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. You have been muted for 30 minutes! ${thirtyMinuteMuteMessage[Math.floor(Math.random() * thirtyMinuteMuteMessage.length)]}` });
                 await interaction.member.timeout(1800000)
                     .catch(async error => {
                         await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -228,7 +228,7 @@ module.exports = {
                     const shieldMessage = [
                         'You landed on a 1 hour mute, but you had a `Shield` powerup, so you were protected!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
                     await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Shield'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                     return;
                 }
@@ -238,7 +238,7 @@ module.exports = {
                     const doubleMessage = [
                         'You landed on a 1 hour mute, but you had a `Double Trouble` powerup, so your mute time was doubled!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
                     await interaction.member.timeout(7200000)
                         .catch(async error => {
                             await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -254,7 +254,7 @@ module.exports = {
                         const muteRaiseMessage = [
                             'You landed on a 1 hour mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
                         await interaction.member.timeout(7200000)
                             .catch(async error => {
                                 await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -265,7 +265,7 @@ module.exports = {
                         const noMuteMessage = [
                             'Without the `Raise the Stakes` powerup, this would have been a 1 hour mute!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
                         await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Raise the Stakes'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                         return;
                     }
@@ -277,7 +277,7 @@ module.exports = {
                     'Better luck next time.',
                     'Bro is NOT lucky.'
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. You have been muted for 1 hour! ${oneHourMuteMessage[Math.floor(Math.random() * oneHourMuteMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. You have been muted for 1 hour! ${oneHourMuteMessage[Math.floor(Math.random() * oneHourMuteMessage.length)]}` });
                 await interaction.member.timeout(3600000)
                     .catch(async error => {
                         await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -293,7 +293,7 @@ module.exports = {
                     const shieldMessage = [
                         'You landed on a 3 hour mute, but you had a `Shield` powerup, so you were protected!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
                     await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Shield'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                     return;
                 }
@@ -303,7 +303,7 @@ module.exports = {
                     const doubleMessage = [
                         'You landed on a 3 hour mute, but you had a `Double Trouble` powerup, so your mute time was doubled!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
                     await interaction.member.timeout(10800000)
                         .catch(async error => {
                             await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -319,7 +319,7 @@ module.exports = {
                         const muteRaiseMessage = [
                             'You landed on a 3 hour mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
                         await interaction.member.timeout(10800000)
                             .catch(async error => {
                                 await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -330,7 +330,7 @@ module.exports = {
                         const noMuteMessage = [
                             'Without the `Raise the Stakes` powerup, this would have been a 3 hour mute!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
                         await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Raise the Stakes'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                         return;
                     }
@@ -341,7 +341,7 @@ module.exports = {
                     'That\'s enough time to touch grass or get productive stuff done!',
                     'Whomp whomp.',
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. You have been muted for 3 hours! ${threeHourMuteMessage[Math.floor(Math.random() * threeHourMuteMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. You have been muted for 3 hours! ${threeHourMuteMessage[Math.floor(Math.random() * threeHourMuteMessage.length)]}` });
                 await interaction.member.timeout(10800000)
                     .catch(async error => {
                         await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -359,7 +359,7 @@ module.exports = {
                         const shieldMessage = [
                             'You landed on a 1 day mute, but you had a `Shield` powerup, so you were protected!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
                         await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Shield'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                         return;
                     }
@@ -369,7 +369,7 @@ module.exports = {
                         const doubleMessage = [
                             'You landed on a 1 day mute, but you had a `Double Trouble` powerup, so your mute time was doubled!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
                         await interaction.member.timeout(172800000)
                             .catch(async error => {
                                 await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -385,7 +385,7 @@ module.exports = {
                             const muteRaiseMessage = [
                                 'You landed on a 1 day mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!',
                             ]
-                            await interaction.reply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
+                            await interaction.editReply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
                             await interaction.member.timeout(172800000)
                                 .catch(async error => {
                                     await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -396,7 +396,7 @@ module.exports = {
                             const noMuteMessage = [
                                 'Without the `Raise the Stakes` powerup, this would have been a 1 day mute!',
                             ]
-                            await interaction.reply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
+                            await interaction.editReply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
                             await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Raise the Stakes'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                             return;
                         }
@@ -407,7 +407,7 @@ module.exports = {
                         'An entire day? Sheeeesh.',
                         'Whomp whomp.'
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. You have been muted for 1 day! ${oneDayMuteMessage[Math.floor(Math.random() * oneDayMuteMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. You have been muted for 1 day! ${oneDayMuteMessage[Math.floor(Math.random() * oneDayMuteMessage.length)]}` });
                     await interaction.member.timeout(86400000)
                         .catch(async error => {
                             await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -420,7 +420,7 @@ module.exports = {
                         const shieldMessage = [
                             'You landed on a 1 week mute, but you had a `Shield` powerup, so you were protected!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
                         await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Shield'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                         return;
                     }
@@ -430,7 +430,7 @@ module.exports = {
                         const doubleMessage = [
                             'You landed on a 1 week mute, but you had a `Double Trouble` powerup, so your mute time was doubled!',
                         ]
-                        await interaction.reply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
+                        await interaction.editReply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
                         await interaction.member.timeout(604800000)
                             .catch(async error => {
                                 await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -446,7 +446,7 @@ module.exports = {
                             const muteRaiseMessage = [
                                 'You landed on a 1 week mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!',
                             ]
-                            await interaction.reply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
+                            await interaction.editReply({ content: `You landed on ${randomNumber}. ${muteRaiseMessage[Math.floor(Math.random() * muteRaiseMessage.length)]}` });
                             await interaction.member.timeout(604800000)
                                 .catch(async error => {
                                     await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -457,7 +457,7 @@ module.exports = {
                             const noMuteMessage = [
                                 'Without the `Raise the Stakes` powerup, this would have been a 1 week mute!',
                             ]
-                            await interaction.reply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
+                            await interaction.editReply({ content: `You landed on ${randomNumber}. ${noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]}` });
                             await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: powerUps.filter(powerUp => powerUp !== 'Raise the Stakes'), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                             return;
                         }
@@ -466,7 +466,7 @@ module.exports = {
                     const oneWeekMuteMessage = [
                         'Do you understand how small the chances of this is? There is exactly a .1% chance of this happening, and it happened to you. It\'s actually insane how this happened, I\'m genuinely in shock. You should go buy a lottery ticket. Whackadoo!',
                     ]
-                    await interaction.reply({ content: `You landed on ${randomNumber}. You have been muted for 1 week! ${oneWeekMuteMessage[Math.floor(Math.random() * oneWeekMuteMessage.length)]}` });
+                    await interaction.editReply({ content: `You landed on ${randomNumber}. You have been muted for 1 week! ${oneWeekMuteMessage[Math.floor(Math.random() * oneWeekMuteMessage.length)]}` });
                     await interaction.member.timeout(604800000)
                         .catch(async error => {
                             await interaction.followUp({ content: `I was unable to mute you! Are you an admin?`, ephemeral: true });
@@ -486,7 +486,7 @@ module.exports = {
                 const shieldMessage = [
                     'You get a `Shield` powerup! This will be automatically used to protect yourself from your next mute.',
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. ${shieldMessage[Math.floor(Math.random() * shieldMessage.length)]}` });
                 await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: [...powerUps, 'Shield'], mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                 return;
             }
@@ -496,7 +496,7 @@ module.exports = {
                 const doubleMessage = [
                     'You get a `Double Trouble` powerup! This will automatically be used to double your next mute time.',
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. ${doubleMessage[Math.floor(Math.random() * doubleMessage.length)]}` });
                 await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: [...powerUps, 'Double Trouble'], mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                 return;
             }
@@ -506,7 +506,7 @@ module.exports = {
                 const raiseMessage = [
                     'You get a `Raise the Stakes` powerup! This will automatically be used on your next roll to halve all potential mute chances, but double all potential mute times.',
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. ${raiseMessage[Math.floor(Math.random() * raiseMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. ${raiseMessage[Math.floor(Math.random() * raiseMessage.length)]}` });
                 await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: [...powerUps, 'Raise the Stakes'], mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                 return;
             }
@@ -516,7 +516,7 @@ module.exports = {
                 const fiftyMessage = [
                     'You get a `Fifty-Fifty` powerup! This will automatically be used on your next roll to make it a 50/50 chance of getting muted. Good luck!',
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. ${fiftyMessage[Math.floor(Math.random() * fiftyMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. ${fiftyMessage[Math.floor(Math.random() * fiftyMessage.length)]}` });
                 await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), powerUps: [...powerUps, 'Fifty-Fifty'], mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                 return;
             }
@@ -526,7 +526,7 @@ module.exports = {
                 const tripleMessage = [
                     'You have disabled mute roulette for everyone for 10 minutes! Enjoy the peace and quiet.',
                 ]
-                await interaction.reply({ content: `You landed on ${randomNumber}. ${tripleMessage[Math.floor(Math.random() * tripleMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. ${tripleMessage[Math.floor(Math.random() * tripleMessage.length)]}` });
                 disabledTime = new Date();
                 return;
             }
@@ -537,7 +537,7 @@ module.exports = {
                     'You get to gift a friend a powerup! Who do you want to gift?',
                 ]
                 // prompt user for a user to gift
-                await interaction.reply({ content: `You landed on ${randomNumber}. ${giftMessage[Math.floor(Math.random() * giftMessage.length)]}` });
+                await interaction.editReply({ content: `You landed on ${randomNumber}. ${giftMessage[Math.floor(Math.random() * giftMessage.length)]}` });
                 await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
                 const filter = m => m.author.id === interaction.user.id;
                 const selectedUserMessages = await interaction.channel.awaitMessages({ filter, max: 1, time: 120000 })
@@ -601,14 +601,14 @@ module.exports = {
                 'No punishment this time!',
                 'Jalen is best mod!',
             ]
-            await interaction.reply({ content: `You landed on ${randomNumber}. ${normalMessage[Math.floor(Math.random() * normalMessage.length)]}` });
+            await interaction.editReply({ content: `You landed on ${randomNumber}. ${normalMessage[Math.floor(Math.random() * normalMessage.length)]}` });
             await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
         } else if (interaction.options.getSubcommand() === 'stats') {
             var specifiedUser = interaction.member;
             const user = await users.findOne({ user: specifiedUser.id });
 
             if (user == null) {
-                await interaction.reply({ content: 'You have not run the mute roulette yet!', ephemeral: true });
+                await interaction.editReply({ content: 'You have not run the mute roulette yet!', ephemeral: true });
                 return;
             }
             const numMutesTotal = user.numMutesTotal;
@@ -624,7 +624,7 @@ module.exports = {
                 .addFields({ name: 'Powerups', value: powerUps.join('\n') || 'None' })
                 .setColor('#FF0000')
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.editReply({ embeds: [embed] });
         } else if (interaction.options.getSubcommand() === 'leaderboard') {
             // find the top user for each category
             const topMutes = await users.find({ numAllTotal: { $gte: 5 } }).sort({ numMutesTotal: -1 }).limit(1).toArray();
@@ -681,7 +681,7 @@ module.exports = {
                 .setColor('#FF0000')
 
             // send the embed
-            await interaction.reply({ embeds: [embed] });
+            await interaction.editReply({ embeds: [embed] });
 
         }
     },

@@ -102,7 +102,7 @@ module.exports = {
                 }
             }
             leaderboardEmbed.setDescription(desc);
-            interaction.reply({ embeds: [leaderboardEmbed] });
+            interaction.editReply({ embeds: [leaderboardEmbed] });
         } else if (interaction.options.getSubcommand() === 'multiplayer') {
             let scores = {};
             let currNum = 0;
@@ -139,7 +139,7 @@ module.exports = {
             var userID = [[interaction.user.id, 0]];
             var onlyID = [interaction.user.id];
             // message
-            const message = await interaction.reply({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row], fetchReply: true });
+            const message = await interaction.editReply({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row], fetchReply: true });
             const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 600000 });
             collector.on('collect', async i => {
                 if (i.customId === 'join') {
@@ -268,7 +268,7 @@ module.exports = {
             shuffle(episodes);
 
             // send a welcome message to the user
-            await interaction.reply('Welcome to the game! I will give you an episode description, and you reply with the episode title! You have three lives, how much episodes can you name?');
+            await interaction.editReply('Welcome to the game! I will give you an episode description, and you reply with the episode title! You have three lives, how much episodes can you name?');
 
             // ask the first question
             askQuestion(interaction);

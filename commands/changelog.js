@@ -7,7 +7,7 @@ module.exports = {
     .setDescription('See what\'s new with Bot Bilby.'),
   async execute(interaction) {
     
-    await interaction.reply({
+    await interaction.editReply({
       embeds: [
         {
           "title": "Bot Changelog",

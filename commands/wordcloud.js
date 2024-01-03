@@ -15,7 +15,7 @@ module.exports = {
         const prompt = interaction.options.getString('word');
 
         // Send a success message to the user via DM
-        await interaction.reply({ content: `Your word submission has been sent to the staff team!`, ephemeral: true });
+        await interaction.editReply({ content: `Your word submission has been sent to the staff team!`, ephemeral: true });
         await interaction.channel.send({ content: `Thank you for sending in your submission for the christmas word cloud! For other members, if you want to send in your word submission, use the \`/wordcloud\` command.` });
         // Get the staff channel where the event details will be sent
         const staffChannel = interaction.guild.channels.cache.find(channel => channel.name === 'heeler-house-word-cloud');
