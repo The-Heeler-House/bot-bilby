@@ -60,6 +60,8 @@ module.exports = {
                 return;
             }
 
+            await interaction.deferReply();
+            
             // if disabled time under 10 mintues 
             if (currentTime - disabledTime < 600000) {
                 await interaction.editReply({ content: 'This command is disabled for 10 minutes!' });
