@@ -7,7 +7,6 @@ module.exports = {
     .setDescription('is bilby dying'),
 async execute(interaction) {
     await interaction.deferReply();
-    await wait(4000);
     await interaction.editReply(`Websocket heartbeat: ${interaction.client.ws.ping}ms.`);
 }
 };
