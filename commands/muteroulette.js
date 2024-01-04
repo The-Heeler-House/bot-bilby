@@ -17,13 +17,16 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('stats')
-                .setDescription('View your mute roulette stats!'))
+                .setDescription('View your mute roulette stats!')
+          .addMentionableOption(option =>
+            option.setName('person')
+              .setDescription('The person who\'s stats you want to check. OPTIONAL.')
+              .setRequired(false)))
         .addSubcommand(subcommand =>
             subcommand
-                .setName('leaderboard')
+                .setName('leaders')
                 .setDescription('View the mute roulette leaderboard!')),
     async execute(interaction) {
-        await interaction.deferReply();
         // connect to the database
         const uri = 'mongodb+srv://heelerhouse:2007Lj76727191@cluster0.7ynqt27.mongodb.net/?retryWrites=true&w=majority';
         const client = new MongoClient(uri);
@@ -53,9 +56,11 @@ module.exports = {
 
             // check if the user ran the command within the last 10 seconds
             if (currentTime - lastTime < 10000) {
-                await interaction.editReply({ content: `You must wait ${Math.round((10000 - (currentTime - lastTime)) / 1000)} seconds before using this command again!`, ephemeral: true });
+                await interaction.reply({ content: `You must wait ${Math.round((10000 - (currentTime - lastTime)) / 1000)} seconds before using this command again!`, ephemeral: true });
                 return;
             }
+
+            await interaction.deferReply();
 
             // if disabled time under 10 mintues 
             if (currentTime - disabledTime < 600000) {
@@ -342,7 +347,7 @@ module.exports = {
                 }
 
                 const threeHourMuteMessage = [
-                    'Congrats! You\'re Heeler House addiction is (hopefully) cured!',
+                    'Congrats! Your Heeler House addiction is (hopefully) cured!',
                     'That\'s enough time to touch grass or get productive stuff done!',
                     'Whomp whomp.',
                 ]
@@ -609,7 +614,7 @@ module.exports = {
             await interaction.editReply({ content: `You landed on ${randomNumber}. ${normalMessage[Math.floor(Math.random() * normalMessage.length)]}` });
             await users.updateOne({ user: interaction.member.id }, { $set: { numAllTotal: numAllTotal + 1, numStreak: numStreak + 1, numMaxStreak: Math.max(numMaxStreak, numStreak + 1), mutePercentage: Math.round((numMutesTotal / (numAllTotal + 1)) * 100) } });
         } else if (interaction.options.getSubcommand() === 'stats') {
-            var specifiedUser = interaction.member;
+            var specifiedUser = interaction.options.getMentionable('person') || interaction.member;
             const user = await users.findOne({ user: specifiedUser.id });
 
             if (user == null) {
@@ -624,13 +629,13 @@ module.exports = {
             const mutePercentage = user.mutePercentage;
 
             const embed = new EmbedBuilder()
-                .setTitle('Mute Roulette Stats')
-                .setDescription(`Total Mutes: **${numMutesTotal}**\nTotal Rolls: **${numAllTotal}**\nCurrent Streak: **${numStreak}**\nMax Streak: **${numMaxStreak}**\nMute Percentage: **${mutePercentage}%**`)
+                .setTitle(`Mute Roulette Stats`)
+                .setDescription(`<@${specifiedUser.id}>\nTotal Mutes: **${numMutesTotal}**\nTotal Rolls: **${numAllTotal}**\nCurrent Streak: **${numStreak}**\nMax Streak: **${numMaxStreak}**\nMute Percentage: **${mutePercentage}%**`)
                 .addFields({ name: 'Powerups', value: powerUps.join('\n') || 'None' })
                 .setColor('#FF0000')
 
-            await interaction.editReply({ embeds: [embed] });
-        } else if (interaction.options.getSubcommand() === 'leaderboard') {
+            await interaction.reply({ embeds: [embed] });
+        } else if (interaction.options.getSubcommand() === 'leaders') {
             // find the top user for each category
             const topMutes = await users.find({ numAllTotal: { $gte: 5 } }).sort({ numMutesTotal: -1 }).limit(1).toArray();
             const topAll = await users.find({ numAllTotal: { $gte: 5 } }).sort({ numAllTotal: -1 }).limit(1).toArray();
@@ -686,7 +691,7 @@ module.exports = {
                 .setColor('#FF0000')
 
             // send the embed
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.reply({ embeds: [embed] });
 
         }
     },

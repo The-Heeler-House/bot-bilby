@@ -25,7 +25,6 @@ const logger = {
   error: function (message) {
     this.log(message.stack, 'ERROR');
     devChannel.send(`\`\`\`${message.stack}\`\`\``);
-    devChannel.send(`JALEN PING SILENCED BY JALEN`);
   },
   warning: function (message) {
     this.log(message, 'WARNING');
