@@ -8,6 +8,6 @@ module.exports = {
   async execute(interaction) {
     await interaction.deferReply();
     await wait(4_000);
-    await interaction.reply(`Websocket heartbeat: ${interaction.client.ws.ping}ms.`);
+    await interaction.editReply(`Websocket heartbeat: ${interaction.client.ws.ping}ms.`);
   }
 };
