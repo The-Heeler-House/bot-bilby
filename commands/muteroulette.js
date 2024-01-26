@@ -73,7 +73,6 @@ module.exports = {
       const numMaxStreak = user.numMaxStreak;
       const lastTime = user.lastTime;
       const powerUps = user.powerUps;
-      console.log(powerUps);
 
       // get the current time
       const currentTime = new Date();
@@ -180,8 +179,7 @@ module.exports = {
       }
 
       // get a random number between 1 and 100
-      //const randomNumber = Math.floor(Math.random() * 100) + 1;
-      const randomNumber = 15;
+      const randomNumber = Math.floor(Math.random() * 100) + 1;
 
       logger.bilby(randomNumber);
 
