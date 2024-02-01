@@ -1,15 +1,10 @@
 const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-var http = require('http');
+const express = require('express');
 var nodemailer = require('nodemailer');
 const logger = require('./logger.js');
 require('dotenv').config();
-
-http.createServer(function (req, res) {
-  res.write("I'm alive");
-  res.end();
-}).listen(8080);
 
 // Require the necessary discord.js classes
 const {
@@ -33,8 +28,6 @@ const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 const TOKEN = process.env['TOKEN'];
-
-const HEELER_HOUSE_SERVER = undefined;
 
 // Creating a collection for commands in client
 client.commands = new Collection();
@@ -553,3 +546,104 @@ async function ohDear(message) {
     return array;
   }
 }
+
+// create simple express server at port 8080
+const app = express();
+const port = 8080;
+app.get('/', (req, res) => {
+  res.send('I\'m alive.');
+});
+app.listen(port, () => {
+  logger.command(`Example app listening at http://localhost:${port}`);
+}
+);
+
+// Counter variable
+let memberCount = 0;
+
+app.get('/membersraw', (req, res) => {
+  // Update member count
+  memberCount = client.guilds.cache.get("959534476520730724").members.cache.size;
+  res.send(memberCount.toString());
+});
+//serve static images
+app.use(express.static('public'));
+// GET /members
+app.get('/members', (req, res) => {
+  // HTML template for the counter
+  const html = `
+    <html>
+      <head>
+        <style>
+        @font-face {
+          font-family: 'CustomFont';
+          src: url('./helloheadline.ttf') format('truetype');
+        }
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+            background: url('./intro.jpg') no-repeat center center fixed;
+				    background-size: cover;
+            color: #5a5a87;
+          }
+          .text {
+            font-size: 48px;
+            font-weight: bold;
+            font-family: 'CustomFont', "Open Sans", Arial, sans-serif;
+          }
+          
+          .counter {
+            font-size: 96px;
+            font-weight: bold;
+            pulse 1s
+            font-family: 'CustomFont', "Open Sans", Arial, sans-serif;
+          }
+          
+          @keyframes pulse {
+            0% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.2);
+            }
+            100% {
+              transform: scale(1);
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="text">Heeler House Member Count:</div>
+        <div class="counter" id="counter">${memberCount}</div>
+        
+        <script>
+          // Function to update the member count
+          function updateMemberCount() {
+            fetch('/membersraw')
+              .then(response => response.text())
+              .then(data => {
+                const counterElement = document.getElementById('counter');
+                const currentCount = parseInt(counterElement.innerText);
+                const newCount = parseInt(data);
+                
+                if (newCount !== currentCount) {
+                  counterElement.innerText = newCount;
+                  counterElement.style.animation = '';
+                  counterElement.style.animation = 'pulse 1s';
+                }
+              });
+          }
+          
+          // Update member count every 30 seconds
+          updateMemberCount();
+          setInterval(updateMemberCount, 10000);
+        </script>
+      </body>
+    </html>
+  `;
+  
+  res.send(html);
+});
