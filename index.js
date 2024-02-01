@@ -561,11 +561,9 @@ app.listen(port, () => {
 // Counter variable
 let memberCount = 0;
 
-let guildCache = client.guilds.fetch('959534476520730724');
-
 app.get('/membersraw', (req, res) => {
   // Update member count
-  memberCount = guildCache.memberCount;
+  memberCount = client.channels.cache.get('1012812013795295233').guild.memberCount;
   res.send(memberCount.toString());
 });
 //serve static images
