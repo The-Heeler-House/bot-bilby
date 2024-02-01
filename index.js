@@ -563,7 +563,7 @@ let memberCount = 0;
 
 app.get('/membersraw', (req, res) => {
   // Update member count
-  memberCount = client.guilds.cache.get("959534476520730724").memberCount;
+  memberCount = client.channels.cache.get('1012812013795295233').guild.memberCount;
   res.send(memberCount.toString());
 });
 //serve static images
