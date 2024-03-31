@@ -140,7 +140,7 @@ client.on('messageCreate', async message => {
   } else if (message.content.toLowerCase() == ('bilby, unicorse')) {
     try {
       await client.user.setUsername('Evil Unicorse');
-      await client.user.setAvatar('https://media.discordapp.net/attachments/1078179472680956035/1116969936468844544/EvilUnicorse.png?width=930&height=930');
+      await client.user.setAvatar('https://media.discordapp.net/attachments/1078179472680956035/1116969936468844544/EvilUnicorse.png?ex=661a1f51&is=6607aa51&hm=aeb00d4b8cc2dc38706bbad19066fdd7a4ffa6649d3384d3c48ccb32b748051d&=&format=webp&quality=lossless&width=930&height=930');
       message.channel.send(`Set avatar and username to 'Evil Unicorse'`);
     } catch (error) {
       logger.error(error);
@@ -151,7 +151,7 @@ client.on('messageCreate', async message => {
   } else if (message.content.toLowerCase() == ('bilby, bilby')) {
     try {
       await client.user.setUsername('Bot Bilby');
-      await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957197717491712/ffdc2bcc0289671061d73f94e497e498.png?width=512&height=512');
+      await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957197717491712/ffdc2bcc0289671061d73f94e497e498.png?ex=661a1373&is=66079e73&hm=812182bf325d2e0c5c70b86af7ccefc64f6fdf86f34dfabadd09da05c51415f4&=&format=webp&quality=lossless&width=512&height=512');
       message.channel.send(`Set avatar and username to 'Bot Bilby'`);
     } catch (error) {
       logger.error(error);
@@ -162,7 +162,7 @@ client.on('messageCreate', async message => {
   } else if (message.content.toLowerCase() == ('bilby, peppa')) {
     try {
       await client.user.setUsername('Peppa Pig');
-      await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957290478706698/unnamed.jpg?width=930&height=930');
+      await client.user.setAvatar('https://media.discordapp.net/attachments/966921162804301824/1116957290478706698/unnamed.jpg?ex=661a138a&is=66079e8a&hm=342a5352b4cf035f9f95f54f74d9419982857c561eb67d153a44e1c2a07406fa&=&format=webp&width=930&height=930');
       message.channel.send(`Set avatar and username to 'Peppa Pig'`);
     } catch (error) {
       logger.error(error);
