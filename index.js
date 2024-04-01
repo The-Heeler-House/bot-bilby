@@ -147,7 +147,7 @@ client.on("messageCreate", async (message) => {
         hehe.send(message.content.substring(10));
     } else if (message.content.toLowerCase() == "bilby, begin") {
         // join stage and speak
-        const stage = client.channels.cache.get("1224172811468411000");
+        const stage = client.channels.cache.get("1094431970643161088");
 
         const connection = await joinVoiceChannel({
             channelId: stage.id,
@@ -508,7 +508,7 @@ async function script(message) {
     // message is something of the foermat "bilby, script <scriptnumber>"
     // print out the number
     const announcementChannel = client.channels.cache.get(
-        "1224129290782904381"
+        "961056736398172200"
     );
     var scriptNumber = message.content.substring(14);
     message.channel.send("Script number: " + scriptNumber);
