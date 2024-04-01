@@ -77,7 +77,7 @@ client.once("ready", () => {
             // Set the bot's status
             client.user.setPresence({
                 activities: [
-                    { name: `a rugby game!`, type: ActivityType.Competing },
+                    { name: `THE HEELER HOUSE`, type: ActivityType.Watching },
                 ],
                 status: "dnd",
             });
