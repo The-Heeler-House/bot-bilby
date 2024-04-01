@@ -1432,7 +1432,7 @@ module.exports = {
         "You should roll me again.",
         "Yawn. That was boring.",
         "No punishment this time!",
-        "Jalen is best mod!",
+        "Bilby is best mod!",
       ];
       await interaction.reply({
         content: `You landed on ${randomNumber}. ${
