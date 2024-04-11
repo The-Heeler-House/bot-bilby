@@ -12,6 +12,7 @@ const {
     Collection,
     GatewayIntentBits,
     ActivityType,
+    Events,
 } = require("discord.js");
 const {
     joinVoiceChannel,
@@ -77,7 +78,7 @@ client.once("ready", () => {
             // Set the bot's status
             client.user.setPresence({
                 activities: [
-                    { name: `THE BILBY HOUSE`, type: ActivityType.Watching },
+                    { name: `a cricket match`, type: ActivityType.Playing },
                 ],
                 status: "dnd",
             });
@@ -107,6 +108,51 @@ client.once("ready", () => {
             if (error) logger.error(error);
         }
     })();
+});
+
+// supress polls
+client.on(Events.Raw, async (packet) => {
+    // We need to hook into the raw event to detect the creation of polls, as discord.js/Discord API does not yet include it in the messageCreate event.
+    // This checks if the poll exists in the event received.
+    if (packet.d.poll) {
+        // We grab the channel based on the data provided in the raw event, as we will be sending a message to it.
+        const channel = await client.channels.fetch(packet.d.channel_id);
+
+        if (!channel || !channel.isTextBased()) {
+            console.log("Channel not found");
+            return;
+        }
+        // We grab the message based on the data provided in the raw event, as we will be deleting it.
+        const message = await channel.messages.fetch(packet.d.id).catch(() => {
+            console.log("Message not found");
+        });
+
+        // The message exists, we then delete it and send a message to the channel.
+        if (message) {
+            // if from mod, ignore
+            if (message.author.bot) return;
+            if (message.member.roles.cache.some((role) => role.id === "1073391142881722400")) return;
+            const replymessage = await message.channel
+                .send(
+                    `${message.author}, polls are not allowed in this server.`
+                )
+                .catch((err) => {
+                    console.log("Error replying to message: ", err);
+                });
+            await message.delete().catch((err) => {
+                console.log("Error deleting message: ", err);
+            });
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+            await replymessage.delete().catch((err) => {
+                console.log("Error deleting message: ", err);
+            });
+        } else {
+            // For the sake of this example, we will log that the message was not found.
+            console.log("Message not found");
+        }
+    } else {
+        // For the sake of this example, we will log that a non-poll event was received, however this will get triggered for every event the Discord gateway sends to the bot.
+    }
 });
 
 // Interaction handler
@@ -157,30 +203,35 @@ client.on("messageCreate", async (message) => {
 
         // Await confirmation reaction
         const filter = (reaction, user) =>
-            (reaction.emoji.name === "✅" || reaction.emoji.name === "2️⃣")&& user.id === message.author.id;
+            (reaction.emoji.name === "✅" || reaction.emoji.name === "2️⃣") &&
+            user.id === message.author.id;
         const collector = message.createReactionCollector({
             filter,
             time: 15000,
         });
 
         collector.on("collect", (reaction, user) => {
-          if (reaction.emoji.name === "✅") {
-            const player = createAudioPlayer();
-            connection.subscribe(player);
-            //make it play jalen_activities_2.wav
-            const resource = createAudioResource("jalen_activities_2.wav");
-            player.play(resource);
-            console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-            // Perform the desired action
-          } else if (reaction.emoji.name === "2️⃣") {
-            const player = createAudioPlayer();
-            connection.subscribe(player);
-            //make it play jalen_activities_2.wav
-            const resource = createAudioResource("glitch.m4a");
-            player.play(resource);
-            console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-            // Perform the desired action
-          }
+            if (reaction.emoji.name === "✅") {
+                const player = createAudioPlayer();
+                connection.subscribe(player);
+                //make it play jalen_activities_2.wav
+                const resource = createAudioResource("jalen_activities_2.wav");
+                player.play(resource);
+                console.log(
+                    `Collected ${reaction.emoji.name} from ${user.tag}`
+                );
+                // Perform the desired action
+            } else if (reaction.emoji.name === "2️⃣") {
+                const player = createAudioPlayer();
+                connection.subscribe(player);
+                //make it play jalen_activities_2.wav
+                const resource = createAudioResource("glitch.m4a");
+                player.play(resource);
+                console.log(
+                    `Collected ${reaction.emoji.name} from ${user.tag}`
+                );
+                // Perform the desired action
+            }
         });
 
         collector.on("end", (collected) => {
@@ -507,9 +558,7 @@ async function revert() {
 async function script(message) {
     // message is something of the foermat "bilby, script <scriptnumber>"
     // print out the number
-    const announcementChannel = client.channels.cache.get(
-        "961056736398172200"
-    );
+    const announcementChannel = client.channels.cache.get("961056736398172200");
     var scriptNumber = message.content.substring(14);
     message.channel.send("Script number: " + scriptNumber);
     switch (scriptNumber) {
