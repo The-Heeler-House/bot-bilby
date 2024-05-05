@@ -1452,7 +1452,6 @@ module.exports = {
           },
         }
       );
-      await client.close();
     } else if (interaction.options.getSubcommand() === "stats") {
       var specifiedUser =
         interaction.options.getMentionable("person") || interaction.member;
@@ -1480,7 +1479,6 @@ module.exports = {
         .addFields({ name: "Powerups", value: powerUps.join("\n") || "None" })
         .setColor("#FF0000");
         
-      await client.close();
       await interaction.reply({ embeds: [embed] });
     } else if (interaction.options.getSubcommand() === "leaders") {
       // find the top user for each category
@@ -1587,8 +1585,9 @@ module.exports = {
         .setColor("#FF0000");
 
       // send the embed
-      await client.close();
       await interaction.reply({ embeds: [embed] });
     }
+
+    await client.close();
   },
 };

@@ -388,5 +388,7 @@ module.exports = {
                 interaction.channel.send({ embeds: [leaderboardEmbed] });
             }
         }
+
+        await client.close();
     }
 };
