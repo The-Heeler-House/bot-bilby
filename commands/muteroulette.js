@@ -322,18 +322,21 @@ module.exports = {
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
           doubleTrouble(10);
+          await client.close();
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
           raiseTheStakes(10);
+          await client.close();
           return;
         }
 
         // checks if the user has a shield powerup
         if (powerUps.includes("Shield")) {
           shield(10);
+          await client.close();
           return;
         }
 
@@ -357,6 +360,7 @@ module.exports = {
           });
         });
         await muted();
+        await client.close();
         return;
       }
 
@@ -365,18 +369,21 @@ module.exports = {
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
           doubleTrouble(30);
+          await client.close();
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
           raiseTheStakes(30);
+          await client.close();
           return;
         }
 
         // checks if the user has a shield powerup
         if (powerUps.includes("Shield")) {
           shield(30);
+          await client.close();
           return;
         }
 
@@ -401,6 +408,7 @@ module.exports = {
           });
         });
         await muted();
+        await client.close();
         return;
       }
 
@@ -409,18 +417,21 @@ module.exports = {
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
           doubleTrouble(60);
+          await client.close();
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
           raiseTheStakes(60);
+          await client.close();
           return;
         }
 
         // checks if the user has a shield powerup
         if (powerUps.includes("Shield")) {
           shield(60);
+          await client.close();
           return;
         }
 
@@ -445,6 +456,7 @@ module.exports = {
           });
         });
         await muted();
+        await client.close();
         return;
       }
 
@@ -453,18 +465,21 @@ module.exports = {
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
           doubleTrouble(180);
+          await client.close();
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
           raiseTheStakes(180);
+          await client.close();
           return;
         }
 
         // checks if the user has a shield powerup
         if (powerUps.includes("Shield")) {
           shield(180);
+          await client.close();
           return;
         }
 
@@ -488,6 +503,7 @@ module.exports = {
           });
         });
         await muted();
+        await client.close();
         return;
       }
 
@@ -498,18 +514,21 @@ module.exports = {
           // checks if the user has a double trouble powerup
           if (powerUps.includes("Double Trouble")) {
             doubleTrouble(1440);
+            await client.close();
             return;
           }
 
           // checks if the user has a raise the stakes powerup
           if (powerUps.includes("Raise the Stakes")) {
             raiseTheStakes(1440);
+            await client.close();
             return;
           }
 
           // checks if the user has a shield powerup
           if (powerUps.includes("Shield")) {
             shield(1440);
+            await client.close();
             return;
           }
 
@@ -532,23 +551,27 @@ module.exports = {
             });
           });
           await muted();
+          await client.close();
           return;
         } else {
           // checks if the user has a double trouble powerup
           if (powerUps.includes("Double Trouble")) {
             doubleTrouble(604800);
+            await client.close();
             return;
           }
 
           // checks if the user has a raise the stakes powerup
           if (powerUps.includes("Raise the Stakes")) {
             raiseTheStakes(604800);
+            await client.close();
             return;
           }
 
           // checks if the user has a shield powerup
           if (powerUps.includes("Shield")) {
             shield(604800);
+            await client.close();
             return;
           }
 
@@ -569,6 +592,7 @@ module.exports = {
             });
           });
           await muted();
+          await client.close();
           return;
         }
       }
@@ -590,6 +614,7 @@ module.exports = {
         });
         await avoidedMute();
         await addPowerUp("Shield");
+        await client.close();
         return;
       }
 
@@ -605,6 +630,7 @@ module.exports = {
         });
         await avoidedMute();
         await addPowerUp("Double Trouble");
+        await client.close();
         return;
       }
 
@@ -620,6 +646,7 @@ module.exports = {
         });
         await avoidedMute();
         await addPowerUp("Raise the Stakes");
+        await client.close();
         return;
       }
 
@@ -635,6 +662,7 @@ module.exports = {
         });
         await avoidedMute();
         await addPowerUp("Fifty-Fifty");
+        await client.close();
         return;
       }
 
@@ -649,6 +677,7 @@ module.exports = {
           }`,
         });
         disabledTime = new Date();
+        await client.close();
         return;
       }
 
@@ -674,6 +703,7 @@ module.exports = {
           await interaction.channel.send(
             "You did not select a user! Gift wasted."
           );
+          await client.close();
           return;
         }
         const user = selectedUserMessages
@@ -688,6 +718,7 @@ module.exports = {
           await interaction.channel.send(
             "You must mention a user! Gift wasted."
           );
+          await client.close();
           return;
         }
 
@@ -696,12 +727,14 @@ module.exports = {
           await interaction.channel.send(
             "That user has not run the mute roulette yet! Gift wasted."
           );
+          await client.close();
           return;
         }
         if (giftedUser.user === interaction.member.id) {
           await interaction.channel.send(
             "You cannot gift yourself! Gift wasted."
           );
+          await client.close();
           return;
         }
         await interaction.channel.send(
@@ -720,6 +753,7 @@ module.exports = {
           await interaction.channel.send(
             "You did not select a powerup! Gift wasted."
           );
+          await client.close();
           return;
         }
         var powerup = powerupMessages.first().content.toLowerCase();
@@ -732,6 +766,7 @@ module.exports = {
           await interaction.channel.send(
             "You must choose a valid powerup! Gift wasted."
           );
+          await client.close();
           return;
         }
         if (powerup.toLowerCase() === "shield") {
@@ -750,7 +785,7 @@ module.exports = {
           { user: user },
           { $set: { powerUps: [...giftedUser.powerUps, powerup] } }
         );
-
+        await client.close();
         return;
       }
 
@@ -781,6 +816,7 @@ module.exports = {
           content: "You have not run the mute roulette yet!",
           ephemeral: true,
         });
+        await client.close();
         return;
       }
       const numMutesTotal = user.numMutesTotal;
