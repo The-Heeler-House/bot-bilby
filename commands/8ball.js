@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-const directoryPath = path.join(__dirname, '../Album');
+const directoryPath = path.join(__dirname, '../eightball');
 const files = fs.readdirSync(directoryPath);
 
 module.exports = {
