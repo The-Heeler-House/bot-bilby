@@ -1,5 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
+
+const directoryPath = path.join(__dirname, '../Album');
+const files = fs.readdirSync(directoryPath);
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('8ball')
@@ -9,7 +13,7 @@ module.exports = {
         .setDescription('The question you want to ask the magic 8-ball.')
         .setRequired(true)),
   async execute(interaction) {
-    var path = '../eightball/' + Math.floor(Math.random() * 20 + 1) + '.png'
+    var path = directoryPath + "/" + Math.floor(Math.random() * 20 + 1) + '.png'
     await interaction.reply({ files: [path] });
   },
 };
