@@ -1,12 +1,7 @@
 // Import the necessary modules
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { exec } = require("child_process");
 const {
   EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ComponentType,
 } = require("discord.js");
 const { MongoClient } = require("mongodb");
 const logger = require("../logger.js");
@@ -77,15 +72,183 @@ module.exports = {
       // get the current time
       const currentTime = new Date();
 
+      const getTextTime = (time) => {
+        if (time === 1) {
+          return "1 minute";
+        }
+        if (time < 60) {
+          return `${time} minutes`;
+        }
+        if (time === 60) {
+          return "1 hour";
+        }
+        if (time % 60 === 0 && time < 1440) {
+          return `${time / 60} hours`;
+        }
+        if (time === 1440) {
+          return "1 day";
+        }
+        if (time % 1440 === 0 && time < 10080) {
+          return `${time / 1440} days`;
+        }
+        if (time === 10080) {
+          return "1 week";
+        }
+      };
+
+      // MONGO HELPER FUNCTIONS
+      // update the user's recent time
+      async function updateTime() {
+        await users.updateOne(
+          { user: interaction.member.id },
+          { $set: { lastTime: currentTime } }
+        );
+      }
       // remove powerup function
-      function removePowerUp(powerUp) {
+      async function removePowerUp(powerUp) {
         var powerUpToChange = powerUps;
         let index = powerUpToChange.indexOf(powerUp);
-        console.log(index)
+        console.log(index);
         if (index > -1) {
-            powerUpToChange.splice(index, 1);
+          powerUpToChange.splice(index, 1);
         }
-        return powerUpToChange;
+        await users.updateOne(
+          { user: interaction.member.id },
+          { $set: { powerUps: powerUpToChange } }
+        );
+      }
+      // add powerup
+      async function addPowerUp(powerUp) {
+        await users.updateOne(
+          { user: interaction.member.id },
+          {
+            $set: {
+              powerUps: [...powerUps, powerUp],
+            },
+          }
+        );
+      }
+      // avoided mute
+      async function avoidedMute() {
+        await users.updateOne(
+          { user: interaction.member.id },
+          {
+            $set: {
+              numAllTotal: numAllTotal + 1,
+              numStreak: numStreak + 1,
+              numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
+              mutePercentage: Math.round(
+                (numMutesTotal / (numAllTotal + 1)) * 100
+              ),
+            },
+          }
+        );
+      }
+      // muted
+      async function muted() {
+        await users.updateOne(
+          { user: interaction.member.id },
+          {
+            $set: {
+              numMutesTotal: numMutesTotal + 1,
+              numAllTotal: numAllTotal + 1,
+              numStreak: 0,
+              numMaxStreak: Math.max(numMaxStreak, 0),
+              mutePercentage: Math.round(
+                ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
+              ),
+            },
+          }
+        );
+      }
+
+      // POWERUP FUNCTIONS
+      // sheild
+      async function shield(time) {
+        const shieldMessage = [
+          `You landed on a ${getTextTime(
+            time
+          )} mute, but you had a \`Shield\` powerup, so you were protected!`,
+        ];
+        await interaction.reply({
+          content: `You landed on ${randomNumber}. ${
+            shieldMessage[Math.floor(Math.random() * shieldMessage.length)]
+          }`,
+        });
+        await avoidedMute();
+        await removePowerUp("Shield");
+      }
+      // double trouble
+      async function doubleTrouble(time) {
+        if (powerUps.include("Shield")) {
+          shield(time * 2);
+          return;
+        }
+        const doubleMessage = [
+          `You landed on a ${getTextTime(
+            time
+          )} mute, but you had a \`Double Trouble\` powerup, so your mute time was doubled!`,
+        ];
+        await interaction.reply({
+          content: `You landed on ${randomNumber}. ${
+            doubleMessage[Math.floor(Math.random() * doubleMessage.length)]
+          }`,
+        });
+        await interaction.member
+          .timeout(time * 2 * 60000)
+          .catch(async (error) => {
+            await interaction.followUp({
+              content: `I was unable to mute you! Are you an admin?`,
+              ephemeral: true,
+            });
+          });
+        await muted();
+        await removePowerUp("Double Trouble");
+      }
+      // raise the stakes
+      async function raiseTheStakes(time) {
+        const raiseRandomNumber = Math.floor(Math.random() * 2) + 1;
+        if (raiseRandomNumber === 1) {
+          if (powerUps.includes("Shield")) {
+            shield(time * 2);
+            return;
+          }
+          const muteRaiseMessage = [
+            `You landed on a ${getTextTime(
+              time
+            )} mute, but you had a \`Raise the Stakes\` powerup, so your mute time was doubled!`,
+          ];
+          await interaction.reply({
+            content: `You landed on ${randomNumber}. ${
+              muteRaiseMessage[
+                Math.floor(Math.random() * muteRaiseMessage.length)
+              ]
+            }`,
+          });
+          await interaction.member
+            .timeout(time * 2 * 60000)
+            .catch(async (error) => {
+              await interaction.followUp({
+                content: `I was unable to mute you! Are you an admin?`,
+                ephemeral: true,
+              });
+            });
+          await muted();
+          await removePowerUp("Raise the Stakes");
+        } else {
+          const noMuteMessage = [
+            `Without the \`Raise the Stakes\` powerup, this would have been a ${getTextTime(
+              time
+            )} mute!`,
+          ];
+          await interaction.reply({
+            content: `You landed on ${randomNumber}. ${
+              noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]
+            }`,
+          });
+          await avoidedMute();
+          await removePowerUp("Raise the Stakes");
+        }
       }
 
       // check if the user ran the command within the last 10 seconds
@@ -107,11 +270,7 @@ module.exports = {
         return;
       }
 
-      // update the user's data
-      await users.updateOne(
-        { user: interaction.member.id },
-        { $set: { lastTime: currentTime } }
-      );
+      updateTime();
 
       // checks if the user has a 50/50 powerup
       if (powerUps.includes("Fifty-Fifty")) {
@@ -133,21 +292,8 @@ module.exports = {
               ephemeral: true,
             });
           });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numMutesTotal: numMutesTotal + 1,
-                numAllTotal: numAllTotal + 1,
-                numStreak: 0,
-                numMaxStreak: Math.max(numMaxStreak, 0),
-                mutePercentage: Math.round(
-                  ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Fifty-Fifty"),
-              },
-            }
-          );
+          await muted();
+          await removePowerUp("Fifty-Fifty");
           return;
         } else {
           const fiftyFiftyMessage = [
@@ -160,20 +306,8 @@ module.exports = {
               ]
             }`,
           });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numAllTotal: numAllTotal + 1,
-                numStreak: numStreak + 1,
-                numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                mutePercentage: Math.round(
-                  (numMutesTotal / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Fifty-Fifty"),
-              },
-            }
-          );
+          await avoidedMute();
+          await removePowerUp("Fifty-Fifty");
           return;
         }
       }
@@ -185,128 +319,22 @@ module.exports = {
 
       // 1-5: mute for 10 minutes
       if (randomNumber <= 5) {
-        // checks if the user has a shield powerup
-        if (powerUps.includes("Shield")) {
-          const shieldMessage = [
-            "You landed on a 10 minutes mute, but you had a `Shield` powerup, so you were protected!",
-          ];
-          await interaction.reply({
-            content: `You landed on ${randomNumber}. ${
-              shieldMessage[Math.floor(Math.random() * shieldMessage.length)]
-            }`,
-          });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numAllTotal: numAllTotal + 1,
-                numStreak: numStreak + 1,
-                numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                mutePercentage: Math.round(
-                  (numMutesTotal / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Shield"),
-              },
-            }
-          );
-          return;
-        }
-
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
-          const doubleMessage = [
-            "You landed on a 10 minute mute, but you had a `Double Trouble` powerup, so your mute time was doubled!",
-          ];
-          await interaction.reply({
-            content: `You landed on ${randomNumber}. ${
-              doubleMessage[Math.floor(Math.random() * doubleMessage.length)]
-            }`,
-          });
-          await interaction.member.timeout(1200000).catch(async (error) => {
-            await interaction.followUp({
-              content: `I was unable to mute you! Are you an admin?`,
-              ephemeral: true,
-            });
-          });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numMutesTotal: numMutesTotal + 1,
-                numAllTotal: numAllTotal + 1,
-                numStreak: 0,
-                numMaxStreak: Math.max(numMaxStreak, 0),
-                mutePercentage: Math.round(
-                  ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Double Trouble"),
-              },
-            }
-          );
+          doubleTrouble(10);
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
-          const randomNumber2 = Math.floor(Math.random() * 2) + 1;
-          if (randomNumber2 === 1) {
-            const muteRaiseMessage = [
-              "You landed on a 10 minute mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                muteRaiseMessage[
-                  Math.floor(Math.random() * muteRaiseMessage.length)
-                ]
-              }`,
-            });
-            await interaction.member.timeout(1200000).catch(async (error) => {
-              await interaction.followUp({
-                content: `I was unable to mute you! Are you an admin?`,
-                ephemeral: true,
-              });
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numMutesTotal: numMutesTotal + 1,
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: 0,
-                  numMaxStreak: Math.max(numMaxStreak, 0),
-                  mutePercentage: Math.round(
-                    ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Raise the Stakes"),
-                },
-              }
-            );
-            return;
-          } else {
-            const noMuteMessage = [
-              "Without the `Raise the Stakes` powerup, this would have been a 10 minute mute!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]
-              }`,
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: numStreak + 1,
-                  numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                  mutePercentage: Math.round(
-                    (numMutesTotal / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Raise the Stakes"),
-                },
-              }
-            );
-            return;
-          }
+          raiseTheStakes(10);
+          return;
+        }
+
+        // checks if the user has a shield powerup
+        if (powerUps.includes("Shield")) {
+          shield(10);
+          return;
         }
 
         const tenMinuteMuteMessage = [
@@ -328,148 +356,30 @@ module.exports = {
             ephemeral: true,
           });
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numMutesTotal: numMutesTotal + 1,
-              numAllTotal: numAllTotal + 1,
-              numStreak: 0,
-              numMaxStreak: Math.max(numMaxStreak, 0),
-              mutePercentage: Math.round(
-                ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await muted();
         return;
       }
 
       // 6-10: mute for 30 minutes
       if (randomNumber <= 10) {
-        // checks if the user has a shield powerup
-        if (powerUps.includes("Shield")) {
-          const shieldMessage = [
-            "You landed on a 30 minute mute, but you had a `Shield` powerup, so you were protected!",
-          ];
-          await interaction.reply({
-            content: `You landed on ${randomNumber}. ${
-              shieldMessage[Math.floor(Math.random() * shieldMessage.length)]
-            }`,
-          });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numAllTotal: numAllTotal + 1,
-                numStreak: numStreak + 1,
-                numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                mutePercentage: Math.round(
-                  (numMutesTotal / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Shield"),
-              },
-            }
-          );
-          return;
-        }
-
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
-          const doubleMessage = [
-            "You landed on a 30 minute mute, but you had a `Double Trouble` powerup, so your mute time was doubled!",
-          ];
-          await interaction.reply({
-            content: `You landed on ${randomNumber}. ${
-              doubleMessage[Math.floor(Math.random() * doubleMessage.length)]
-            }`,
-          });
-          await interaction.member.timeout(3600000).catch(async (error) => {
-            await interaction.followUp({
-              content: `I was unable to mute you! Are you an admin?`,
-              ephemeral: true,
-            });
-          });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numMutesTotal: numMutesTotal + 1,
-                numAllTotal: numAllTotal + 1,
-                numStreak: 0,
-                numMaxStreak: Math.max(numMaxStreak, 0),
-                powerUps: removePowerUp("Double Trouble"),
-                mutePercentage: Math.round(
-                  ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                ),
-              },
-            }
-          );
+          doubleTrouble(30);
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
-          const randomNumber2 = Math.floor(Math.random() * 2) + 1;
-          if (randomNumber2 === 1) {
-            const muteRaiseMessage = [
-              "You landed on a 30 minute mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                muteRaiseMessage[
-                  Math.floor(Math.random() * muteRaiseMessage.length)
-                ]
-              }`,
-            });
-            await interaction.member.timeout(3600000).catch(async (error) => {
-              await interaction.followUp({
-                content: `I was unable to mute you! Are you an admin?`,
-                ephemeral: true,
-              });
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numMutesTotal: numMutesTotal + 1,
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: 0,
-                  numMaxStreak: Math.max(numMaxStreak, 0),
-                  mutePercentage: Math.round(
-                    ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Raise the Stakes"),
-                },
-              }
-            );
-            return;
-          } else {
-            const noMuteMessage = [
-              "Without the `Raise the Stakes` powerup, this would have been a 30 minute mute!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]
-              }`,
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: numStreak + 1,
-                  numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                  mutePercentage: Math.round(
-                    (numMutesTotal / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Raise the Stakes"),
-                },
-              }
-            );
-            return;
-          }
+          raiseTheStakes(30);
+          return;
         }
+
+        // checks if the user has a shield powerup
+        if (powerUps.includes("Shield")) {
+          shield(30);
+          return;
+        }
+
 
         const thirtyMinuteMuteMessage = [
           "Lmaoooo.",
@@ -490,148 +400,30 @@ module.exports = {
             ephemeral: true,
           });
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numMutesTotal: numMutesTotal + 1,
-              numAllTotal: numAllTotal + 1,
-              numStreak: 0,
-              numMaxStreak: Math.max(numMaxStreak, 0),
-              mutePercentage: Math.round(
-                ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await muted();
         return;
       }
 
       // 11-15: mute for 1 hour
       if (randomNumber <= 15) {
-        // checks if the user has a shield powerup
-        if (powerUps.includes("Shield")) {
-          const shieldMessage = [
-            "You landed on a 1 hour mute, but you had a `Shield` powerup, so you were protected!",
-          ];
-          await interaction.reply({
-            content: `You landed on ${randomNumber}. ${
-              shieldMessage[Math.floor(Math.random() * shieldMessage.length)]
-            }`,
-          });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numAllTotal: numAllTotal + 1,
-                numStreak: numStreak + 1,
-                numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                mutePercentage: Math.round(
-                  (numMutesTotal / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Shield"),
-              },
-            }
-          );
-          return;
-        }
-
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
-          const doubleMessage = [
-            "You landed on a 1 hour mute, but you had a `Double Trouble` powerup, so your mute time was doubled!",
-          ];
-          await interaction.reply({
-            content: `You landed on ${randomNumber}. ${
-              doubleMessage[Math.floor(Math.random() * doubleMessage.length)]
-            }`,
-          });
-          await interaction.member.timeout(7200000).catch(async (error) => {
-            await interaction.followUp({
-              content: `I was unable to mute you! Are you an admin?`,
-              ephemeral: true,
-            });
-          });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numMutesTotal: numMutesTotal + 1,
-                numAllTotal: numAllTotal + 1,
-                numStreak: 0,
-                numMaxStreak: Math.max(numMaxStreak, 0),
-                mutePercentage: Math.round(
-                  ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Double Trouble"),
-              },
-            }
-          );
+          doubleTrouble(60);
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
-          const randomNumber2 = Math.floor(Math.random() * 2) + 1;
-          if (randomNumber2 === 1) {
-            const muteRaiseMessage = [
-              "You landed on a 1 hour mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                muteRaiseMessage[
-                  Math.floor(Math.random() * muteRaiseMessage.length)
-                ]
-              }`,
-            });
-            await interaction.member.timeout(7200000).catch(async (error) => {
-              await interaction.followUp({
-                content: `I was unable to mute you! Are you an admin?`,
-                ephemeral: true,
-              });
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numMutesTotal: numMutesTotal + 1,
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: 0,
-                  numMaxStreak: Math.max(numMaxStreak, 0),
-                  mutePercentage: Math.round(
-                    ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Raise the Stakes"),
-                },
-              }
-            );
-            return;
-          } else {
-            const noMuteMessage = [
-              "Without the `Raise the Stakes` powerup, this would have been a 1 hour mute!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]
-              }`,
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: numStreak + 1,
-                  numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                  mutePercentage: Math.round(
-                    (numMutesTotal / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Raise the Stakes"),
-                },
-              }
-            );
-            return;
-          }
+          raiseTheStakes(60);
+          return;
         }
+
+        // checks if the user has a shield powerup
+        if (powerUps.includes("Shield")) {
+          shield(60);
+          return;
+        }
+
 
         const oneHourMuteMessage = [
           "Lmaoooo.",
@@ -652,148 +444,30 @@ module.exports = {
             ephemeral: true,
           });
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numMutesTotal: numMutesTotal + 1,
-              numAllTotal: numAllTotal + 1,
-              numStreak: 0,
-              numMaxStreak: Math.max(numMaxStreak, 0),
-              mutePercentage: Math.round(
-                ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await muted();
         return;
       }
 
       // 16-20: mute for 3 hours
       if (randomNumber <= 20) {
-        // checks if the user has a shield powerup
-        if (powerUps.includes("Shield")) {
-          const shieldMessage = [
-            "You landed on a 3 hour mute, but you had a `Shield` powerup, so you were protected!",
-          ];
-          await interaction.reply({
-            content: `You landed on ${randomNumber}. ${
-              shieldMessage[Math.floor(Math.random() * shieldMessage.length)]
-            }`,
-          });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numAllTotal: numAllTotal + 1,
-                numStreak: numStreak + 1,
-                numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                mutePercentage: Math.round(
-                  (numMutesTotal / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Shield"),
-              },
-            }
-          );
-          return;
-        }
-
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
-          const doubleMessage = [
-            "You landed on a 3 hour mute, but you had a `Double Trouble` powerup, so your mute time was doubled!",
-          ];
-          await interaction.reply({
-            content: `You landed on ${randomNumber}. ${
-              doubleMessage[Math.floor(Math.random() * doubleMessage.length)]
-            }`,
-          });
-          await interaction.member.timeout(21600000).catch(async (error) => {
-            await interaction.followUp({
-              content: `I was unable to mute you! Are you an admin?`,
-              ephemeral: true,
-            });
-          });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numMutesTotal: numMutesTotal + 1,
-                numAllTotal: numAllTotal + 1,
-                numStreak: 0,
-                numMaxStreak: Math.max(numMaxStreak, 0),
-                mutePercentage: Math.round(
-                  ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                ),
-                powerUps: removePowerUp("Double Trouble"),
-              },
-            }
-          );
+          doubleTrouble(180);
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
-          const randomNumber2 = Math.floor(Math.random() * 2) + 1;
-          if (randomNumber2 === 1) {
-            const muteRaiseMessage = [
-              "You landed on a 3 hour mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                muteRaiseMessage[
-                  Math.floor(Math.random() * muteRaiseMessage.length)
-                ]
-              }`,
-            });
-            await interaction.member.timeout(21600000).catch(async (error) => {
-              await interaction.followUp({
-                content: `I was unable to mute you! Are you an admin?`,
-                ephemeral: true,
-              });
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numMutesTotal: numMutesTotal + 1,
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: 0,
-                  numMaxStreak: Math.max(numMaxStreak, 0),
-                  mutePercentage: Math.round(
-                    ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Raise the Stakes"),
-                },
-              }
-            );
-            return;
-          } else {
-            const noMuteMessage = [
-              "Without the `Raise the Stakes` powerup, this would have been a 3 hour mute!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                noMuteMessage[Math.floor(Math.random() * noMuteMessage.length)]
-              }`,
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: numStreak + 1,
-                  numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                  mutePercentage: Math.round(
-                    (numMutesTotal / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Raise the Stakes"),
-                },
-              }
-            );
-            return;
-          }
+          raiseTheStakes(180);
+          return;
         }
+
+        // checks if the user has a shield powerup
+        if (powerUps.includes("Shield")) {
+          shield(180);
+          return;
+        }
+
 
         const threeHourMuteMessage = [
           "Congrats! Your Heeler House addiction is (hopefully) cured!",
@@ -813,20 +487,7 @@ module.exports = {
             ephemeral: true,
           });
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numMutesTotal: numMutesTotal + 1,
-              numAllTotal: numAllTotal + 1,
-              numStreak: 0,
-              numMaxStreak: Math.max(numMaxStreak, 0),
-              mutePercentage: Math.round(
-                ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await muted();
         return;
       }
 
@@ -834,132 +495,22 @@ module.exports = {
       if (randomNumber === 21) {
         const randomNumber2 = Math.floor(Math.random() * 10) + 1;
         if (randomNumber2 <= 9) {
-          // checks if the user has a shield powerup
-          if (powerUps.includes("Shield")) {
-            const shieldMessage = [
-              "You landed on a 1 day mute, but you had a `Shield` powerup, so you were protected!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                shieldMessage[Math.floor(Math.random() * shieldMessage.length)]
-              }`,
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: numStreak + 1,
-                  numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                  mutePercentage: Math.round(
-                    (numMutesTotal / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Shield"),
-                },
-              }
-            );
-            return;
-          }
-
           // checks if the user has a double trouble powerup
           if (powerUps.includes("Double Trouble")) {
-            const doubleMessage = [
-              "You landed on a 1 day mute, but you had a `Double Trouble` powerup, so your mute time was doubled!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                doubleMessage[Math.floor(Math.random() * doubleMessage.length)]
-              }`,
-            });
-            await interaction.member.timeout(172800000).catch(async (error) => {
-              await interaction.followUp({
-                content: `I was unable to mute you! Are you an admin?`,
-                ephemeral: true,
-              });
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numMutesTotal: numMutesTotal + 1,
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: 0,
-                  numMaxStreak: Math.max(numMaxStreak, 0),
-                  mutePercentage: Math.round(
-                    ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Double Trouble"),
-                },
-              }
-            );
+            doubleTrouble(1440);
             return;
           }
 
           // checks if the user has a raise the stakes powerup
           if (powerUps.includes("Raise the Stakes")) {
-            const randomNumber3 = Math.floor(Math.random() * 2) + 1;
-            if (randomNumber3 === 1) {
-              const muteRaiseMessage = [
-                "You landed on a 1 day mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!",
-              ];
-              await interaction.reply({
-                content: `You landed on ${randomNumber}. ${
-                  muteRaiseMessage[
-                    Math.floor(Math.random() * muteRaiseMessage.length)
-                  ]
-                }`,
-              });
-              await interaction.member
-                .timeout(172800000)
-                .catch(async (error) => {
-                  await interaction.followUp({
-                    content: `I was unable to mute you! Are you an admin?`,
-                    ephemeral: true,
-                  });
-                });
-              await users.updateOne(
-                { user: interaction.member.id },
-                {
-                  $set: {
-                    numMutesTotal: numMutesTotal + 1,
-                    numAllTotal: numAllTotal + 1,
-                    numStreak: 0,
-                    numMaxStreak: Math.max(numMaxStreak, 0),
-                    mutePercentage: Math.round(
-                      ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                    ),
-                    powerUps: removePowerUp("Raise the Stakes"),
-                  },
-                }
-              );
-              return;
-            } else {
-              const noMuteMessage = [
-                "Without the `Raise the Stakes` powerup, this would have been a 1 day mute!",
-              ];
-              await interaction.reply({
-                content: `You landed on ${randomNumber}. ${
-                  noMuteMessage[
-                    Math.floor(Math.random() * noMuteMessage.length)
-                  ]
-                }`,
-              });
-              await users.updateOne(
-                { user: interaction.member.id },
-                {
-                  $set: {
-                    numAllTotal: numAllTotal + 1,
-                    numStreak: numStreak + 1,
-                    numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                    mutePercentage: Math.round(
-                      (numMutesTotal / (numAllTotal + 1)) * 100
-                    ),
-                    powerUps: removePowerUp("Raise the Stakes"),
-                  },
-                }
-              );
-              return;
-            }
+            raiseTheStakes(1440);
+            return;
+          }
+
+          // checks if the user has a shield powerup
+          if (powerUps.includes("Shield")) {
+            shield(1440);
+            return;
           }
 
           const oneDayMuteMessage = [
@@ -980,152 +531,25 @@ module.exports = {
               ephemeral: true,
             });
           });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numMutesTotal: numMutesTotal + 1,
-                numAllTotal: numAllTotal + 1,
-                numStreak: 0,
-                numMaxStreak: Math.max(numMaxStreak, 0),
-                mutePercentage: Math.round(
-                  ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                ),
-              },
-            }
-          );
+          await muted();
           return;
         } else {
-          // checks if the user has a shield powerup
-          if (powerUps.includes("Shield")) {
-            const shieldMessage = [
-              "You landed on a 1 week mute, but you had a `Shield` powerup, so you were protected!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                shieldMessage[Math.floor(Math.random() * shieldMessage.length)]
-              }`,
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numAllTotal: numAllTotal + 1,
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: numStreak + 1,
-                  numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                  mutePercentage: Math.round(
-                    (numMutesTotal / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Shield"),
-                },
-              }
-            );
-            return;
-          }
-
           // checks if the user has a double trouble powerup
           if (powerUps.includes("Double Trouble")) {
-            const doubleMessage = [
-              "You landed on a 1 week mute, but you had a `Double Trouble` powerup, so your mute time was doubled!",
-            ];
-            await interaction.reply({
-              content: `You landed on ${randomNumber}. ${
-                doubleMessage[Math.floor(Math.random() * doubleMessage.length)]
-              }`,
-            });
-            await interaction.member.timeout(604800000).catch(async (error) => {
-              await interaction.followUp({
-                content: `I was unable to mute you! Are you an admin?`,
-                ephemeral: true,
-              });
-            });
-            await users.updateOne(
-              { user: interaction.member.id },
-              {
-                $set: {
-                  numMutesTotal: numMutesTotal + 1,
-                  numAllTotal: numAllTotal + 1,
-                  numAllTotal: numAllTotal + 1,
-                  numStreak: 0,
-                  numMaxStreak: Math.max(numMaxStreak, 0),
-                  mutePercentage: Math.round(
-                    ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                  ),
-                  powerUps: removePowerUp("Double Trouble"),
-                },
-              }
-            );
+            doubleTrouble(604800);
             return;
           }
 
           // checks if the user has a raise the stakes powerup
           if (powerUps.includes("Raise the Stakes")) {
-            const randomNumber3 = Math.floor(Math.random() * 2) + 1;
-            if (randomNumber3 === 1) {
-              const muteRaiseMessage = [
-                "You landed on a 1 week mute, but you had a `Raise the Stakes` powerup, so your mute time was doubled!",
-              ];
-              await interaction.reply({
-                content: `You landed on ${randomNumber}. ${
-                  muteRaiseMessage[
-                    Math.floor(Math.random() * muteRaiseMessage.length)
-                  ]
-                }`,
-              });
-              await interaction.member
-                .timeout(604800000)
-                .catch(async (error) => {
-                  await interaction.followUp({
-                    content: `I was unable to mute you! Are you an admin?`,
-                    ephemeral: true,
-                  });
-                });
-              await users.updateOne(
-                { user: interaction.member.id },
-                {
-                  $set: {
-                    numMutesTotal: numMutesTotal + 1,
-                    numAllTotal: numAllTotal + 1,
-                    numAllTotal: numAllTotal + 1,
-                    numStreak: 0,
-                    numMaxStreak: Math.max(numMaxStreak, 0),
-                    mutePercentage: Math.round(
-                      ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                    ),
-                    powerUps: removePowerUp("Raise the Stakes"),
-                  },
-                }
-              );
-              return;
-            } else {
-              const noMuteMessage = [
-                "Without the `Raise the Stakes` powerup, this would have been a 1 week mute!",
-              ];
-              await interaction.reply({
-                content: `You landed on ${randomNumber}. ${
-                  noMuteMessage[
-                    Math.floor(Math.random() * noMuteMessage.length)
-                  ]
-                }`,
-              });
-              await users.updateOne(
-                { user: interaction.member.id },
-                {
-                  $set: {
-                    numAllTotal: numAllTotal + 1,
-                    numAllTotal: numAllTotal + 1,
-                    numStreak: numStreak + 1,
-                    numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-                    mutePercentage: Math.round(
-                      (numMutesTotal / (numAllTotal + 1)) * 100
-                    ),
-                    powerUps: removePowerUp("Raise the Stakes"),
-                  },
-                }
-              );
-              return;
-            }
+            raiseTheStakes(604800);
+            return;
+          }
+
+          // checks if the user has a shield powerup
+          if (powerUps.includes("Shield")) {
+            shield(604800);
+            return;
           }
 
           const oneWeekMuteMessage = [
@@ -1144,34 +568,14 @@ module.exports = {
               ephemeral: true,
             });
           });
-          await users.updateOne(
-            { user: interaction.member.id },
-            {
-              $set: {
-                numMutesTotal: numMutesTotal + 1,
-                numAllTotal: numAllTotal + 1,
-                numStreak: 0,
-                numMaxStreak: Math.max(numMaxStreak, 0),
-                mutePercentage: Math.round(
-                  ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
-                ),
-              },
-            }
-          );
+          await muted();
           return;
         }
       }
 
       // if they have a raise the stakes powerup, remove it
       if (powerUps.includes("Raise the Stakes")) {
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              powerUps: removePowerUp("Raise the Stakes"),
-            },
-          }
-        );
+        await removePowerUp("Raise the Stakes");
       }
 
       // 22-26: Get a shield powerup
@@ -1184,21 +588,8 @@ module.exports = {
             shieldMessage[Math.floor(Math.random() * shieldMessage.length)]
           }`,
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numAllTotal: numAllTotal + 1,
-              numAllTotal: numAllTotal + 1,
-              numStreak: numStreak + 1,
-              numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-              powerUps: [...powerUps, "Shield"],
-              mutePercentage: Math.round(
-                (numMutesTotal / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await avoidedMute();
+        await addPowerUp("Shield");
         return;
       }
 
@@ -1212,20 +603,8 @@ module.exports = {
             doubleMessage[Math.floor(Math.random() * doubleMessage.length)]
           }`,
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numAllTotal: numAllTotal + 1,
-              numStreak: numStreak + 1,
-              numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-              powerUps: [...powerUps, "Double Trouble"],
-              mutePercentage: Math.round(
-                (numMutesTotal / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await avoidedMute();
+        await addPowerUp("Double Trouble");
         return;
       }
 
@@ -1239,20 +618,8 @@ module.exports = {
             raiseMessage[Math.floor(Math.random() * raiseMessage.length)]
           }`,
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numAllTotal: numAllTotal + 1,
-              numStreak: numStreak + 1,
-              numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-              powerUps: [...powerUps, "Raise the Stakes"],
-              mutePercentage: Math.round(
-                (numMutesTotal / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await avoidedMute();
+        await addPowerUp("Raise the Stakes");
         return;
       }
 
@@ -1266,20 +633,8 @@ module.exports = {
             fiftyMessage[Math.floor(Math.random() * fiftyMessage.length)]
           }`,
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numAllTotal: numAllTotal + 1,
-              numStreak: numStreak + 1,
-              numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-              powerUps: [...powerUps, "Fifty-Fifty"],
-              mutePercentage: Math.round(
-                (numMutesTotal / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await avoidedMute();
+        await addPowerUp("Fifty-Fifty");
         return;
       }
 
@@ -1308,19 +663,7 @@ module.exports = {
             giftMessage[Math.floor(Math.random() * giftMessage.length)]
           }`,
         });
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numAllTotal: numAllTotal + 1,
-              numStreak: numStreak + 1,
-              numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-              mutePercentage: Math.round(
-                (numMutesTotal / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
+        await avoidedMute();
         const filter = (m) => m.author.id === interaction.user.id;
         const selectedUserMessages = await interaction.channel.awaitMessages({
           filter,
@@ -1407,22 +750,10 @@ module.exports = {
           { user: user },
           { $set: { powerUps: [...giftedUser.powerUps, powerup] } }
         );
-        await users.updateOne(
-          { user: interaction.member.id },
-          {
-            $set: {
-              numAllTotal: numAllTotal + 1,
-              numStreak: numStreak + 1,
-              numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-              mutePercentage: Math.round(
-                (numMutesTotal / (numAllTotal + 1)) * 100
-              ),
-            },
-          }
-        );
 
         return;
       }
+
       logger.bilby("normal roll");
       const normalMessage = [
         "Normal roll!",
@@ -1439,19 +770,7 @@ module.exports = {
           normalMessage[Math.floor(Math.random() * normalMessage.length)]
         }`,
       });
-      await users.updateOne(
-        { user: interaction.member.id },
-        {
-          $set: {
-            numAllTotal: numAllTotal + 1,
-            numStreak: numStreak + 1,
-            numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
-            mutePercentage: Math.round(
-              (numMutesTotal / (numAllTotal + 1)) * 100
-            ),
-          },
-        }
-      );
+      await avoidedMute();
     } else if (interaction.options.getSubcommand() === "stats") {
       var specifiedUser =
         interaction.options.getMentionable("person") || interaction.member;
@@ -1476,106 +795,121 @@ module.exports = {
         .setDescription(
           `<@${specifiedUser.id}>\nTotal Mutes: **${numMutesTotal}**\nTotal Rolls: **${numAllTotal}**\nCurrent Streak: **${numStreak}**\nMax Streak: **${numMaxStreak}**\nMute Percentage: **${mutePercentage}%**`
         )
-        .addFields({ name: "Powerups", value: powerUps.join("\n") || "None" })
+        .addFields({
+          name: "Powerups",
+          value: powerUps.join("\n") || "None",
+        })
         .setColor("#FF0000");
-        
+
       await interaction.reply({ embeds: [embed] });
     } else if (interaction.options.getSubcommand() === "leaders") {
       // find the top user for each category
       const topMutes = await users
         .find({ numAllTotal: { $gte: 5 } })
         .sort({ numMutesTotal: -1 })
-        .limit(1)
+        .limit(5)
         .toArray();
       const topAll = await users
         .find({ numAllTotal: { $gte: 5 } })
         .sort({ numAllTotal: -1 })
-        .limit(1)
+        .limit(5)
         .toArray();
       const topStreak = await users
         .find({ numAllTotal: { $gte: 5 } })
         .sort({ numMaxStreak: -1 })
-        .limit(1)
+        .limit(5)
         .toArray();
       const lowestPercentage = await users
-        .find({ numAllTotal: { $gte: 5 } })
+        .find({ mutePercentage: { $gt: 0 }, numAllTotal: { $gte: 50 } })
         .sort({ mutePercentage: 1 })
-        .limit(1)
+        .limit(5)
         .toArray();
       const highestPercentage = await users
-        .find({ numAllTotal: { $gte: 5 } })
+        .find({ mutePercentage: { $lt: 100 }, numAllTotal: { $gte: 50 } })
         .sort({ mutePercentage: -1 })
-        .limit(1)
+        .limit(5)
         .toArray();
 
       // get the top user's data
-      const topMutesData = topMutes[0].numMutesTotal;
-      const topAllData = topAll[0].numAllTotal;
-      const topStreakData = topStreak[0].numMaxStreak;
-      const lowestPercentageData = lowestPercentage[0].mutePercentage;
-      const highestPercentageData = highestPercentage[0].mutePercentage;
-
       var description = "";
 
-      try {
-        const topMutesUser = await interaction.guild.members.fetch(
-          topMutes[0].user
-        );
-        description += `Highest Number of Mutes: **${
-          topMutesUser.nickname ||
-          topMutesUser.user.displayName ||
-          topMutesUser.user.username
-        }** - **${topMutesData} mutes**\n`;
-      } catch (error) {
-        description += `Highest Number of Mutes: **Unknown** - **${topMutesData} mutes**\n`;
+      for (var i = 0; i < topMutes.length; i++) {
+        try {
+          const topMutesData = topMutes[i].numMutesTotal;
+          const topMutesUser = await interaction.guild.members.fetch(
+            topMutes[i].user
+          );
+          description += `Highest Number of Mutes: **${
+            topMutesUser.nickname ||
+            topMutesUser.user.displayName ||
+            topMutesUser.user.username
+          }** - **${topMutesData} mutes**\n`;
+        } catch (error) {
+          continue;
+        }
+        break;
       }
-      try {
-        const topAllUser = await interaction.guild.members.fetch(
-          topAll[0].user
-        );
-        description += `Highest Number of Rolls: **${
-          topAllUser.nickname ||
-          topAllUser.user.displayName ||
-          topAllUser.user.username
-        }** - **${topAllData} rolls**\n`;
-      } catch (error) {
-        description += `Highest Number of Rolls: **Unknown** - **${topAllData} rolls**\n`;
+      for (var i = 0; i < topAll.length; i++) {
+        try {
+          const topAllData = topAll[i].numAllTotal;
+          const topAllUser = await interaction.guild.members.fetch(topAll[i].user);
+          description += `Highest Number of Rolls: **${
+            topAllUser.nickname ||
+            topAllUser.user.displayName ||
+            topAllUser.user.username
+          }** - **${topAllData} rolls**\n`;
+        } catch (error) {
+          continue;
+        }
+        break;
       }
-      try {
-        const topStreakUser = await interaction.guild.members.fetch(
-          topStreak[0].user
-        );
-        description += `Highest Unmuted Streak: **${
-          topStreakUser.nickname ||
-          topStreakUser.user.displayName ||
-          topStreakUser.user.username
-        }** - **${topStreakData} rolls**\n`;
-      } catch (error) {
-        description += `Highest Unmuted Streak: **Unknown** - **${topStreakData} rolls**\n`;
+      for (var i = 0; i < topStreak.length; i++) {
+        try {
+          const topStreakData = topStreak[i].numMaxStreak;
+          const topStreakUser = await interaction.guild.members.fetch(
+            topStreak[i].user
+          );
+          description += `Highest Unmuted Streak: **${
+            topStreakUser.nickname ||
+            topStreakUser.user.displayName ||
+            topStreakUser.user.username
+          }** - **${topStreakData} rolls**\n`;
+        } catch (error) {
+          continue;
+        }
+        break;
       }
-      try {
-        const lowestPercentageUser = await interaction.guild.members.fetch(
-          lowestPercentage[0].user
-        );
-        description += `Lowest Mute Percentage: **${
-          lowestPercentageUser.nickname ||
-          lowestPercentageUser.user.displayName ||
-          lowestPercentageUser.user.username
-        }** - **${lowestPercentageData}%**\n`;
-      } catch (error) {
-        description += `Lowest Mute Percentage: **Unknown** - **${lowestPercentageData}%**\n`;
+      for (var i = 0; i < lowestPercentage.length; i++) {
+        try {
+          const lowestPercentageData = lowestPercentage[i].mutePercentage;
+          const lowestPercentageUser = await interaction.guild.members.fetch(
+            lowestPercentage[i].user
+          );
+          description += `Lowest Mute Percentage: **${
+            lowestPercentageUser.nickname ||
+            lowestPercentageUser.user.displayName ||
+            lowestPercentageUser.user.username
+          }** - **${lowestPercentageData}%**\n`;
+        } catch (error) {
+          continue;
+        }
+        break;
       }
-      try {
-        const highestPercentageUser = await interaction.guild.members.fetch(
-          highestPercentage[0].user
-        );
-        description += `Highest Mute Percentage: **${
-          highestPercentageUser.nickname ||
-          highestPercentageUser.user.displayName ||
-          highestPercentageUser.user.username
-        }** - **${highestPercentageData}%**\n`;
-      } catch (error) {
-        description += `Highest Mute Percentage: **Unknown** - **${highestPercentageData}%**\n`;
+      for (var i = 0; i < highestPercentage.length; i++) {
+        try {
+          const highestPercentageData = highestPercentage[i].mutePercentage;
+          const highestPercentageUser = await interaction.guild.members.fetch(
+            highestPercentage[i].user
+          );
+          description += `Highest Mute Percentage: **${
+            highestPercentageUser.nickname ||
+            highestPercentageUser.user.displayName ||
+            highestPercentageUser.user.username
+          }** - **${highestPercentageData}%**\n`;
+        } catch (error) {
+          continue;
+        }
+        break;
       }
 
       // create the embed
