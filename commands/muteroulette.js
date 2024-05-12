@@ -106,24 +106,23 @@ module.exports = {
       }
       // remove powerup function
       async function removePowerUp(powerUp) {
-        var powerUpToChange = powerUps;
-        let index = powerUpToChange.indexOf(powerUp);
-        console.log(index);
-        if (index > -1) {
-          powerUpToChange.splice(index, 1);
-        }
+        const updatedPowerUps = powerUps.filter(p => p !== powerUp);
         await users.updateOne(
           { user: interaction.member.id },
-          { $set: { powerUps: powerUpToChange } }
+          { $set: { powerUps: updatedPowerUps } }
         );
       }
       // add powerup
       async function addPowerUp(powerUp) {
+        const updatedPowerUps = [...powerUps];
+        if (!updatedPowerUps.includes(powerUp)) {
+          updatedPowerUps.push(powerUp);
+        }
         await users.updateOne(
           { user: interaction.member.id },
           {
             $set: {
-              powerUps: [...powerUps, powerUp],
+              powerUps: updatedPowerUps,
             },
           }
         );
