@@ -23,7 +23,7 @@ module.exports = {
     async execute(interaction) {
 
         // connect to the database
-        const uri = 'mongodb+srv://heelerhouse:2007Lj76727191@cluster0.7ynqt27.mongodb.net/?retryWrites=true&w=majority';
+        const uri = process.env.MONGODB_URI;
         const client = new MongoClient(uri);
         await client.connect();
 
