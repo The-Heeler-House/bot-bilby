@@ -315,8 +315,7 @@ module.exports = {
       }
 
       // get a random number between 1 and 100
-      //const randomNumber = Math.floor(Math.random() * 100) + 1;
-      const randomNumber = 15;
+      const randomNumber = Math.floor(Math.random() * 100) + 1;
 
       logger.bilby(randomNumber);
 
