@@ -180,7 +180,7 @@ module.exports = {
       // double trouble
       async function doubleTrouble(time) {
         if (powerUps.include("Shield")) {
-          shield(time * 2);
+          await shield(time * 2);
           return;
         }
         const doubleMessage = [
@@ -209,7 +209,7 @@ module.exports = {
         const raiseRandomNumber = Math.floor(Math.random() * 2) + 1;
         if (raiseRandomNumber === 1) {
           if (powerUps.includes("Shield")) {
-            shield(time * 2);
+            await shield(time * 2);
             return;
           }
           const muteRaiseMessage = [
@@ -258,6 +258,7 @@ module.exports = {
           )} seconds before using this command again!`,
           ephemeral: true,
         });
+        await client.close();
         return;
       }
 
@@ -266,10 +267,11 @@ module.exports = {
         await interaction.reply({
           content: "This command is disabled for 10 minutes!",
         });
+        await client.close();
         return;
       }
 
-      updateTime();
+      await updateTime();
 
       // checks if the user has a 50/50 powerup
       if (powerUps.includes("Fifty-Fifty")) {
@@ -293,6 +295,7 @@ module.exports = {
           });
           await muted();
           await removePowerUp("Fifty-Fifty");
+          await client.close();
           return;
         } else {
           const fiftyFiftyMessage = [
@@ -307,12 +310,14 @@ module.exports = {
           });
           await avoidedMute();
           await removePowerUp("Fifty-Fifty");
+          await client.close();
           return;
         }
       }
 
       // get a random number between 1 and 100
-      const randomNumber = Math.floor(Math.random() * 100) + 1;
+      //const randomNumber = Math.floor(Math.random() * 100) + 1;
+      const randomNumber = 15;
 
       logger.bilby(randomNumber);
 
@@ -320,21 +325,21 @@ module.exports = {
       if (randomNumber <= 5) {
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
-          doubleTrouble(10);
+          await doubleTrouble(10);
           await client.close();
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
-          raiseTheStakes(10);
+          await raiseTheStakes(10);
           await client.close();
           return;
         }
 
         // checks if the user has a shield powerup
         if (powerUps.includes("Shield")) {
-          shield(10);
+          await shield(10);
           await client.close();
           return;
         }
@@ -367,21 +372,21 @@ module.exports = {
       if (randomNumber <= 10) {
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
-          doubleTrouble(30);
+          await doubleTrouble(30);
           await client.close();
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
-          raiseTheStakes(30);
+          await raiseTheStakes(30);
           await client.close();
           return;
         }
 
         // checks if the user has a shield powerup
         if (powerUps.includes("Shield")) {
-          shield(30);
+          await shield(30);
           await client.close();
           return;
         }
@@ -415,21 +420,21 @@ module.exports = {
       if (randomNumber <= 15) {
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
-          doubleTrouble(60);
+          await doubleTrouble(60);
           await client.close();
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
-          raiseTheStakes(60);
+          await raiseTheStakes(60);
           await client.close();
           return;
         }
 
         // checks if the user has a shield powerup
         if (powerUps.includes("Shield")) {
-          shield(60);
+          await shield(60);
           await client.close();
           return;
         }
@@ -463,21 +468,21 @@ module.exports = {
       if (randomNumber <= 20) {
         // checks if the user has a double trouble powerup
         if (powerUps.includes("Double Trouble")) {
-          doubleTrouble(180);
+          await doubleTrouble(180);
           await client.close();
           return;
         }
 
         // checks if the user has a raise the stakes powerup
         if (powerUps.includes("Raise the Stakes")) {
-          raiseTheStakes(180);
+          await raiseTheStakes(180);
           await client.close();
           return;
         }
 
         // checks if the user has a shield powerup
         if (powerUps.includes("Shield")) {
-          shield(180);
+          await shield(180);
           await client.close();
           return;
         }
@@ -512,21 +517,21 @@ module.exports = {
         if (randomNumber2 <= 9) {
           // checks if the user has a double trouble powerup
           if (powerUps.includes("Double Trouble")) {
-            doubleTrouble(1440);
+            await doubleTrouble(1440);
             await client.close();
             return;
           }
 
           // checks if the user has a raise the stakes powerup
           if (powerUps.includes("Raise the Stakes")) {
-            raiseTheStakes(1440);
+            await raiseTheStakes(1440);
             await client.close();
             return;
           }
 
           // checks if the user has a shield powerup
           if (powerUps.includes("Shield")) {
-            shield(1440);
+            await shield(1440);
             await client.close();
             return;
           }
@@ -555,21 +560,21 @@ module.exports = {
         } else {
           // checks if the user has a double trouble powerup
           if (powerUps.includes("Double Trouble")) {
-            doubleTrouble(604800);
+            await doubleTrouble(604800);
             await client.close();
             return;
           }
 
           // checks if the user has a raise the stakes powerup
           if (powerUps.includes("Raise the Stakes")) {
-            raiseTheStakes(604800);
+            await raiseTheStakes(604800);
             await client.close();
             return;
           }
 
           // checks if the user has a shield powerup
           if (powerUps.includes("Shield")) {
-            shield(604800);
+            await shield(604800);
             await client.close();
             return;
           }
@@ -958,5 +963,6 @@ module.exports = {
     }
 
     await client.close();
+    return;
   },
 };
