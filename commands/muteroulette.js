@@ -178,7 +178,7 @@ module.exports = {
       }
       // double trouble
       async function doubleTrouble(time) {
-        if (powerUps.include("Shield")) {
+        if (powerUps.includes("Shield")) {
           await shield(time * 2);
           return;
         }
