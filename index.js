@@ -522,8 +522,9 @@ client.on("messageReactionAdd", async (reaction, user) => {
     // Send the message link to the #staff-chat channel
     const messageLink = `https://discord.com/channels/${reaction.message.guild.id}/${reaction.message.channel.id}/${reaction.message.id}`;
     const emote = isCustomEmote ? ( !isServerEmote ? `[:${reaction.emoji.name}:](${reactionEmoteImage})` : reaction.emoji.toString()) : reaction.emoji.toString();
+    const member = await reaction.message.guild.members.fetch(user.id);
     staffChatChannel.send(
-        `${emote} **added** by \`${reaction.message.member.displayName}\`: ${messageLink}`
+        `${emote} **added** by \`${member.displayName}\`: ${messageLink}`
     );
 });
 client.on("messageReactionRemove", async (reaction, user) => {
@@ -546,8 +547,9 @@ client.on("messageReactionRemove", async (reaction, user) => {
     // Send the message link to the #staff-chat channel
     const messageLink = `https://discord.com/channels/${reaction.message.guild.id}/${reaction.message.channel.id}/${reaction.message.id}`;
     const emote = isCustomEmote ? ( !isServerEmote ? `[:${reaction.emoji.name}:](${reactionEmoteImage})` : reaction.emoji.toString()) : reaction.emoji.toString();
+    const member = await reaction.message.guild.members.fetch(user.id);
     staffChatChannel.send(
-        `${emote} **removed** by \`${reaction.message.member.displayName}\`: ${messageLink}`
+        `${emote} **removed** by \`${member.displayName}\`: ${messageLink}`
     );
 });
 
