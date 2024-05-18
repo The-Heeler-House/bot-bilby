@@ -878,9 +878,7 @@ module.exports = {
             topMutes[i].user
           );
           description += `Highest Number of Mutes: **${
-            topMutesUser.nickname ||
-            topMutesUser.user.displayName ||
-            topMutesUser.user.username
+            topMutesUser.displayName
           }** - **${topMutesData} mutes**\n`;
         } catch (error) {
           continue;
@@ -892,9 +890,7 @@ module.exports = {
           const topAllData = topAll[i].numAllTotal;
           const topAllUser = await interaction.guild.members.fetch(topAll[i].user);
           description += `Highest Number of Rolls: **${
-            topAllUser.nickname ||
-            topAllUser.user.displayName ||
-            topAllUser.user.username
+            topAllUser.displayName
           }** - **${topAllData} rolls**\n`;
         } catch (error) {
           continue;
@@ -908,9 +904,7 @@ module.exports = {
             topStreak[i].user
           );
           description += `Highest Unmuted Streak: **${
-            topStreakUser.nickname ||
-            topStreakUser.user.displayName ||
-            topStreakUser.user.username
+            topStreakUser.displayName
           }** - **${topStreakData} rolls**\n`;
         } catch (error) {
           continue;
@@ -924,9 +918,7 @@ module.exports = {
             lowestPercentage[i].user
           );
           description += `Lowest Mute Percentage: **${
-            lowestPercentageUser.nickname ||
-            lowestPercentageUser.user.displayName ||
-            lowestPercentageUser.user.username
+            lowestPercentageUser.displayName
           }** - **${lowestPercentageData}%**\n`;
         } catch (error) {
           continue;
@@ -940,9 +932,7 @@ module.exports = {
             highestPercentage[i].user
           );
           description += `Highest Mute Percentage: **${
-            highestPercentageUser.nickname ||
-            highestPercentageUser.user.displayName ||
-            highestPercentageUser.user.username
+            highestPercentageUser.displayName
           }** - **${highestPercentageData}%**\n`;
         } catch (error) {
           continue;

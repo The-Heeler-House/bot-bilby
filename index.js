@@ -53,6 +53,7 @@ for (const file of commandFiles) {
 }
 
 const trackedMessages = new Map();
+const trackedReactions = new Map();
 
 var joinGate = true;
 
@@ -543,6 +544,56 @@ client.on("messageDelete", async (deletedMessage) => {
             }
         }
     }
+});
+
+// reaction logging
+client.on("messageReactionAdd", async (reaction, user) => {
+    if (reaction.message.partial) {
+        try {
+            await reaction.message.fetch();
+        } catch (error) {
+            logger.error("Something went wrong when fetching the message: ", error);
+            return;
+        }
+    }
+    if (reaction.message.author.bot) return;
+
+    const isServerEmote = reaction.emoji.available;
+    const isCustomEmote = reaction.emoji.id;
+    const staffChatChannel = await client.channels.fetch(
+        "1241199271022301266"
+    );
+    const reactionEmoteImage = reaction.emoji.imageURL({extension: "png", size: 128});
+    // Send the message link to the #staff-chat channel
+    const messageLink = `https://discord.com/channels/${reaction.message.guild.id}/${reaction.message.channel.id}/${reaction.message.id}`;
+    const emote = isCustomEmote ? ( !isServerEmote ? `[:${reaction.emoji.name}:](${reactionEmoteImage})` : reaction.emoji.toString()) : reaction.emoji.toString();
+    staffChatChannel.send(
+        `${emote} **added** by \`${reaction.message.member.displayName}\`: ${messageLink}`
+    );
+});
+client.on("messageReactionRemove", async (reaction, user) => {
+    if (reaction.message.partial) {
+        try {
+            await reaction.message.fetch();
+        } catch (error) {
+            logger.error("Something went wrong when fetching the message: ", error);
+            return;
+        }
+    }
+    if (reaction.message.author.bot) return;
+
+    const isServerEmote = reaction.emoji.available;
+    const isCustomEmote = reaction.emoji.id;
+    const staffChatChannel = await client.channels.fetch(
+        "1241199271022301266"
+    );
+    const reactionEmoteImage = reaction.emoji.imageURL({extension: "png", size: 128});
+    // Send the message link to the #staff-chat channel
+    const messageLink = `https://discord.com/channels/${reaction.message.guild.id}/${reaction.message.channel.id}/${reaction.message.id}`;
+    const emote = isCustomEmote ? ( !isServerEmote ? `[:${reaction.emoji.name}:](${reactionEmoteImage})` : reaction.emoji.toString()) : reaction.emoji.toString();
+    staffChatChannel.send(
+        `${emote} **removed** by \`${reaction.message.member.displayName}\`: ${messageLink}`
+    );
 });
 
 // Login to Discord with your client's token

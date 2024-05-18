@@ -379,7 +379,7 @@ module.exports = {
                     try {
                         const user = await interaction.guild.members.fetch(id);
                         console.log(user)
-                        desc += `${i + 1}. ${user.nickname || user.user.globalName || user.user.username}: ${player.score} Episodes\n`;
+                        desc += `${i + 1}. ${user.displayName}: ${player.score} Episodes\n`;
                     } catch (err) {
                         desc += `${i + 1}. Unknown : ${player.score} Episodes\n`;
                     }
