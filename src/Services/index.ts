@@ -6,13 +6,16 @@
     Services are stored in an object.
 */
 import ExampleService from "./ExampleService";
+import Database from "./Database";
 
 export default function getServices(client): Services {
     return {
-        example: new ExampleService()
+        example: new ExampleService(),
+        database: new Database()
     }
 }
 
 export interface Services {
-    example: ExampleService
+    example: ExampleService,
+    database: Database
 }
