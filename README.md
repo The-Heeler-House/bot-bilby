@@ -1,5 +1,4 @@
-# Bot Bilby
+# Bot Bilby v4
+recode of bot bilby so it doesn't crash every 5 seconds
 
-### Node JS Version of Bot Bilby
- 
-
+contributors: jalen, sudo, and cloudburst (leah)
