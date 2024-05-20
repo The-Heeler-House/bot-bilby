@@ -1,0 +1,25 @@
+{
+  "name": "bot-bilby",
+  "version": "4.0.0",
+  "description": "Bot Bilby is a Discord Bot for The Heeler House Discord server, providing moderation tools, gambling, and more!",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/The-Heeler-House/bot=bilby.git"
+  },
+  "author": "Bot Bilby Contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/The-Heeler-House/bot=bilby/issues"
+  },
+  "homepage": "https://github.com/The-Heeler-House/bot=bilby#readme",
+  "dependencies": {
+    "@types/node": "^20.12.12",
+    "discord.js": "^14.15.2",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.4.5"
+  }
+}
