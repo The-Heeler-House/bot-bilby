@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc",
-    "bot": "node dist/index.js"
+    "bot-unix": "./build.sh && node dist/index.js",
+    "bot-windows": "build.bat && node dist/index.js"
   },
   "repository": {
     "type": "git",

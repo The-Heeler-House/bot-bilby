@@ -25,13 +25,13 @@ PREFIX="..." # text command prefix, can be any length.
 MONGO_URL="" # connection URL for MongoDB database (should be in the form of: "mongodb://...")
 ```
 ### **Run the bot**
-Once everything have seen set up, compile the source code of the bot using:
+Once everything have seen set up, compile and run the bot using:
 ```
-npm run compile
+npm run bot-unix # for people using MacOS/Linux
 ```
-Once finished, run the bot using:
+or
 ```
-npm run bot
+npm run bot-windows # for people using Windows
 ```
 
 ## Credit & License
