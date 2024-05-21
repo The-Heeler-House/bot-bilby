@@ -1,4 +1,9 @@
-import { ChatInputCommandInteraction, ComponentType, EmbedBuilder, ReactionCollector, SlashCommandBuilder } from "discord.js";
+import {
+    ChatInputCommandInteraction,
+    EmbedBuilder,
+    ReactionCollector,
+    SlashCommandBuilder
+} from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import path from "path";
