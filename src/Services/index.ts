@@ -7,8 +7,9 @@
 */
 import ExampleService from "./ExampleService";
 import Database from "./Database";
+import { Client } from "discord.js";
 
-export default function getServices(client): Services {
+export default function getServices(client: Client): Services {
     return {
         example: new ExampleService(),
         database: new Database()

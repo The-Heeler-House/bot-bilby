@@ -1,8 +1,8 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from "discord.js";
 import { Services } from "../Services";
 
 export default class SlashCommand {
-    public data: SlashCommandBuilder;
+    public data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder;
 
     constructor() {}
 
