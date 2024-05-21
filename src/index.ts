@@ -45,6 +45,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
     await commands.onSlashAutocompletePreprocess(interaction, services);
 });
 
-console.log(process.env.TOKEN);
-
 client.login(process.env.TOKEN);
