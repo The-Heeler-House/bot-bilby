@@ -1,6 +1,4 @@
-import { Snowflake } from "discord.js";
-
 export const roleIds = {
-    staff: "1242459865159569418",
-    leadership: "1242091677028585502"
+    staff: "1073391142881722400",
+    leadership: "1073388656183742514"
 }
