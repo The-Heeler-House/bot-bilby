@@ -133,6 +133,7 @@ export default class HangmanCommand extends SlashCommand {
         const stopCollector = () => LETTER_COLLECTOR_LIST.forEach(v => v.stop())
 
         const gameOver = async () => {
+            gameState.currentTries = gameState.maxTries
             await interaction.editReply({
                 embeds: [
                     generateGameEmbed(`Game Over! You lose!\nThe word was **${SELECTED_WORD}**.`)
@@ -156,6 +157,9 @@ export default class HangmanCommand extends SlashCommand {
         BUTTON_COLLECTOR.on("collect", async e => {
             if (e.customId == "quit") {
                 await gameOver()
+                e.reply({
+                    content: "At least you could've used up all your guess..."
+                })
             }
         })
 
