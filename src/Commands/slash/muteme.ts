@@ -12,7 +12,7 @@ export default class ExampleCommand extends SlashCommand {
                 .setRequired(false))
 
     async execute(interaction: ChatInputCommandInteraction, services: Services) {
-        // TODO: maybe add a check for permission?
+        // TODO: maybe add a check for permission to see if the bot have perm to mute?
 
         const TIME = interaction.options.getInteger("length") ?? 1
         if (interaction.member instanceof GuildMember) {
