@@ -21,20 +21,20 @@ export default class Database {
 
         logger.command("Connected to MongoDB database.");
 
-        const databases: Databases = {
-            bilby: client.db("bilby"),
+        const databases = {
+            bilby: client.db("bilby")
         }
 
+        this.collections.state = databases.bilby.collection("state");
+        this.collections.botCharacters = databases.bilby.collection("botCharacters");
         this.collections.muteroulette = databases.bilby.collection("muteroulette");
-        this.collections.guess = databases.bilby.collection("guess");
+        this.collections.guess = databases.bilby.collection("guessLeaders");
     }
 }
 
-interface Databases {
-    bilby: mongoDB.Db,
-}
-
 export interface DatabaseCollections {
+    state?: mongoDB.Collection
+    botCharacters?: mongoDB.Collection,
     muteroulette?: mongoDB.Collection,
     guess?: mongoDB.Collection
 }

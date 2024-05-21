@@ -1,6 +1,6 @@
 import SlashCommand from "./SlashCommand";
 import TextCommand from "./TextCommand";
-import { BaseInteraction, Client, InteractionType, Message, REST, Routes } from "discord.js";
+import { BaseInteraction, ChannelType, Client, InteractionType, Message, REST, Routes } from "discord.js";
 import { readdir } from "fs/promises";
 import * as logger from "../Logger";
 import { Services } from "../Services";
@@ -123,7 +123,7 @@ export default class CommandPreprocessor {
         let commandName = [...this.textCommands.keys()].find(key => content.startsWith(key));
 
         if (commandName === undefined) return; // The above find function didn't find a command.
-        let args = content.replace(commandName, "").split(" "); // Args splitting while respecting both prefix and command length.
+        let args = content.replace(commandName, "").trim().split(" "); // Args splitting while respecting both prefix and command length.
 
         let command = this.textCommands.get(commandName);
 
@@ -131,7 +131,29 @@ export default class CommandPreprocessor {
             if (!command) throw new ReferenceError(`Text command ${commandName} does not exist.`);
 
             // TODO: Do permission and environment checks.
-            command.execute(message, args, services);
+            // Environment checks
+            if (!command.data.allowedInDMs && [ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return;
+
+            // Permission checks.
+            // User allows override role allows/denies.
+            let allowed = false;
+
+            // Gets list of current user's roles allowed to use the command
+            let allowedUserRoles = message.member.roles.cache.filter((_, snowflake) => command.data.permissions.allowedRoles.includes(snowflake));
+
+            // Gets list of current user's roles which deny use of the command
+            let deniedUserRoles = message.member.roles.cache.filter((_, snowflake) => command.data.permissions.deniedRoles.includes(snowflake));
+
+            if (allowedUserRoles.size != 0 || command.data.permissions.allowedRoles.length == 0)
+                allowed = true; // Either the user has a role that allows them to use the command, or there are no allowed roles, which implitly allows all roles.
+
+            if (deniedUserRoles.size != 0)
+                allowed = false; // The user has a role that denies them from using the command.
+
+            if (command.data.permissions.allowedUsers.includes(message.author.id))
+                allowed = true; // The user's id is in the allowed users list.
+
+            if (allowed) command.execute(message, args, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", commandName, "text command.\n", error, "\n", error.stack);
             await message.reply("Whoops! Seems like something went wrong while processing your request. Please try again.");

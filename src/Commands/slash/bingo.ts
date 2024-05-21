@@ -15,7 +15,7 @@ export default class BingoCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("bingo")
         .setDescription("Create a Bingo card to play while watching Bluey Episodes!")
-    
+
     async execute(
         interaction: ChatInputCommandInteraction<CacheType>,
         services: Services): Promise<void>
