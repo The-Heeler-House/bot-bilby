@@ -4,12 +4,12 @@ import {
     ChatInputCommandInteraction,
     EmbedBuilder,
     SlashCommandBuilder
-} from "discord.js";
-import { Services } from "../../Services";
-import SlashCommand from "../SlashCommand";
-import path from "path";
-import { randomInt } from "crypto";
-import { readdir } from "fs/promises";
+} from "discord.js"
+import { Services } from "../../Services"
+import SlashCommand from "../SlashCommand"
+import path from "path"
+import { randomInt } from "crypto"
+import { readdir } from "fs/promises"
 
 
 export default class EightBallCommand extends SlashCommand {
@@ -32,13 +32,14 @@ export default class EightBallCommand extends SlashCommand {
                 path.join(EIGHT_BALL_IMAGE_DIR, SELECTED_FILENAME))
 
             const EIGHT_BALL_EMBED = new EmbedBuilder()
-                .setColor(0xffffff)
-                .setAuthor({
-                    name: "Bot Billy the Bizard"
-                })
+                .setColor(0x0000ff)
+                .setTitle("Magic 8-Ball")
                 .setDescription(`My answer for: ${interaction.options.getString("question")}, is:`)
                 .setImage(`attachment://${SELECTED_FILENAME}`)
                 .setTimestamp()
+                .setFooter({
+                    text: "Bot Billy the Bizard"
+                })
             await interaction.reply({
                 embeds: [EIGHT_BALL_EMBED],
                 files: [FILE],
