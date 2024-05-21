@@ -4,14 +4,14 @@ import SlashCommand from "../SlashCommand";
 import { randomInt } from "crypto";
 
 export default class ExampleCommand extends SlashCommand {
-    public data = new SlashCommandBuilder()
+    public data = (new SlashCommandBuilder()
         .setName("fortune")
         .setDescription("Check your or someone else's fortune!")
         .addMentionableOption(option =>
             option.setName("person")
                 .setDescription("[OPTIONAL] The person whose fortune you want to check.")
                 .setRequired(false)
-        )
+        )) as SlashCommandBuilder;
 
     async execute(interaction: ChatInputCommandInteraction, services: Services) {
         const FORTUNES = [
