@@ -140,7 +140,7 @@ export default class CharacterCommand extends SlashCommand {
         const BUTTON_COLLECTOR = MESSAGE.createMessageComponentCollector({
             componentType: ComponentType.Button,
             filter: i => i.user.id == interaction.user.id,
-            time: 30_000
+            time: 120_000
         })
 
         BUTTON_COLLECTOR.on("collect", async e => {

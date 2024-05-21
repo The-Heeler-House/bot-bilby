@@ -1,5 +1,9 @@
 import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     ChatInputCommandInteraction,
+    ComponentType,
     EmbedBuilder,
     ReactionCollector,
     SlashCommandBuilder
@@ -55,10 +59,22 @@ export default class HangmanCommand extends SlashCommand {
             haveGuessed: 0, // the current amount of letters the user have guessed
         }
 
+        const TIMEOUT = 15 * 60_000 // 15 minute * 60_000 (a minute in miliseconds)
+
+        const QUIT_BUTTON = new ButtonBuilder()
+            .setCustomId("quit")
+            .setLabel("I GIVE UP!")
+            .setStyle(ButtonStyle.Danger)
+
+        const BUTTON_ROW = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(QUIT_BUTTON)
+
         const INIT_EMBED = new EmbedBuilder()
             .setColor("Yellow")
             .setTitle("Initializing")
             .setFooter({ text: "Bot Billy" })
+
+        const LETTER_COLLECTOR_LIST: ReactionCollector[] = []
 
         const renderCurrentlyGuessed = () => gameState.currentlyGuessed
             .map(v => v == "" ? "**_**" : `__${v}__`)
@@ -114,12 +130,34 @@ export default class HangmanCommand extends SlashCommand {
             gameState.guessedLetters.push(letter)
         }
 
-        await interaction.reply({
+        const stopCollector = () => LETTER_COLLECTOR_LIST.forEach(v => v.stop())
+
+        const gameOver = async () => {
+            await interaction.editReply({
+                embeds: [
+                    generateGameEmbed(`Game Over! You lose!\nThe word was **${SELECTED_WORD}**.`)
+                ]
+            })
+            stopCollector()
+        }
+
+        const REPLY = await interaction.reply({
             embeds: [INIT_EMBED]
         })
 
-        const letterCollectorList: ReactionCollector[] = []
-        const stopCollector = () => letterCollectorList.forEach(v => v.stop())
+        const BUTTON_COLLECTOR = REPLY.createMessageComponentCollector(
+            {
+                componentType: ComponentType.Button,
+                filter: i => interaction.user.id == i.user.id,
+                time: TIMEOUT
+            }
+        )
+
+        BUTTON_COLLECTOR.on("collect", async e => {
+            if (e.customId == "quit") {
+                await gameOver()
+            }
+        })
 
         for (const i of REACTIONS) {
             const MESSAGE = await interaction.channel.send("** **")
@@ -128,9 +166,9 @@ export default class HangmanCommand extends SlashCommand {
                 //const LETTER = j.split(":")[1]
                 await MESSAGE.react(EMOJI)
             }
-            letterCollectorList.push(
+            LETTER_COLLECTOR_LIST.push(
                 MESSAGE.createReactionCollector({
-                    time: 120_000,
+                    time: TIMEOUT,
                     filter: (reaction, user) =>
                         reaction.message.id == MESSAGE.id &&
                         i.includes(reaction.emoji.name) &&
@@ -140,10 +178,11 @@ export default class HangmanCommand extends SlashCommand {
         }
 
         await interaction.editReply({
-            embeds: [generateGameEmbed()]
+            embeds: [generateGameEmbed()],
+            components: [BUTTON_ROW]
         })
 
-        for (const i of letterCollectorList) {
+        for (const i of LETTER_COLLECTOR_LIST) {
             i.on("collect", async (reaction, user) => {
                 if (user.id != interaction.user.id) return
 
@@ -158,15 +197,11 @@ export default class HangmanCommand extends SlashCommand {
                     gameState.currentTries++
 
                     if (gameState.currentTries >= gameState.maxTries) {
-                        await interaction.editReply({
-                            embeds: [
-                                generateGameEmbed(`Game Over! You lose!\nThe word was **${SELECTED_WORD}**.`)
-                            ]
-                        })
-                        stopCollector()
+                        await gameOver()
                     } else {
                         await interaction.editReply({
-                            embeds: [generateGameEmbed()]
+                            embeds: [generateGameEmbed()],
+                            components: [BUTTON_ROW]
                         })
                     }
                     return
@@ -186,7 +221,8 @@ export default class HangmanCommand extends SlashCommand {
                 }
 
                 await interaction.editReply({
-                    embeds: [generateGameEmbed()]
+                    embeds: [generateGameEmbed()],
+                    components: [BUTTON_ROW]
                 })
             })
         }
