@@ -19,7 +19,7 @@ const client = new Client({ intents: [
 ] });
 
 const commands = new CommandPreprocessor();
-const services = getServices(client);
+const services = getServices(client, commands);
 
 client.on(Events.ClientReady, async () => {
     await commands.registerSlashCommands(client);

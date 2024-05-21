@@ -23,9 +23,13 @@ export default class TextCommand {
 export class TextCommandBuilder {
     public name: string;
     public description: string;
-    public permissions: TextCommandPermissions;
-    public arguments: TextCommandArgument[];
-    public allowedInDMs: boolean;
+    public permissions: TextCommandPermissions = {
+        allowedRoles: [],
+        deniedRoles: [],
+        allowedUsers: []
+    };
+    public arguments: TextCommandArgument[] = [];
+    public allowedInDMs: boolean = false;
 
     /**
      * Sets the command name.
@@ -64,6 +68,16 @@ export class TextCommandBuilder {
      */
     addDeniedRoles(...roles: Snowflake[]): TextCommandBuilder {
         this.permissions.deniedRoles.push(...roles);
+        return this;
+    }
+
+    /**
+     * Denies all roles from executing the command.
+     * A shorthand to addAllowedRoles("0"), which due to how the permission handler works, denies all roles.
+     * @returns This TextCommandBuilder
+     */
+    denyAllRoles(): TextCommandBuilder {
+        this.permissions.allowedRoles.push("0");
         return this;
     }
 
