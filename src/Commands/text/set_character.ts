@@ -26,7 +26,7 @@ export default class SetCharacterCommand extends TextCommand {
 
             await message.reply(`Successfully changed character to \`${args.join(" ")}\`.`);
         } catch (error) {
-            logger.error("Encountered error while trying to change avatar and username to preset", args.join(" "), "\n", error, "\n", error.stack);
+            logger.error("Encountered error while trying to change avatar and username to character", args.join(" "), "\n", error, "\n", error.stack);
             await message.reply(`That's awkward. I encountered an error while changing character to \`${args.join(" ")}\`. Please try again.`);
         }
     }

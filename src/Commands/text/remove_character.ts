@@ -8,7 +8,7 @@ import * as logger from "../../Logger";
 export default class RemoveCharacterCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("remove character")
-        .setDescription("Removes a character preset from Bot Bilby.")
+        .setDescription("Removes a character from Bot Bilby.")
         .addArgument("name", "The name of the character to remove.")
         .addAllowedRoles(roleIds.staff)
         .allowInDMs(false);
@@ -26,10 +26,10 @@ export default class RemoveCharacterCommand extends TextCommand {
                 name: args.join(" ")
             });
 
-            await message.reply(`Successfully removed character preset \`${args.join(" ")}\`.`);
+            await message.reply(`Successfully removed character \`${args.join(" ")}\`.`);
         } catch (error) {
-            logger.error("Encountered error while trying to remove character preset", args.join(" "), "\n", error, "\n", error.stack);
-            await message.reply(`That's awkward. I encountered an error while removing the character preset \`${args.join(" ")}\`. Please try again.`);
+            logger.error("Encountered error while trying to remove character", args.join(" "), "\n", error, "\n", error.stack);
+            await message.reply(`That's awkward. I encountered an error while removing the character \`${args.join(" ")}\`. Please try again.`);
         }
     }
 }
