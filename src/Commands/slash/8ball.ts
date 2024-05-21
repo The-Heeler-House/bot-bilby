@@ -13,36 +13,37 @@ import { readdir } from "fs/promises"
 
 
 export default class EightBallCommand extends SlashCommand {
-    public data = new SlashCommandBuilder()
+    public data = (new SlashCommandBuilder()
         .setName("8ball")
         .setDescription("Shake the magic 8-ball!")
         .addStringOption(option =>
             option.setName("question")
                 .setDescription("The question you want to ask the magic 8-ball.")
                 .setRequired(true)
-        )
-        async execute(
-            interaction: ChatInputCommandInteraction<CacheType>,
-            services: Services): Promise<void>
-        {
-            const EIGHT_BALL_IMAGE_DIR = path.join(__dirname, "../../Assets/8ball-data")
-            const FILE_LIST = await readdir(EIGHT_BALL_IMAGE_DIR)
-            const SELECTED_FILENAME = FILE_LIST[randomInt(0, FILE_LIST.length)]
-            const FILE = new AttachmentBuilder(
-                path.join(EIGHT_BALL_IMAGE_DIR, SELECTED_FILENAME))
+        )) as SlashCommandBuilder;
 
-            const EIGHT_BALL_EMBED = new EmbedBuilder()
-                .setColor(0x0000ff)
-                .setTitle("Magic 8-Ball")
-                .setDescription(`My answer for: ${interaction.options.getString("question")}, is:`)
-                .setImage(`attachment://${SELECTED_FILENAME}`)
-                .setTimestamp()
-                .setFooter({
-                    text: "Bot Billy the Bizard"
-                })
-            await interaction.reply({
-                embeds: [EIGHT_BALL_EMBED],
-                files: [FILE],
+    async execute(
+        interaction: ChatInputCommandInteraction<CacheType>,
+        services: Services): Promise<void>
+    {
+        const EIGHT_BALL_IMAGE_DIR = path.join(__dirname, "../../Assets/8ball-data")
+        const FILE_LIST = await readdir(EIGHT_BALL_IMAGE_DIR)
+        const SELECTED_FILENAME = FILE_LIST[randomInt(0, FILE_LIST.length)]
+        const FILE = new AttachmentBuilder(
+            path.join(EIGHT_BALL_IMAGE_DIR, SELECTED_FILENAME))
+
+        const EIGHT_BALL_EMBED = new EmbedBuilder()
+            .setColor(0x0000ff)
+            .setTitle("Magic 8-Ball")
+            .setDescription(`My answer for: ${interaction.options.getString("question")}, is:`)
+            .setImage(`attachment://${SELECTED_FILENAME}`)
+            .setTimestamp()
+            .setFooter({
+                text: "Bot Billy the Bizard"
             })
-        }
+        await interaction.reply({
+            embeds: [EIGHT_BALL_EMBED],
+            files: [FILE],
+        })
+    }
 }

@@ -16,7 +16,7 @@ git clone https://github.com/The-Heeler-House/bot-bilby
 ```bash
 npm i
 ```
-3. Create a new file in the root of the directory called `.env` (**note the dot at the end of the file**). This will be where you'll store your secret data.
+3. Create a new file in the root of the directory called `.env` (**note the dot at the start of the file**). This will be where you'll store your secret data.
 4. Inside the `.env` file, fill in the following information (replace the dot between the quotation mark with actual value):
 ```env
 TOKEN="..." # the bot token
@@ -35,6 +35,6 @@ npm run bot-windows # for people using Windows
 ```
 
 ## Credit & License
-Contributors: @jalenluorion, @sudoker0, and @CloudburstSys (leah).
+Contributors: @jalenluorion, @sudoker0, and @CloudburstSys (Leah).
 
 License: MIT
