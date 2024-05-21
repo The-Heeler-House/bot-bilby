@@ -152,7 +152,7 @@ export default class CommandPreprocessor {
 
             await command.execute(interaction, services);
         } catch (error) {
-            logger.error("Encountered an error while trying to execute the", interaction.commandName, "slash command.\n", error, "\n", error.stack);
+            logger.error("Encountered an error while trying to execute the", interaction.commandName, "slash command.\n", error.stack);
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
             } else {

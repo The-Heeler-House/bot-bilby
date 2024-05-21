@@ -4,6 +4,8 @@
 
 import * as mongoDB from "mongodb";
 import * as logger from "../../Logger";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 export default class Database {
     public collections: DatabaseCollections = {};
@@ -20,18 +22,16 @@ export default class Database {
         logger.command("Connected to MongoDB database.");
 
         const databases: Databases = {
-            muteroulette: client.db("muteroulette"),
-            guess: client.db("guessLeaders")
+            bilby: client.db("bilby"),
         }
 
-        this.collections.muteroulette = databases.muteroulette.collection("users");
-        this.collections.guess = databases.guess.collection("leaders");
+        this.collections.muteroulette = databases.bilby.collection("muteroulette");
+        this.collections.guess = databases.bilby.collection("guess");
     }
 }
 
 interface Databases {
-    muteroulette: mongoDB.Db,
-    guess: mongoDB.Db
+    bilby: mongoDB.Db,
 }
 
 export interface DatabaseCollections {
