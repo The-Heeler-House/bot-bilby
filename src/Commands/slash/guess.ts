@@ -39,7 +39,7 @@ export default class GuessCommand extends SlashCommand {
             subcommand
                 .setName("multiplayer")
                 .setDescription(
-                    "Play a live multipayer guessing game with your friends!"
+                    "Play a live multiplayer guessing game with your friends!"
                 )
         )
         .addSubcommand((subcommand) =>

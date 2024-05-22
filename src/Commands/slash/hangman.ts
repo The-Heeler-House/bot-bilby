@@ -59,7 +59,7 @@ export default class HangmanCommand extends SlashCommand {
             haveGuessed: 0, // the current amount of letters the user have guessed
         }
 
-        const TIMEOUT = 15 * 60_000 // 15 minute * 60_000 (a minute in miliseconds)
+        const TIMEOUT = 15 * 60_000 // 15 minute * 60_000 (a minute in milliseconds)
 
         const QUIT_BUTTON = new ButtonBuilder()
             .setCustomId("quit")

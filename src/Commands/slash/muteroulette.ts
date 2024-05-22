@@ -37,7 +37,7 @@ export default class MuterouletteCommand extends SlashCommand {
         services: Services
     ) {
         const users = services.database.collections.muteroulette;
-        
+
         if (interaction.options.getSubcommand() === "play") {
             var user = await users.findOne({ user: interaction.user.id });
             // each entry has format { id: string, numMutesTotal: number, numAllTotal: number, numStreak: number, numMaxStreak: number, lastTime: string }
@@ -172,7 +172,7 @@ export default class MuterouletteCommand extends SlashCommand {
             }
 
             // POWERUP FUNCTIONS
-            // sheild
+            // shield
             async function shield(time: number) {
                 const shieldMessage = [
                     `You landed on a ${getTextTime(
@@ -263,7 +263,7 @@ export default class MuterouletteCommand extends SlashCommand {
                 return;
             }
 
-            // if disabled time under 10 mintues
+            // if disabled time under 10 minutes
             if (Number(currentTime) - Number(this.disabledTime) < 600000) {
                 await interaction.reply({
                     content: "This command is disabled for 10 minutes!",
@@ -794,7 +794,7 @@ export default class MuterouletteCommand extends SlashCommand {
         } else if (interaction.options.getSubcommand() === "leaders") {
             // find the top user for each category
 
-            // TODO: dont use defer in the future
+            // TODO: don't use defer in the future
             await interaction.deferReply();
 
             const topMutes = await users

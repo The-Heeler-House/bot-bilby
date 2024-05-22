@@ -145,7 +145,7 @@ export default class CommandPreprocessor {
             let deniedUserRoles = message.member.roles.cache.filter((_, snowflake) => command.data.permissions.deniedRoles.includes(snowflake));
 
             if (allowedUserRoles.size != 0 || command.data.permissions.allowedRoles.length == 0)
-                allowed = true; // Either the user has a role that allows them to use the command, or there are no allowed roles, which implitly allows all roles.
+                allowed = true; // Either the user has a role that allows them to use the command, or there are no allowed roles, which implicitly allows all roles.
 
             if (deniedUserRoles.size != 0)
                 allowed = false; // The user has a role that denies them from using the command.

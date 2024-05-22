@@ -9,7 +9,7 @@ export default class ExampleCommand extends TextCommand {
         .allowInDMs(true);
 
     async execute(message: Message, args: string[], services: Services) {
-        await message.reply(`Hello! This is the example text command. Everything is working well. ${services.example.message} The arguments for this messsage are: [${args.join(", ")}]`);
+        await message.reply(`Hello! This is the example text command. Everything is working well. ${services.example.message} The arguments for this message are: [${args.join(", ")}]`);
         let result = (await services.database.collections.muteroulette.findOne()) as unknown as { message: string };
         if (result) {
             await message.reply(`The database service told me to tell you: ${result.message}`);

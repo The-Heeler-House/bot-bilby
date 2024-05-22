@@ -1,4 +1,4 @@
-function log(level = "MESSAGE", message) {
+function log(level = "MESSAGE", message: string[]) {
     let color = 32;
     switch (level.toUpperCase()) {
         case "ERROR":

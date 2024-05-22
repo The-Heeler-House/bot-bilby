@@ -19,7 +19,7 @@ export default class MuteMeCommand extends SlashCommand {
             interaction.member.timeout(
                 TIME * 3_600_000,
                 "Needed some time away from the server."
-            ) //? 1 hour in miliseconds
+            ) //? 1 hour in milliseconds
             const EMBED = new EmbedBuilder()
                 .setColor(0xff0000)
                 .setTitle("Muted!")
