@@ -28,7 +28,7 @@ export default class Database {
         this.collections.state = databases.bilby.collection("state");
         this.collections.botCharacters = databases.bilby.collection("botCharacters");
         this.collections.muteroulette = databases.bilby.collection("muteroulette");
-        this.collections.guess = databases.bilby.collection("guessLeaders");
+        this.collections.guess = databases.bilby.collection("guess");
     }
 }
 

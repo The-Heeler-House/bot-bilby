@@ -3,7 +3,7 @@ import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import { randomInt } from "crypto";
 
-export default class ExampleCommand extends SlashCommand {
+export default class FortuneCommand extends SlashCommand {
     public data = (new SlashCommandBuilder()
         .setName("fortune")
         .setDescription("Check your or someone else's fortune!")

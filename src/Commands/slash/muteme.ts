@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBui
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 
-export default class ExampleCommand extends SlashCommand {
+export default class MuteMeCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("muteme")
         .setDescription("Is the Heeler House too addicting? I have the fix for you!")
