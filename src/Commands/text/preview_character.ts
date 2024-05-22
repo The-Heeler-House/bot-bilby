@@ -29,7 +29,6 @@ export default class PreviewCharacterCommand extends TextCommand {
                 text: `ID: ${character.id}`
             });
 
-    
         await message.reply({
             content: `This is what the character \`${character.name}\` looks like. To set, say \`${process.env.PREFIX}set character ${character.name}\`. To remove, say \`${process.env.PREFIX}remove character ${character.name}\``,
             embeds: [ embed ]
