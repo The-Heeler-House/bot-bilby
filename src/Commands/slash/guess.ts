@@ -5,12 +5,21 @@ import {
     ChatInputCommandInteraction,
     ComponentType,
     EmbedBuilder,
+    Interaction,
+    Message,
     SlashCommandBuilder,
 } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import * as fs from 'fs';
 import * as path from 'path';
+
+type Episode = {
+    season: string,
+    episode: string,
+    name: string,
+    description: string
+}
 
 // TODO: more strict type checking
 export default class GuessCommand extends SlashCommand {
@@ -54,6 +63,7 @@ export default class GuessCommand extends SlashCommand {
                 await leaderboard.updateOne({ user }, { $set: { score } }, { upsert: true });
             }
         }
+
         async function getTopLeaderboard() {
             const cursor = leaderboard.find().sort({ score: -1 }).limit(10);
             const leaderboardArray = await cursor.toArray();
@@ -63,16 +73,18 @@ export default class GuessCommand extends SlashCommand {
         // read the text file
         //const text = fs.readFileSync(path.join('../src/episodeDesc.txt'), 'utf-8');
         const text = fs.readFileSync(path.join('src/Assets/guess-data/episodeDesc.txt'), 'utf-8');
+        const episodeEntry = text.split(/\r?\n^\r?\n/gm)
+        console.log(episodeEntry)
 
         // define a regular expression to match each episode
-        const regex = /^S(\d+) E(\d+) · (.+)$([\s\S]+?)^$/gm;
+        const regex = /^S(\d+) E(\d+) · (.+)$\r?\n^(.*)$/m;
 
         // create an array to store the episode information
-        const episodes = [];
+        const episodes: Episode[] = [];
 
         // iterate over each match of the regular expression
-        let match;
-        while ((match = regex.exec(text))) {
+        for (const i of episodeEntry) {
+            let match = regex.exec(i)
             const season = match[1];
             const episode = match[2];
             const name = match[3];
@@ -81,9 +93,9 @@ export default class GuessCommand extends SlashCommand {
         }
 
         // shuffle function
-        function shuffle(array: number[]) {
+        function shuffle(array: Episode[]) {
             let currentIndex = array.length,
-                randomIndex;
+                randomIndex: number;
 
             // While there remain elements to shuffle.
             while (currentIndex != 0) {
@@ -103,8 +115,10 @@ export default class GuessCommand extends SlashCommand {
         if (interaction.options.getSubcommand() === 'leaders') {
             const topLeaderboard = await getTopLeaderboard();
             const leaderboardEmbed = new EmbedBuilder()
-                .setColor(9356018)
+                .setColor(0x8ec2f2)
                 .setTitle('Guesser Leaderboard!')
+                .setTimestamp()
+                .setFooter({ text: "Bot Billy" })
             var desc = "";
             for (let i = 0; i < topLeaderboard.length; i++) {
                 const player = topLeaderboard[i];
@@ -147,125 +161,157 @@ export default class GuessCommand extends SlashCommand {
                         .setStyle(ButtonStyle.Primary),
                 );
             var users = ["<@" + interaction.user.id + "> (Host)"];
-            var userID = [[interaction.user.id, 0]];
+            var userID: [string, number][] = [[interaction.user.id, 0]];
             var onlyID = [interaction.user.id];
+
+            //? the string will get concatenated, it will not get break line unless specifically required
+            const MULTIPLAYER_BEGIN_STR =
+                "Welcome to the game! " +
+                "I will give you an episode description, and you reply with the episode title. " +
+                "This is the multiplayer version, be the first to answer and beat your friends!\n" +
+                "**Current Players:** $players"
+
             // message
-            const message = await interaction.reply({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row], fetchReply: true });
+            const message = await interaction.reply({
+                content: MULTIPLAYER_BEGIN_STR.replace("$players", users.join(", ")),
+                components: [row],
+                fetchReply: true
+            });
             const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 600000 });
             collector.on('collect', async i => {
-                if (i.customId === 'join') {
-                    if (!onlyID.includes(i.user.id)) {
-                        users.push("<@" + i.user.id + ">")
-                        userID.push([i.user.id, 0])
-                        onlyID.push(i.user.id)
-                        await i.update({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row] })
-                    } else {
-                        await i.reply({ content: `You have already joined the game!`, ephemeral: true });
-                    }
-                } else if (i.customId === 'leave') {
-                    var location = onlyID.indexOf(i.user.id)
-                    if (location != -1) {
-                        if (i.user.id != interaction.user.id) {
-                            userID.splice(location, 1)
-                            onlyID.splice(location, 1)
-                            users.splice(location, 1)
-                            await i.update({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row] })
-                        } else {
-                            await i.reply({ content: `The host cannot leave!`, ephemeral: true });
-                        }
-                    } else {
-                        await i.reply({ content: `You have not joined the game!`, ephemeral: true })
-                    }
-                } else if (i.customId === 'start') {
-                    if (i.user.id == interaction.user.id) {
-                        row.components[0].setDisabled(true);
-                        row.components[1].setDisabled(true);
-                        row.components[2].setDisabled(true);
-                        await i.update({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row] })
-                        await interaction.channel.send("Starting Game! To end the game, type `endgame` as the host.");
-
-                        var currNum = 0;
-                        var timer = 12500;
-                        var currentEpisode;
-
-                        // start the game loop
-                        shuffle(episodes);
-                        askQuestion(interaction);
-
-                        async function askQuestion(interaction) {
-                            // if there are no remaining questions, end the game
-                            if (currNum === 20) {
-                                await endGame(interaction, userID);
-                                return;
-                            }
-
-                            // select the next episode and decrement the remainingLives counter
-                            currentEpisode = episodes.pop();
-                            currNum++;
-
-                            // send the episode description as a question
-                            await interaction.channel.send(`Question ${currNum}: ${currentEpisode.description}`);
-
-                            // create a filter to only listen to the user's next message in the same channel
-                            const multiFilter = (message) => onlyID.includes(message.author.id) && message.channel.id === interaction.channel.id;
-                            var correct = false;
-                            const answerMessage = interaction.channel.createMessageCollector({ filter: multiFilter, time: timer });
-                            answerMessage.on('collect', m => {
-                                const answer = m.content;
-                                const id = m.author.id;
-                                // if the user's answer matches the episode name, increment the score
-                                if (answer.toLowerCase() === currentEpisode.name.toLowerCase()) {
-                                    interaction.channel.send('Correct! <@' + id + '> receives 1 point!');
-                                    var location = userID.findIndex(inner => inner.indexOf(id) >= 0);
-                                    userID[location][1] = Number(userID[location][1]) + 1
-                                    timer -= 100
-                                    // ask the next question after a short delay to avoid flooding the channel
-                                    correct = true;
-                                    answerMessage.stop()
-                                    setTimeout(() => {
-                                        askQuestion(interaction);
-                                    }, 500);
-                                } else if (answer.toLowerCase() === 'endgame' && id == interaction.user.id) {
-                                    correct = true;
-                                    answerMessage.stop()
-                                    endGame(interaction, userID);
-                                }
+                switch (i.customId) {
+                    case "join":
+                        if (!onlyID.includes(i.user.id)) {
+                            users.push("<@" + i.user.id + ">")
+                            userID.push([i.user.id, 0])
+                            onlyID.push(i.user.id)
+                            await i.update({
+                                content: MULTIPLAYER_BEGIN_STR.replace("$players", users.join(", ")),
+                                components: [row]
                             })
-                            answerMessage.on('end', collected => {
-                                if (!correct) {
-                                    interaction.channel.send(`Time's up! The answer is ${currentEpisode.name}. No one gains a point!`);
-                                    setTimeout(() => {
-                                        askQuestion(interaction);
-                                    }, 500);
-                                }
-                            });
+                        } else {
+                            await i.reply({ content: `You have already joined the game!`, ephemeral: true });
                         }
-                        async function endGame(interaction, scores) {
-                            const leaderboardEmbed = new EmbedBuilder()
-                                .setColor(9356018)
-                                .setTitle('Multiplayer Guesser Results!')
-                            var desc = "";
-
-                            scores.sort((a, b) => b[1] - a[1]);
-                            interaction.channel.send(`Game over! The winner is: <@` + scores[0][0] + '>!');
-
-                            for (let i = 0; i < scores.length; i++) {
-                                const player = scores[i];
-                                desc += `${i + 1}. <@${player[0]}>: ${player[1]} Episodes\n`;
+                        break
+                    case "leave":
+                        var location = onlyID.indexOf(i.user.id)
+                        if (location != -1) {
+                            if (i.user.id != interaction.user.id) {
+                                userID.splice(location, 1)
+                                onlyID.splice(location, 1)
+                                users.splice(location, 1)
+                                await i.update({
+                                    content: MULTIPLAYER_BEGIN_STR.replace("$players", users.join(", ")),
+                                    components: [row]
+                                })
+                            } else {
+                                await i.reply({ content: `The host cannot leave!`, ephemeral: true });
                             }
-                            leaderboardEmbed.setDescription(desc);
-                            interaction.channel.send({ embeds: [leaderboardEmbed] });
+                        } else {
+                            await i.reply({ content: `You have not joined the game!`, ephemeral: true })
                         }
-                    } else {
-                        await i.reply({ content: `Only the host can start the game!`, ephemeral: true });
-                    }
+                        break
+                    case "start":
+                        if (i.user.id == interaction.user.id) {
+                            row.components[0].setDisabled(true);
+                            row.components[1].setDisabled(true);
+                            row.components[2].setDisabled(true);
+                            await i.update({
+                                content: MULTIPLAYER_BEGIN_STR.replace("$players", users.join(", ")),
+                                components: [row]
+                            })
+                            await interaction.channel.send("Starting Game! To end the game, type `endgame` as the host.");
+
+                            var currNum = 0;
+                            var timer = 12500;
+                            var currentEpisode: Episode;
+
+                            // start the game loop
+                            shuffle(episodes);
+                            askQuestion(interaction);
+
+                            async function askQuestion(interaction: ChatInputCommandInteraction) {
+                                // if there are no remaining questions, end the game
+                                if (currNum === 20) {
+                                    await endGame(interaction, userID);
+                                    return;
+                                }
+
+                                // select the next episode and decrement the remainingLives counter
+                                currentEpisode = episodes.pop();
+                                currNum++;
+
+                                // send the episode description as a question
+                                await interaction.channel.send(`Question ${currNum}: ${currentEpisode.description}`);
+
+                                // create a filter to only listen to the user's next message in the same channel
+                                const multiFilter = (message: Message<boolean>) =>
+                                    onlyID.includes(message.author.id) &&
+                                    message.channel.id === interaction.channel.id;
+
+                                var correct = false;
+                                const answerMessage = interaction.channel.createMessageCollector({ filter: multiFilter, time: timer });
+                                answerMessage.on('collect', m => {
+                                    const answer = m.content;
+                                    const id = m.author.id;
+                                    // if the user's answer matches the episode name, increment the score
+                                    if (answer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+
+                                        interaction.channel.send('Correct! <@' + id + '> receives 1 point!');
+                                        var location = userID.findIndex(inner => inner.indexOf(id) >= 0);
+                                        userID[location][1] = Number(userID[location][1]) + 1
+                                        timer -= 100
+                                        // ask the next question after a short delay to avoid flooding the channel
+
+                                        correct = true;
+                                        answerMessage.stop()
+                                        setTimeout(() => {
+                                            askQuestion(interaction);
+                                        }, 500);
+                                    } else if (answer.toLowerCase() === 'endgame' && id == interaction.user.id) {
+                                        correct = true;
+                                        answerMessage.stop()
+                                        endGame(interaction, userID);
+                                    }
+                                })
+                                answerMessage.on('end', _ => {
+                                    if (!correct) {
+                                        interaction.channel.send(`Time's up! The answer is ${currentEpisode.name}. No one gains a point!`);
+                                        setTimeout(() => {
+                                            askQuestion(interaction);
+                                        }, 500);
+                                    }
+                                });
+                            }
+                            async function endGame(interaction: ChatInputCommandInteraction, scores: [string, number][]) {
+                                const leaderboardEmbed = new EmbedBuilder()
+                                    .setColor(9356018)
+                                    .setTitle('Multiplayer Guesser Results!')
+                                    .setTimestamp()
+                                    .setFooter({ text: "Bot Billy" })
+                                var desc = "";
+
+                                scores.sort((a, b) => b[1] - a[1]);
+                                interaction.channel.send(`Game over! The winner is: <@` + scores[0][0] + '>!');
+
+                                for (let i = 0; i < scores.length; i++) {
+                                    const player = scores[i];
+                                    desc += `${i + 1}. <@${player[0]}>: ${player[1]} Episodes\n`;
+                                }
+                                leaderboardEmbed.setDescription(desc);
+                                interaction.channel.send({ embeds: [leaderboardEmbed] });
+                            }
+                        } else {
+                            await i.reply({ content: `Only the host can start the game!`, ephemeral: true });
+                        }
+                        break
                 }
             });
-            collector.on('end', collected => {
+            collector.on('end', _ => {
                 row.components[0].setDisabled(true);
                 row.components[1].setDisabled(true);
                 row.components[2].setDisabled(true);
-                interaction.editReply({ content: 'Welcome to the game! I will give you an episode description, and you reply with the episode title. This is the multiplayer version, be the first to answer and beat your friends!\n**Current Players:** ' + users.join(", "), components: [row] })
+                interaction.editReply({ content: MULTIPLAYER_BEGIN_STR.replace("$players", users.join(", ")), components: [row] })
             });
         } else {
             // initialize the game state
@@ -273,7 +319,7 @@ export default class GuessCommand extends SlashCommand {
             let remainingLives = 3;
             let currNum = 0;
             let timer = 12500;
-            let currentEpisode;
+            let currentEpisode: Episode;
 
             // start the game loop
             shuffle(episodes);
@@ -284,7 +330,7 @@ export default class GuessCommand extends SlashCommand {
             // ask the first question
             askQuestion(interaction);
 
-            async function askQuestion(interaction) {
+            async function askQuestion(interaction: ChatInputCommandInteraction) {
                 // if there are no remaining questions, end the game
                 if (remainingLives === 0) {
                     await endGame(interaction, score);
@@ -299,7 +345,7 @@ export default class GuessCommand extends SlashCommand {
                 await interaction.channel.send(`Question ${currNum}: ${currentEpisode.description}`);
 
                 // create a filter to only listen to the user's next message in the same channel
-                const filter = (message) => message.author.id === interaction.user.id && message.channel.id === interaction.channel.id;
+                const filter = (message: Message) => message.author.id === interaction.user.id && message.channel.id === interaction.channel.id;
 
                 // wait for the user's answer
                 try {
@@ -317,54 +363,42 @@ export default class GuessCommand extends SlashCommand {
                         }, 500);
                     } else {
                         // if the user's answer is incorrect and no hint has been given yet, ask for more information
-                        const hintOption = await interaction.channel.send('Incorrect! Would you like to ask for a hint or exit the game? (h/e). Otherwise, guess again below!');
+                        await interaction.channel.send(
+                            'Incorrect! Would you like to ask for a hint or exit the game? (h/e). Otherwise, guess again below!'
+                        );
                         const hintMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
                         const option = hintMessage.first().content.toLowerCase();
 
                         if (option === 'e') {
                             await endGame(interaction, score);
                             return;
-                        } else if (option === 'h') {
+                        }
+                        var userAnswer = option //? when the user answer, the first arg will be the answer
+                        var useHint = false
+                        if (option === 'h') {
                             await interaction.channel.send(`Season ${currentEpisode.season}, Episode ${currentEpisode.episode}`);
                             const retryMessage = await interaction.channel.awaitMessages({ filter, max: 1, time: timer, errors: ['time'] });
-                            const retryAnswer = retryMessage.first().content;
-
-                            if (retryAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
-                                score += 0.5;
-                                await interaction.channel.send('Correct! (With Hint)');
-                                timer -= 100;
-                                // ask the next question after a short delay to avoid flooding the channel
-                                setTimeout(() => {
-                                    askQuestion(interaction);
-                                }, 500);
-                            } else {
-                                // reveal the answer and move on to the next question
-                                remainingLives--;
-                                await interaction.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
-                                // ask the next question after a short delay to avoid flooding the channel
-                                setTimeout(() => {
-                                    askQuestion(interaction);
-                                }, 500);
-                            }
-                        } else {
-                            if (option.toLowerCase() === currentEpisode.name.toLowerCase()) {
-                                score += 0.5;
-                                await interaction.channel.send('Correct! (Second Guess)');
-                                timer -= 100;
-                                // ask the next question after a short delay to avoid flooding the channel
-                                setTimeout(() => {
-                                    askQuestion(interaction);
-                                }, 500);
-                            } else {
-                                // reveal the answer and move on to the next question
-                                remainingLives--;
-                                await interaction.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
-                                // ask the next question after a short delay to avoid flooding the channel
-                                setTimeout(() => {
-                                    askQuestion(interaction);
-                                }, 500);
-                            }
+                            userAnswer = retryMessage.first().content.toLowerCase();
+                            useHint = true
                         }
+
+                            if (userAnswer.toLowerCase() === currentEpisode.name.toLowerCase()) {
+                                score += 0.5;
+                                await interaction.channel.send(`Correct! ${useHint ? "(With Hint)" : "(Second Guess)"}`);
+                                timer -= 100;
+                                // ask the next question after a short delay to avoid flooding the channel
+                                setTimeout(() => {
+                                    askQuestion(interaction);
+                                }, 500);
+                            } else {
+                                // reveal the answer and move on to the next question
+                                remainingLives--;
+                                await interaction.channel.send(`Incorrect! The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`);
+                                // ask the next question after a short delay to avoid flooding the channel
+                                setTimeout(() => {
+                                    askQuestion(interaction);
+                                }, 500);
+                            }
                     }
                 } catch (err) {
                     // reveal the answer and move on to the next question
@@ -375,13 +409,15 @@ export default class GuessCommand extends SlashCommand {
                     }, 500);
                 }
             }
-            async function endGame(interaction, score) {
+            async function endGame(interaction: Interaction, score: number) {
                 interaction.channel.send(`Game over! Your score is ${score} episodes guessed.`);
                 saveScore('<@' + interaction.user.id + '>', score);
                 const topLeaderboard = await getTopLeaderboard();
                 const leaderboardEmbed = new EmbedBuilder()
-                    .setColor(9356018)
+                    .setColor(0x8ec2f2)
                     .setTitle('Guesser Leaderboard!')
+                    .setTimestamp()
+                    .setFooter({ text: "Bot Billy" })
                 var desc = "";
                 for (let i = 0; i < topLeaderboard.length; i++) {
                     const player = topLeaderboard[i];
