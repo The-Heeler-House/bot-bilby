@@ -9,13 +9,15 @@ import ExampleService from "./ExampleService";
 import Database from "./Database";
 import { Client } from "discord.js";
 import CommandPreprocessor from "../Commands";
+import StateService from "./State";
 
 export default function getServices(client: Client, commands: CommandPreprocessor): Services {
     return {
         commands,
 
         example: new ExampleService(),
-        database: new Database()
+        database: new Database(),
+        state: new StateService()
     }
 }
 
@@ -23,5 +25,6 @@ export interface Services {
     commands: CommandPreprocessor,
 
     example: ExampleService,
-    database: Database
+    database: Database,
+    state: StateService
 }
