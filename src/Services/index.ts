@@ -5,18 +5,22 @@
 
     Services are stored in an object created by the getServices function.
 */
-import ExampleService from "./ExampleService";
-import Database from "./Database";
+import DatabaseService from "./Database";
 import { Client } from "discord.js";
 import CommandPreprocessor from "../Commands";
 import StateService from "./State";
+import BilbyAPIService from "./BilbyAPI";
+
 
 export default function getServices(client: Client, commands: CommandPreprocessor): Services {
+    // Services not accessable, but need either the Client or CommandPreprocessor.
+    new BilbyAPIService(client);
+
+    // Services accessable to commands and events
     return {
         commands,
 
-        example: new ExampleService(),
-        database: new Database(),
+        database: new DatabaseService(),
         state: new StateService()
     }
 }
@@ -24,7 +28,6 @@ export default function getServices(client: Client, commands: CommandPreprocesso
 export interface Services {
     commands: CommandPreprocessor,
 
-    example: ExampleService,
-    database: Database,
+    database: DatabaseService,
     state: StateService
 }

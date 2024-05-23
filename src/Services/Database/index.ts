@@ -7,7 +7,7 @@ import * as logger from "../../Logger";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-export default class Database {
+export default class DatabaseService {
     public collections: DatabaseCollections = {};
     
     constructor() {
