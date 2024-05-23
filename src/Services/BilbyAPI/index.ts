@@ -12,7 +12,10 @@ export default class BilbyAPIService {
 
         client.on("ready", () => {
             this.client = client;
-            this.client.guilds.fetch(process.env.DEVELOPMENT_GUILD).then(guild => this.guild = guild);
+            
+            // DEVELOPMENT_GUILD is only set in a development environment, so by default we assume The Heeler House as target guild
+            // FIXME: Maybe this shouldn't be hardcoded? Will need a discussion regarding this.
+            this.client.guilds.fetch(process.env.DEVELOPMENT_GUILD ?? "959534476520730724").then(guild => this.guild = guild);
 
             this.app.get("/members", (req, res) => this.serverMembers(req, res));
             this.app.get("/events", (req, res) => this.serverEvents(req, res));
