@@ -11,6 +11,10 @@ import path from "path"
 import { readdir } from "fs/promises"
 import { createCanvas, loadImage } from "canvas"
 
+const BINGO_IMAGE_DIR = path.join(__dirname, "../../Assets/bingo-data")
+const FREE_SPACE_ITEM = "freespace.png"
+const BINGO_FILENAME = "bingo.png"
+
 export default class BingoCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("bingo")
@@ -20,9 +24,6 @@ export default class BingoCommand extends SlashCommand {
         interaction: ChatInputCommandInteraction<CacheType>,
         services: Services): Promise<void>
     {
-        const BINGO_IMAGE_DIR = path.join(__dirname, "../../Assets/bingo-data")
-        const FREE_SPACE_ITEM = "freespace.png"
-        const BINGO_FILENAME = "bingo.png"
 
         var ITEM_LIST = await readdir(BINGO_IMAGE_DIR)
         ITEM_LIST = ITEM_LIST.filter(v => v.startsWith("Prompt - "))
@@ -55,7 +56,7 @@ export default class BingoCommand extends SlashCommand {
         }
 
         const FILE = new AttachmentBuilder(
-            BINGO_CARD.toBuffer(), {name: BINGO_FILENAME});
+            BINGO_CARD.toBuffer(), {name: BINGO_FILENAME})
 
         const BINGO_EMBED = new EmbedBuilder()
             .setColor(0x7da4ff)
