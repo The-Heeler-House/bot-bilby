@@ -6,6 +6,7 @@ import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
 import CommandPreprocessor from "./Commands";
 import * as logger from "./Logger";
 import getServices from "./Services";
+import EventManager from "./Events";
 
 const client = new Client({ intents: [
     GatewayIntentBits.Guilds,
@@ -19,10 +20,13 @@ const client = new Client({ intents: [
 ] });
 
 const commands = new CommandPreprocessor();
+const events = new EventManager();
 const services = getServices(client, commands);
 
 client.on(Events.ClientReady, async () => {
     await commands.registerSlashCommands(client);
+    events.registerEvents(client, services);
+
     logger.command("Online!");
 
     client.user.setPresence({
