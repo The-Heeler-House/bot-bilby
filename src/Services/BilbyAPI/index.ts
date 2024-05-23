@@ -1,5 +1,5 @@
 import { Client, Guild, GuildScheduledEventPrivacyLevel, Status } from "discord.js";
-import express from "express";
+import express, { Request, Response } from "express";
 import * as logger from "../../Logger";
 
 export default class BilbyAPIService {
@@ -12,7 +12,7 @@ export default class BilbyAPIService {
 
         client.on("ready", () => {
             this.client = client;
-            this.client.guilds.fetch(process.env.DEVELOPMENT_GUILD ?? "959534476520730724").then(guild => this.guild = guild);
+            this.client.guilds.fetch(process.env.DEVELOPMENT_GUILD).then(guild => this.guild = guild);
 
             this.app.get("/members", (req, res) => this.serverMembers(req, res));
             this.app.get("/events", (req, res) => this.serverEvents(req, res));
@@ -21,7 +21,7 @@ export default class BilbyAPIService {
         });
     }
 
-    async serverMembers(req, res) {
+    async serverMembers(req: Request, res: Response) {
         let allMembers = this.guild.members.cache;
         let onlineMembers = allMembers.filter((member) => ["online", "idle", "dnd"].includes(member.presence?.status));
 
@@ -31,9 +31,8 @@ export default class BilbyAPIService {
         });
     }
 
-    async serverEvents(req, res) {
+    async serverEvents(req: Request, res: Response) {
         let events = await this.guild.scheduledEvents.fetch();
-        
         let upcomingEvents: UpcomingEvents[] = []
 
         events.forEach((event) => {
@@ -47,8 +46,8 @@ export default class BilbyAPIService {
             });
         });
 
-        res.status(200).send(upcomingEvents.sort((eventa, eventb) => {
-            return eventa.start.getTime() - eventb.start.getTime();
+        res.status(200).send(upcomingEvents.sort((event_a, event_b) => {
+            return event_a.start.getTime() - event_b.start.getTime();
         }));
     }
 }
