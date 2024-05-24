@@ -2,6 +2,7 @@ import SlashCommand from "./SlashCommand";
 import TextCommand from "./TextCommand";
 import { BaseInteraction, ChannelType, Client, InteractionType, Message, REST, Routes } from "discord.js";
 import { readdir } from "fs/promises";
+import { THH_SERVER_ID } from "../constants";
 import * as logger from "../logger";
 import { Services } from "../Services";
 
@@ -118,7 +119,8 @@ export default class CommandPreprocessor {
      * @param message The message received from Discord.
      */
     async onTextCommandPreprocess(message: Message, services: Services) {
-        if (message.guildId != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
+        if (process.env.DEVELOPMENT_GUILD ? message.guildId != process.env.DEVELOPMENT_GUILD : message.guildId != THH_SERVER_ID) return;
+
         if (!message.content.startsWith(process.env.PREFIX)) return;
         let content = message.content.replace(process.env.PREFIX, "");
         let commandName = [...this.textCommands.keys()].find(key => content.startsWith(key));
