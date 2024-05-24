@@ -1,9 +1,9 @@
 import { EmbedBuilder, Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
-import { roleIds } from "../../Constants";
+import { roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
-import * as logger from "../../Logger";
+import * as logger from "../../logger";
 
 export default class ListCharactersCommand extends TextCommand {
     public data = new TextCommandBuilder()

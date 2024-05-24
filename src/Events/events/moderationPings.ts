@@ -1,7 +1,7 @@
 import { Events, GuildMember, Message, TextChannel } from "discord.js";
 import BotEvent, { MessageCreateEventData } from "../BotEvent";
 import { Services } from "../../Services";
-import * as logger from "../../Logger";
+import * as logger from "../../logger";
 
 export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageCreate;

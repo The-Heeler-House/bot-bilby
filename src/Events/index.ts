@@ -1,5 +1,5 @@
 import { readdir } from "fs/promises";
-import * as logger from "../Logger";
+import * as logger from "../logger";
 import { Client, Events } from "discord.js";
 import BotEvent from "./BotEvent";
 import { Services } from "../Services";

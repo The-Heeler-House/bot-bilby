@@ -1,7 +1,7 @@
 import { Events, GuildMember, Message } from "discord.js";
 import BotEvent, { MessageCreateEventData } from "../BotEvent";
 import { Services } from "../../Services";
-import * as logger from "../../Logger";
+import * as logger from "../../logger";
 
 export default class AccountAgeGateEvent extends BotEvent {
     public eventName = Events.GuildMemberAdd;

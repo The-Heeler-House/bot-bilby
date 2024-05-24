@@ -1,6 +1,6 @@
 import { Client, Guild, GuildScheduledEventPrivacyLevel, Status } from "discord.js";
 import express, { Request, Response } from "express";
-import * as logger from "../../Logger";
+import * as logger from "../../logger";
 
 export default class BilbyAPIService {
     protected client: Client;
