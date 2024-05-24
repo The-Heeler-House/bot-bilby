@@ -1,4 +1,4 @@
-import { Client } from "discord.js";
+import { Message } from "discord.js";
 import { existsSync, readFileSync } from "fs";
 import path from "path";
 
@@ -13,7 +13,8 @@ export default class StateService {
         } else {
             // Default values for the state are defined here.
             this.state = {
-                joinGate: true
+                joinGate: true,
+                trackedMessages: new Map()
             }
         }
     }
@@ -25,4 +26,16 @@ export default class StateService {
 
 export interface State {
     joinGate: boolean
+    trackedMessages: Map<string, TrackedMessage>
 }
+
+export interface TrackedMessage {
+    originalMessage: Message,
+    originalLink: string,
+    guildId: string,
+    channelId: string,
+    messageId: string,
+    content: string,
+    author: string,
+    timestamp: number, // Add timestamp to track when the message was linked
+};
