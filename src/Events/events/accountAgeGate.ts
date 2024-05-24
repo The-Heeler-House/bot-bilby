@@ -1,5 +1,6 @@
 import { Events, GuildMember, Message } from "discord.js";
 import BotEvent, { MessageCreateEventData } from "../BotEvent";
+import { THH_SERVER_ID } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
 
@@ -7,8 +8,9 @@ export default class AccountAgeGateEvent extends BotEvent {
     public eventName = Events.GuildMemberAdd;
 
     async execute(services: Services, member: GuildMember) {
+        if (process.env.DEVELOPMENT_GUILD ? member.guild.id != process.env.DEVELOPMENT_GUILD : member.guild.id != THH_SERVER_ID) return;
+
         if (!services.state.state.joinGate) return; // The join age gate is disabled.
-        if (member.guild.id != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
 
         const accountAge = Date.now() - member.user.createdTimestamp;
         const fiveDays = 432000000;

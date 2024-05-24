@@ -1,5 +1,6 @@
 import { Client, Guild, GuildScheduledEventPrivacyLevel, Status } from "discord.js";
 import express, { Request, Response } from "express";
+import { THH_SERVER_ID } from "../../constants";
 import * as logger from "../../logger";
 
 export default class BilbyAPIService {
@@ -16,7 +17,6 @@ export default class BilbyAPIService {
 
         client.on("ready", async () => {
             this.client = client;
-            const THH_SERVER_ID = "959534476520730724"
 
             // DEVELOPMENT_GUILD is only set in a development environment, so by default we assume The Heeler House as target guild
             // FIXME: Maybe this shouldn't be hardcoded? Will need a discussion regarding this.

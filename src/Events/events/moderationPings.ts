@@ -1,5 +1,6 @@
 import { Events, GuildMember, Message, TextChannel } from "discord.js";
 import BotEvent, { MessageCreateEventData } from "../BotEvent";
+import { THH_SERVER_ID } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
 
@@ -7,7 +8,7 @@ export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(services: Services, message: Message) {
-        if (message.guildId != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
+        if (process.env.DEVELOPMENT_GUILD ? message.guild.id != process.env.DEVELOPMENT_GUILD : message.guild.id != THH_SERVER_ID) return;
 
         if (message.mentions.roles.has("960044331572547654")) {
             const staffChatChannel = await message.client.channels.fetch("1079596899335680000") as TextChannel;

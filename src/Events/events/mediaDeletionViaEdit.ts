@@ -1,5 +1,6 @@
 import { ChannelType, Events, GuildMember, Message, TextChannel } from "discord.js";
 import BotEvent, { MessageCreateEventData } from "../BotEvent";
+import { THH_SERVER_ID } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
 
@@ -7,8 +8,9 @@ export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageUpdate;
 
     async execute(services: Services, oldMessage: Message, newMessage: Message) {
+        if (process.env.DEVELOPMENT_GUILD ? oldMessage.guild.id != process.env.DEVELOPMENT_GUILD : oldMessage.guild.id != THH_SERVER_ID) return;
+        
         if ([ChannelType.DM, ChannelType.GroupDM].includes(oldMessage.channel.type)) return; // Don't log DMs.
-        if (oldMessage.guildId != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
 
         try {
             oldMessage.attachments.forEach(async (attachment, id) => {
