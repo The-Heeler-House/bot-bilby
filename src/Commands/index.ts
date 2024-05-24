@@ -118,6 +118,7 @@ export default class CommandPreprocessor {
      * @param message The message received from Discord.
      */
     async onTextCommandPreprocess(message: Message, services: Services) {
+        if (message.guildId != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
         if (!message.content.startsWith(process.env.PREFIX)) return;
         let content = message.content.replace(process.env.PREFIX, "");
         let commandName = [...this.textCommands.keys()].find(key => content.startsWith(key));

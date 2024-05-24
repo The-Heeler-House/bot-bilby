@@ -7,6 +7,8 @@ export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(services: Services, message: Message) {
+        if (message.guildId != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
+
         if (message.mentions.roles.has("960044331572547654")) {
             const staffChatChannel = await message.client.channels.fetch("1079596899335680000") as TextChannel;
             // Send the message link to the #staff-chat channel

@@ -17,6 +17,8 @@ export default class ReactionTrackingAddEvent extends BotEvent {
             }
         }
 
+        if (reaction.message.guildId != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
+
         const isServerEmote = reaction.emoji instanceof GuildEmoji;
         const isCustomEmote = reaction.emoji.id;
         const staffChatChannel = await reaction.client.channels.fetch("1241199271022301266") as TextChannel;

@@ -8,6 +8,7 @@ export default class ModerationPingEvent extends BotEvent {
 
     async execute(services: Services, message: Message) {
         if ([ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return; // Don't log DMs.
+        if (message.guildId != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
 
         try {
             message.attachments.forEach(async attachment => {

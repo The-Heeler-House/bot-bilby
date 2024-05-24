@@ -8,6 +8,7 @@ export default class AccountAgeGateEvent extends BotEvent {
 
     async execute(services: Services, member: GuildMember) {
         if (!services.state.state.joinGate) return; // The join age gate is disabled.
+        if (member.guild.id != "959534476520730724" && process.env.DEVELOPMENT_GUILD == undefined) return;
 
         const accountAge = Date.now() - member.user.createdTimestamp;
         const fiveDays = 432000000;
