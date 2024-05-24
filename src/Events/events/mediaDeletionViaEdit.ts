@@ -1,6 +1,6 @@
 import { ChannelType, Events, GuildMember, Message, TextChannel } from "discord.js";
 import BotEvent, { MessageCreateEventData } from "../BotEvent";
-import { THH_SERVER_ID } from "../../constants";
+import { THH_SERVER_ID, channelIds } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
 
@@ -9,7 +9,7 @@ export default class ModerationPingEvent extends BotEvent {
 
     async execute(services: Services, oldMessage: Message, newMessage: Message) {
         if (process.env.DEVELOPMENT_GUILD ? oldMessage.guild.id != process.env.DEVELOPMENT_GUILD : oldMessage.guild.id != THH_SERVER_ID) return;
-        
+
         if ([ChannelType.DM, ChannelType.GroupDM].includes(oldMessage.channel.type)) return; // Don't log DMs.
 
         try {
@@ -17,7 +17,7 @@ export default class ModerationPingEvent extends BotEvent {
                 if (newMessage.attachments.has(id)) return; // The attachment wasn't deleted.
                 const image = attachment.proxyURL;
 
-                const logChannel = await oldMessage.client.channels.fetch("1098673855809204294") as TextChannel;
+                const logChannel = await oldMessage.client.channels.fetch(channelIds.mediaLog) as TextChannel;
 
                 await logChannel.send({
                     files: [

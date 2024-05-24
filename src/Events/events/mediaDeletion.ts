@@ -1,6 +1,6 @@
 import { ChannelType, Events, GuildMember, Message, TextChannel } from "discord.js";
 import BotEvent, { MessageCreateEventData } from "../BotEvent";
-import { THH_SERVER_ID } from "../../constants";
+import { THH_SERVER_ID, channelIds } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
 
@@ -9,14 +9,14 @@ export default class ModerationPingEvent extends BotEvent {
 
     async execute(services: Services, message: Message) {
         if (process.env.DEVELOPMENT_GUILD ? message.guild.id != process.env.DEVELOPMENT_GUILD : message.guild.id != THH_SERVER_ID) return;
-        
+
         if ([ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return; // Don't log DMs.
 
         try {
             message.attachments.forEach(async attachment => {
                 const image = attachment.proxyURL;
 
-                const logChannel = await message.client.channels.fetch("1098673855809204294") as TextChannel;
+                const logChannel = await message.client.channels.fetch(channelIds.mediaLog) as TextChannel;
 
                 await logChannel.send({
                     files: [

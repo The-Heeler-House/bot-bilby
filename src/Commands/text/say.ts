@@ -1,7 +1,7 @@
 import { Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
-import { roleIds } from "../../constants";
+import { roleIds, channelIds } from "../../constants";
 
 export default class SayCommand extends TextCommand {
     public data = new TextCommandBuilder()
@@ -12,7 +12,7 @@ export default class SayCommand extends TextCommand {
         .allowInDMs(false);
 
     async execute(message: Message, args: string[], services: Services) {
-        let channel = await message.guild.channels.fetch("962936076404686859") as TextChannel;
+        let channel = await message.guild.channels.fetch(channelIds.offTopic) as TextChannel;
         await channel.send(args.join(" "));
     }
 }

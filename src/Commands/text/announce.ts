@@ -1,7 +1,7 @@
 import { Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
-import { roleIds } from "../../constants";
+import { roleIds, channelIds } from "../../constants";
 
 export default class AnnounceCommand extends TextCommand {
     public data = new TextCommandBuilder()
@@ -12,7 +12,7 @@ export default class AnnounceCommand extends TextCommand {
         .allowInDMs(false);
 
     async execute(message: Message, args: string[], services: Services) {
-        let channel = await message.guild.channels.fetch("961056736398172200") as TextChannel;
+        let channel = await message.guild.channels.fetch(channelIds.announcements) as TextChannel;
         await channel.send(args.join(" "));
     }
 }

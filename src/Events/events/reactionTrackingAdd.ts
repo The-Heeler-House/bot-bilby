@@ -1,6 +1,6 @@
 import { Events, GuildEmoji, GuildMember, Message, MessageReaction, TextChannel, User } from "discord.js";
 import BotEvent, { MessageCreateEventData } from "../BotEvent";
-import { THH_SERVER_ID } from "../../constants";
+import { THH_SERVER_ID, channelIds } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
 
@@ -9,7 +9,7 @@ export default class ReactionTrackingAddEvent extends BotEvent {
 
     async execute(services: Services, reaction: MessageReaction, user: User) {
         if (process.env.DEVELOPMENT_GUILD ? reaction.message.guildId != process.env.DEVELOPMENT_GUILD : reaction.message.guildId != THH_SERVER_ID) return;
-        
+
         if (reaction.message.partial) {
             // The message is only partial, try to fetch the full message.
             try {
@@ -22,7 +22,7 @@ export default class ReactionTrackingAddEvent extends BotEvent {
 
         const isServerEmote = reaction.emoji instanceof GuildEmoji;
         const isCustomEmote = reaction.emoji.id;
-        const staffChatChannel = await reaction.client.channels.fetch("1241199271022301266") as TextChannel;
+        const staffChatChannel = await reaction.client.channels.fetch(channelIds.reactionLog) as TextChannel;
         const reactionEmoteImage = reaction.emoji.imageURL({
             extension: "png",
             size: 128
