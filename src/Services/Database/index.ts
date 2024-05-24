@@ -3,7 +3,7 @@
  */
 
 import * as mongoDB from "mongodb";
-import * as logger from "../../Logger";
+import * as logger from "../../logger";
 import * as dotenv from "dotenv";
 dotenv.config();
 

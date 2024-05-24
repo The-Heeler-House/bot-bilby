@@ -1,7 +1,7 @@
 import { Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
-import { roleIds } from "../../Constants";
+import { roleIds } from "../../constants";
 
 export default class UnhideCommand extends TextCommand {
     public data = new TextCommandBuilder()

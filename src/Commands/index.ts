@@ -2,7 +2,7 @@ import SlashCommand from "./SlashCommand";
 import TextCommand from "./TextCommand";
 import { BaseInteraction, ChannelType, Client, InteractionType, Message, REST, Routes } from "discord.js";
 import { readdir } from "fs/promises";
-import * as logger from "../Logger";
+import * as logger from "../logger";
 import { Services } from "../Services";
 
 /**

@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
-import * as logger from "../../Logger";
+import * as logger from "../../logger";
 
 export default class MuterouletteCommand extends SlashCommand {
     public disabledTime = new Date(0);

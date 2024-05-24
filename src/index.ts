@@ -4,7 +4,7 @@ dotenv.config();
 
 import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
 import CommandPreprocessor from "./Commands";
-import * as logger from "./Logger";
+import * as logger from "./logger";
 import getServices from "./Services";
 import EventManager from "./Events";
 
