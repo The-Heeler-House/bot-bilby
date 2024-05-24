@@ -1,8 +1,8 @@
-# How To: Make your own Bot Billy
+# How To: Make your own Bot Bilby
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a `New Application` (there should be a button on the top-right corner).
  - ![New Application button](src-makeabot/1.png)
 
-2. Name the application however you want (just, don't name it Bot Billy, cause that has been copyrighted by us (jk)).
+2. Name the application however you want (just, don't name it Bot Bilby, cause that has been copyrighted by us (jk)).
 - ![New Application dialog](src-makeabot/2.png)
 
 3. Go into the `Bot` tab (should be on the panel to the left of your screen).

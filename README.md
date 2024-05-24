@@ -6,13 +6,13 @@ A recode of bot bilby so it doesn't crash every 5 seconds.
 To install and run the bot, make sure that you have the following things set up/installed:
 - MongoDB (https://www.mongodb.com/docs/manual/administration/install-community/)
 - NodeJS (https://nodejs.org/en)
-- A Discord Bot (instruction for how to setup one can be found at [MAKE_A_BOT_BILLY.md](MAKE_A_BOT_BILLY.md))
+- A Discord Bot (instruction for how to setup one can be found at [MAKE_A_BOT_BILBY.md](MAKE_A_BOT_BILBY.md))
 ### **Install**
 1. Clone the repo into your favorite directory (or if you don't have git, you can [download the repo as a ZIP instead](https://github.com/The-Heeler-House/bot-bilby/archive/refs/heads/main.zip))
 ```bash
 git clone https://github.com/The-Heeler-House/bot-bilby
 ```
-2. Change directory into the `bot-billy` folder, and install the required package using npm:
+2. Change directory into the `bot-bilby` folder, and install the required package using npm:
 ```bash
 npm i
 ```
