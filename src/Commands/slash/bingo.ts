@@ -59,7 +59,7 @@ export default class BingoCommand extends SlashCommand {
             BINGO_CARD.toBuffer(), {name: BINGO_FILENAME})
 
         const BINGO_EMBED = new EmbedBuilder()
-            .setColor(0x7da4ff)
+            .setColor(0xe27a37)
             .setTitle("Bingo!")
             .setDescription(
                 "<:Bluey:965545191270400000> Bluey, <:Bingo:965564211642105867> Bingo!\n" +

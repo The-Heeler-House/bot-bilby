@@ -114,7 +114,7 @@ export default class GuessCommand extends SlashCommand {
         if (interaction.options.getSubcommand() === 'leaders') {
             const topLeaderboard = await getTopLeaderboard();
             const leaderboardEmbed = new EmbedBuilder()
-                .setColor(0x8ec2f2)
+                .setColor(0x72bfed)
                 .setTitle('Guesser Leaderboard!')
                 .setTimestamp()
                 .setFooter({ text: "Bot Bilby" })
@@ -284,7 +284,7 @@ export default class GuessCommand extends SlashCommand {
                             }
                             async function endGame(interaction: ChatInputCommandInteraction, scores: [string, number][]) {
                                 const leaderboardEmbed = new EmbedBuilder()
-                                    .setColor(9356018)
+                                    .setColor(0x72bfed)
                                     .setTitle('Multiplayer Guesser Results!')
                                     .setTimestamp()
                                     .setFooter({ text: "Bot Bilby" })
@@ -413,7 +413,7 @@ export default class GuessCommand extends SlashCommand {
                 saveScore('<@' + interaction.user.id + '>', score);
                 const topLeaderboard = await getTopLeaderboard();
                 const leaderboardEmbed = new EmbedBuilder()
-                    .setColor(0x8ec2f2)
+                    .setColor(0x72bfed)
                     .setTitle('Guesser Leaderboard!')
                     .setTimestamp()
                     .setFooter({ text: "Bot Bilby" })

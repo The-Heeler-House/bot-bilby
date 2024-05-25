@@ -21,7 +21,7 @@ export default class MuteMeCommand extends SlashCommand {
                 "Needed some time away from the server."
             ) //? 1 hour in milliseconds
             const EMBED = new EmbedBuilder()
-                .setColor(0xff0000)
+                .setColor(0xe27a37)
                 .setTitle("Muted!")
                 .setDescription(`You have been muted for ${TIME} hour(s)! Thank you for using the Heeler House's detox service.`)
                 .setImage("https://c.tenor.com/Y1rAFV25rVEAAAAC/tenor.gif")

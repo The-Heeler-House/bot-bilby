@@ -46,7 +46,7 @@ export default class CharacterCommand extends SlashCommand {
                 "Choose a character in the dropdown below to view the detail.\n" +
                 "Use the arrow below to view more characters in the dropdown.\n"
             )
-            .setColor(0x3f4aa1)
+            .setColor(0x72bfed)
             .setTimestamp()
             .setFooter({ text: "Bot Bilby" })
 
@@ -69,7 +69,7 @@ export default class CharacterCommand extends SlashCommand {
             }
 
             return new EmbedBuilder()
-                .setColor(0x3f4aa1)
+                .setColor(0x72bfed)
                 .setTitle($CHARACTER(CHARACTER_NAME_PATH).text())
                 .setURL(url)
                 .addFields([
