@@ -16,6 +16,7 @@ export default class ReactionTrackingAddEvent extends BotEvent {
                 await reaction.message.fetch();
             } catch (error) {
                 logger.error("Encountered an error while trying to fetch full message from a reaction add event (for reaction tracking).\n", error, "\n", error.stack);
+                await services.pager.sendError(error, "Trying to fetch full message from a reaction add event.");
                 return; // Don't continue execution.
             }
         }

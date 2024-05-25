@@ -21,8 +21,9 @@ export default class EventManager {
                     }
                 }
             })
-            .catch(error => {
-                logger.error("Encountered an error when trying to get events directory. See error below.\n", error, "\n", error.stack);
+            .catch(async error => {
+                logger.error("Encountered an error when trying to get events directory. See error below.\n", error.message, "\n", error.stack);
+                await services.pager.sendCrash(error, "Event registeration");
                 process.exit(1);
             });
     }
