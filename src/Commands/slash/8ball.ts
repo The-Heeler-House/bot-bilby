@@ -35,7 +35,7 @@ export default class EightBallCommand extends SlashCommand {
         const EIGHT_BALL_EMBED = new EmbedBuilder()
             .setColor(0x72bfed)
             .setTitle("Magic 8-Ball")
-            .setDescription(`My answer for: ${interaction.options.getString("question")}, is:`)
+            .setDescription(`Question: ${interaction.options.getString("question")}`)
             .setImage(`attachment://${SELECTED_FILENAME}`)
             .setTimestamp()
             .setFooter({

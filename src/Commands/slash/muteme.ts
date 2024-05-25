@@ -16,10 +16,14 @@ export default class MuteMeCommand extends SlashCommand {
 
         const TIME = interaction.options.getInteger("length") ?? 1
         if (interaction.member instanceof GuildMember) {
+            try {
             interaction.member.timeout(
                 TIME * 3_600_000,
                 "Needed some time away from the server."
-            ) //? 1 hour in milliseconds
+            )
+            } catch (error) {
+                interaction.reply("I was unable to mute you! Are you an admin?");
+            }
             const EMBED = new EmbedBuilder()
                 .setColor(0xe27a37)
                 .setTitle("Muted!")
