@@ -788,7 +788,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     name: "Powerups",
                     value: powerUps.join("\n") || "None",
                 })
-                .setColor(0x8ec2f2)
+                .setColor(0x72bfed)
                 .setTimestamp()
                 .setFooter({ text: "Bot Bilby" });
 
@@ -915,7 +915,7 @@ export default class MuterouletteCommand extends SlashCommand {
             const embed = new EmbedBuilder()
                 .setTitle("Mute Roulette Leaderboard")
                 .setDescription(description)
-                .setColor(0x8ec2f2)
+                .setColor(0x72bfed)
                 .setTimestamp()
                 .setFooter({ text: "Bot Bilby" });
 

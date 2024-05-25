@@ -33,7 +33,7 @@ export default class EightBallCommand extends SlashCommand {
             path.join(EIGHT_BALL_IMAGE_DIR, SELECTED_FILENAME))
 
         const EIGHT_BALL_EMBED = new EmbedBuilder()
-            .setColor(0x0000ff)
+            .setColor(0x72bfed)
             .setTitle("Magic 8-Ball")
             .setDescription(`My answer for: ${interaction.options.getString("question")}, is:`)
             .setImage(`attachment://${SELECTED_FILENAME}`)
