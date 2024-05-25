@@ -20,7 +20,6 @@ export default class AddCharacterCommand extends TextCommand {
         let avatar = `https://${args[1]}`;
 
         const character = await services.database.collections.botCharacters.findOne({ name: name }) as unknown as BotCharacter;
-        console.log(character);
         if (character) {
             await message.reply(`I seem to already know of this character.`);
             return;

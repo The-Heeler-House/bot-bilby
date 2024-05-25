@@ -74,7 +74,6 @@ export default class GuessCommand extends SlashCommand {
         //const text = fs.readFileSync(path.join('../src/episodeDesc.txt'), 'utf-8');
         const text = fs.readFileSync(path.join('src/Assets/guess-data/episodeDesc.txt'), 'utf-8');
         const episodeEntry = text.split(/\r?\n^\r?\n/gm)
-        console.log(episodeEntry)
 
         // define a regular expression to match each episode
         const regex = /^S(\d+) E(\d+) · (.+)$\r?\n^(.*)$/m;

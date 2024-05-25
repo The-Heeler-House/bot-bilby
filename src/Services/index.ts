@@ -10,6 +10,7 @@ import { Client } from "discord.js";
 import CommandPreprocessor from "../Commands";
 import StateService from "./State";
 import BilbyAPIService from "./BilbyAPI";
+import PagerService from "./Pager";
 
 
 export default function getServices(client: Client, commands: CommandPreprocessor): Services {
@@ -19,15 +20,15 @@ export default function getServices(client: Client, commands: CommandPreprocesso
     // Services accessable to commands and events
     return {
         commands,
-
         database: new DatabaseService(),
-        state: new StateService()
+        state: new StateService(),
+        pager: new PagerService(client)
     }
 }
 
 export interface Services {
     commands: CommandPreprocessor,
-
     database: DatabaseService,
-    state: StateService
+    state: StateService,
+    pager: PagerService
 }

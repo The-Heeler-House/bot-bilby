@@ -43,8 +43,7 @@ export default class LinkedMessageAddEvent extends BotEvent {
                 };
         
                 logger.command("New linked message: " + trackedMessage.content);
-                const newChannel = await message.client.channels.fetch(channelIds.chatLog) as TextChannel;
-                newChannel.send(`New linked message added.`);
+                
                 // Add the tracked message to the map
                 services.state.state.trackedMessages.set(trackedMessage.messageId, trackedMessage);
               } catch (error) {
