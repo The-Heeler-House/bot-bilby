@@ -39,7 +39,7 @@ export default class EightBallCommand extends SlashCommand {
             .setImage(`attachment://${SELECTED_FILENAME}`)
             .setTimestamp()
             .setFooter({
-                text: "Bot Billy the Bizard"
+                text: "Bot Bilby"
             })
         await interaction.reply({
             embeds: [EIGHT_BALL_EMBED],

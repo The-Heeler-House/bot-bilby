@@ -117,7 +117,7 @@ export default class GuessCommand extends SlashCommand {
                 .setColor(0x8ec2f2)
                 .setTitle('Guesser Leaderboard!')
                 .setTimestamp()
-                .setFooter({ text: "Bot Billy" })
+                .setFooter({ text: "Bot Bilby" })
             var desc = "";
             for (let i = 0; i < topLeaderboard.length; i++) {
                 const player = topLeaderboard[i];
@@ -287,7 +287,7 @@ export default class GuessCommand extends SlashCommand {
                                     .setColor(9356018)
                                     .setTitle('Multiplayer Guesser Results!')
                                     .setTimestamp()
-                                    .setFooter({ text: "Bot Billy" })
+                                    .setFooter({ text: "Bot Bilby" })
                                 var desc = "";
 
                                 scores.sort((a, b) => b[1] - a[1]);
@@ -416,7 +416,7 @@ export default class GuessCommand extends SlashCommand {
                     .setColor(0x8ec2f2)
                     .setTitle('Guesser Leaderboard!')
                     .setTimestamp()
-                    .setFooter({ text: "Bot Billy" })
+                    .setFooter({ text: "Bot Bilby" })
                 var desc = "";
                 for (let i = 0; i < topLeaderboard.length; i++) {
                     const player = topLeaderboard[i];

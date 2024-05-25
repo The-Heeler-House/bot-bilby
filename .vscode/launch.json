@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch bot-billy",
+            "name": "Launch bot-Bilby",
             "request": "launch",
             "windows": {
                 "runtimeArgs": [

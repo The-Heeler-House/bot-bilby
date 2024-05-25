@@ -48,7 +48,7 @@ export default class CharacterCommand extends SlashCommand {
             )
             .setColor(0x3f4aa1)
             .setTimestamp()
-            .setFooter({ text: "Bot Billy" })
+            .setFooter({ text: "Bot Bilby" })
 
         const generateCharacterEmbed = async (url: string) => {
             const CHARACTER_NAME_PATH = "main .page-header #firstHeading"
@@ -91,7 +91,7 @@ export default class CharacterCommand extends SlashCommand {
                 ])
                 .setImage($CHARACTER(CHARACTER_IMAGE_PATH).attr("href"))
                 .setTimestamp()
-                .setFooter({ text: 'Fetched from Blueypedia by Bot Billy' })
+                .setFooter({ text: 'Fetched from Blueypedia by Bot Bilby' })
         }
 
         const generateDropdownItems = () => LIST_OF_CHARACTERS

@@ -72,7 +72,7 @@ export default class HangmanCommand extends SlashCommand {
         const INIT_EMBED = new EmbedBuilder()
             .setColor("Yellow")
             .setTitle("Initializing")
-            .setFooter({ text: "Bot Billy" })
+            .setFooter({ text: "Bot Bilby" })
 
         const LETTER_COLLECTOR_LIST: ReactionCollector[] = []
 
@@ -119,7 +119,7 @@ export default class HangmanCommand extends SlashCommand {
                     extraMessage
                 )
                 .setTimestamp()
-                .setFooter({ text: "Bot Billy" })
+                .setFooter({ text: "Bot Bilby" })
             }
 
         const updateGuesses = (foundCharPos: number[], letter: string) => {

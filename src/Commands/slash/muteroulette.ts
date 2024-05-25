@@ -788,7 +788,9 @@ export default class MuterouletteCommand extends SlashCommand {
                     name: "Powerups",
                     value: powerUps.join("\n") || "None",
                 })
-                .setColor("#FF0000");
+                .setColor(0x8ec2f2)
+                .setTimestamp()
+                .setFooter({ text: "Bot Bilby" });
 
             await interaction.reply({ embeds: [embed] });
         } else if (interaction.options.getSubcommand() === "leaders") {
@@ -913,7 +915,9 @@ export default class MuterouletteCommand extends SlashCommand {
             const embed = new EmbedBuilder()
                 .setTitle("Mute Roulette Leaderboard")
                 .setDescription(description)
-                .setColor("#FF0000");
+                .setColor(0x8ec2f2)
+                .setTimestamp()
+                .setFooter({ text: "Bot Bilby" });
 
             // send the embed
             await interaction.editReply({ embeds: [embed] });

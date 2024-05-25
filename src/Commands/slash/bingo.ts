@@ -69,7 +69,7 @@ export default class BingoCommand extends SlashCommand {
             .setImage(`attachment://${BINGO_FILENAME}`)
             .setTimestamp()
             .setFooter({
-                text: "Bot Billy"
+                text: "Bot Bilby"
             })
 
         await interaction.reply({
