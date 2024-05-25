@@ -2,7 +2,7 @@
 A recode of bot bilby so it doesn't crash every 5 seconds.
 
 ## Notices
-This project was designed with The Heeler House as it's main target, so many of the functionality (Text Commands & Events) **have been tailored** specifically to THH. While you can change the config to make the bot work for your own server, it is recommended that you install and use the bot only for development and testing purposes.
+This project was designed with The Heeler House as it's main target, so many of the functionality (Text Commands & Events) **have been tailored** specifically to THH. While you can change the config (in `src/constant.ts`) to make the bot work for your own server, it is recommended that you install and use the bot only for development and testing purposes.
 
 ## Setting Up
 ### **Dependencies**
