@@ -29,6 +29,7 @@ export default class RemoveCharacterCommand extends TextCommand {
             await message.reply(`Successfully removed character \`${args.join(" ")}\`.`);
         } catch (error) {
             logger.error("Encountered error while trying to remove character", args.join(" "), "\n", error, "\n", error.stack);
+            await services.pager.sendError(error, "Trying to remove character " + args.join(" "), services.state.state.pagedUsers);
             await message.reply(`That's awkward. I encountered an error while removing the character \`${args.join(" ")}\`. Please try again.`);
         }
     }

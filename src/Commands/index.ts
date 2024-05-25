@@ -13,15 +13,12 @@ export default class CommandPreprocessor {
     public slashCommands = new Map<string, SlashCommand>()
     public textCommands = new Map<string, TextCommand>();
 
-    constructor() {
-        this.getSlashCommands();
-        this.getTextCommands();
-    }
+    constructor() {}
 
     /**
      * Fetches the slash commands from their respective folder.
      */
-    private getSlashCommands() {
+    getSlashCommands(services: Services) {
         readdir(`${__dirname}/slash`)
             .then(files => files.filter(file => file.endsWith(".js")))
             .then(async commandsDir => {
@@ -35,8 +32,9 @@ export default class CommandPreprocessor {
                     }
                 }
             })
-            .catch(error => {
+            .catch(async error => {
                 logger.error("Encountered an error when trying to get slash commands directory. See error below.\n", error, "\n", error.stack);
+                await services.pager.sendCrash(error, "Get slash commands", services.state.state.pagedUsers);
                 process.exit(1);
             });
     }
@@ -44,7 +42,7 @@ export default class CommandPreprocessor {
     /**
      * Fetches the text command from their respective folder.
      */
-    private getTextCommands() {
+    getTextCommands(services: Services) {
         readdir(`${__dirname}/text`)
             .then(files => files.filter(file => file.endsWith(".js")))
             .then(async commandsDir => {
@@ -58,8 +56,9 @@ export default class CommandPreprocessor {
                     }
                 }
             })
-            .catch(error => {
+            .catch(async error => {
                 logger.error("Encountered an error when trying to get text commands directory.\n", error, "\n", error.stack);
+                await services.pager.sendCrash(error, "Get text commands", services.state.state.pagedUsers);
                 process.exit(1);
             });
     }
@@ -69,7 +68,7 @@ export default class CommandPreprocessor {
      * If the DEVELOPMENT_GUILD environment variable is defined, commands will be registered as guild commands instead.
      * @param client The Discord client to register the commands on.
      */
-    async registerSlashCommands(client: Client) {
+    async registerSlashCommands(client: Client, services: Services) {
         const commands = [];
 
         this.slashCommands.forEach(command => {
@@ -97,6 +96,7 @@ export default class CommandPreprocessor {
                 logger.command("Registered", commands.length.toString(), "slash commands in guild id", process.env.DEVELOPMENT_GUILD as string);
             } catch (error) {
                 logger.error("Encountered an error while trying to register all slash commands as guild commands.\n", error, "\n", error.stack);
+                await services.pager.sendError(error, "Trying to register all slash commands as guild commands.", services.state.state.pagedUsers);
             }
         } else {
             try {
@@ -108,6 +108,7 @@ export default class CommandPreprocessor {
                 logger.command("Registered", commands.length.toString(), "slash commands globally");
             } catch (error) {
                 logger.error("Encountered an error while trying to register all slash commands as global commands.\n", error, "\n", error.stack);
+                await services.pager.sendError(error, "Trying to register all slash commands as global commands.", services.state.state.pagedUsers);
             }
         }
     }
@@ -159,6 +160,7 @@ export default class CommandPreprocessor {
             if (allowed) command.execute(message, args, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", commandName, "text command.\n", error, "\n", error.stack);
+            await services.pager.sendError(error, "Trying to execute the " + commandName + " text command. See message " + message.url, services.state.state.pagedUsers);
             await message.reply("Whoops! Seems like something went wrong while processing your request. Please try again.");
         }
     }
@@ -178,6 +180,7 @@ export default class CommandPreprocessor {
             await command.execute(interaction, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", interaction.commandName, "slash command.\n", error.stack);
+            await services.pager.sendError(error, "Trying to execute the " + interaction.commandName + " slash command.", services.state.state.pagedUsers);
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
             } else {
@@ -201,6 +204,7 @@ export default class CommandPreprocessor {
             await command.autocomplete(interaction, services);
         } catch (error) {
             logger.error("Encountered an error while trying to autocomplete the", interaction.commandName, "slash command.\n", error, "\n", error.stack);
+            // FIXME: Due to spamming concerns, we don't page errors here. Potential solution is to generate a hash based on the error's message and stack trace, as well as "whileDoing" in order to get a unique id for an error so we don't repeat ourselves.
             await interaction.respond([].map(choice => ({ name: choice, value: choice })));
         }
     }

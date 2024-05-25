@@ -23,8 +23,23 @@ const commands = new CommandPreprocessor();
 const events = new EventManager();
 const services = getServices(client, commands);
 
+process.on("uncaughtException", async (error, origin) => {
+    // Bilby has crashed at this point, best we can do is log the errors and exit.
+    logger.error("Detected an uncaught exception with origin", origin, ".\n",error.message,"\n",error.stack);
+
+    await services.pager.sendCrash(error, origin, services.state.state.pagedUsers);
+
+    // Bilby is in an undefined state, it is EXTREMELY discouraged from continuing in this state.
+    // If the exit call wasn't here, Bilby would continue running, but doing so may cause undefined and unexpected behaviour
+    // so we must exit here.
+    logger.error("Bot Bilby is in an undefined state! Terminating immediatly.");
+    process.exit(1);
+});
+
 client.on(Events.ClientReady, async () => {
-    await commands.registerSlashCommands(client);
+    commands.getSlashCommands(services);
+    commands.getTextCommands(services);
+    await commands.registerSlashCommands(client, services);
     events.registerEvents(client, services);
 
     logger.command("Online!");
