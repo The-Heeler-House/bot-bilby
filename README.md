@@ -24,6 +24,7 @@ npm i
 4. Inside the `.env` file, fill in the following information (replace the dot between the quotation mark with actual value):
 ```env
 TOKEN="..." # the bot token
+DEVELOPMENT_GUILD="..." # guild to register guild commands in. if this is omitted, global commands will be registered instead.
 PREFIX="..." # text command prefix, can be any length.
 MONGO_URL="" # connection URL for MongoDB database (should be in the form of: "mongodb://...")
 API_PORT=8080 # port that the BilbyAPI service will listen on. used for non-bilby related projects where data from bilby is needed.
