@@ -1,44 +1,32 @@
 {
-  "name": "Bot-Bilby-Heeler-House",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jalenluorion/Bot-Bilby-1.git"
-  },
-  "author": "jalenluorion <<>",
-  "license": "MIT",
-  "description": "### Node JS Version of Bot Bilby",
-  "bugs": {
-    "url": "https://github.com/jalenluorion/Bot-Bilby-1/issues"
-  },
-  "homepage": "https://github.com/jalenluorion/Bot-Bilby-1#readme",
-  "dependencies": {
-    "@discordjs/builders": "^1.2.0",
-    "@discordjs/rest": "^0.3.0",
-    "@discordjs/voice": "^0.16.0",
-    "axios": "^0.26.1",
-    "canvas": "^2.11.2",
-    "cheerio": "^1.0.0-rc.10",
-    "dayjs": "^1.11.0",
-    "dayjs-with-plugins": "0.0.4",
-    "discord-api-types": "^0.31.1",
-    "discord.js": "^14.3.0",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "ffmpeg-static": "^5.1.0",
-    "libsodium-wrappers": "^0.7.11",
-    "mongodb": "^5.3.0",
-    "nodemailer": "^6.9.4",
-    "nodemon": "^3.0.1"
-  },
-  "devDependencies": {
-    "node": "^16.14.2"
-  },
+  "name": "bot-bilby",
+  "version": "4.0.0",
+  "description": "Bot Bilby is a Discord Bot for The Heeler House Discord server, providing moderation tools, gambling, and more!",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "bot-unix": "./build.sh && node dist/index.js",
+    "bot-windows": "build.bat && node dist/index.js"
   },
-  "keywords": []
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/The-Heeler-House/bot=bilby.git"
+  },
+  "author": "Bot Bilby Contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/The-Heeler-House/bot=bilby/issues"
+  },
+  "homepage": "https://github.com/The-Heeler-House/bot=bilby#readme",
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.12",
+    "canvas": "^2.11.2",
+    "cheerio": "^1.0.0-rc.12",
+    "discord.js": "^14.15.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.6.2",
+    "typescript": "^5.4.5"
+  }
 }
