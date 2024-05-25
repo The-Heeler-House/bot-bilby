@@ -1,4 +1,4 @@
-import { Client, TextChannel } from "discord.js";
+import { Client, Snowflake, TextChannel } from "discord.js";
 import { channelIds } from "../../constants";
 
 export default class PagerService {
@@ -13,11 +13,12 @@ export default class PagerService {
         });
     }
 
-    public async sendCrash(error: Error, origin: string) {
+    public async sendCrash(error: Error, origin: string, pingList: Snowflake[]) {
         // This method is designed for paging a complete and total failure of Bot Bilby.
         // If this is called, Bilby has already crashed and there's nothing we can do to prevent it.
         // But before we exit, we send a "crash" page to the bilby channel to allow for debugging.
         await this.loggingChannel.send({
+            "content": `${pingList.map(userId => `<@${userId}>`).join(" ")} Crash thrown!`,
             "embeds": [
                 {
                     "color": 15879747,
@@ -49,8 +50,9 @@ export default class PagerService {
         });
     }
 
-    public async sendError(error: Error, whileDoing: string) {
+    public async sendError(error: Error, whileDoing: string, pingList: Snowflake[]) {
         await this.loggingChannel.send({
+            "content": `${pingList.map(userId => `<@${userId}>`).join(" ")} Error thrown!`,
             "embeds": [
                 {
                     "color": 15695665,

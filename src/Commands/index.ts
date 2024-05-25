@@ -34,7 +34,7 @@ export default class CommandPreprocessor {
             })
             .catch(async error => {
                 logger.error("Encountered an error when trying to get slash commands directory. See error below.\n", error, "\n", error.stack);
-                await services.pager.sendCrash(error, "Get slash commands");
+                await services.pager.sendCrash(error, "Get slash commands", services.state.state.pagedUsers);
                 process.exit(1);
             });
     }
@@ -58,7 +58,7 @@ export default class CommandPreprocessor {
             })
             .catch(async error => {
                 logger.error("Encountered an error when trying to get text commands directory.\n", error, "\n", error.stack);
-                await services.pager.sendCrash(error, "Get text commands");
+                await services.pager.sendCrash(error, "Get text commands", services.state.state.pagedUsers);
                 process.exit(1);
             });
     }
@@ -96,7 +96,7 @@ export default class CommandPreprocessor {
                 logger.command("Registered", commands.length.toString(), "slash commands in guild id", process.env.DEVELOPMENT_GUILD as string);
             } catch (error) {
                 logger.error("Encountered an error while trying to register all slash commands as guild commands.\n", error, "\n", error.stack);
-                await services.pager.sendError(error, "Trying to register all slash commands as guild commands.");
+                await services.pager.sendError(error, "Trying to register all slash commands as guild commands.", services.state.state.pagedUsers);
             }
         } else {
             try {
@@ -108,7 +108,7 @@ export default class CommandPreprocessor {
                 logger.command("Registered", commands.length.toString(), "slash commands globally");
             } catch (error) {
                 logger.error("Encountered an error while trying to register all slash commands as global commands.\n", error, "\n", error.stack);
-                await services.pager.sendError(error, "Trying to register all slash commands as global commands.");
+                await services.pager.sendError(error, "Trying to register all slash commands as global commands.", services.state.state.pagedUsers);
             }
         }
     }
@@ -160,7 +160,7 @@ export default class CommandPreprocessor {
             if (allowed) command.execute(message, args, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", commandName, "text command.\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to execute the " + commandName + " text command. See message " + message.url);
+            await services.pager.sendError(error, "Trying to execute the " + commandName + " text command. See message " + message.url, services.state.state.pagedUsers);
             await message.reply("Whoops! Seems like something went wrong while processing your request. Please try again.");
         }
     }
@@ -180,7 +180,7 @@ export default class CommandPreprocessor {
             await command.execute(interaction, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", interaction.commandName, "slash command.\n", error.stack);
-            await services.pager.sendError(error, "Trying to execute the " + interaction.commandName + " slash command.");
+            await services.pager.sendError(error, "Trying to execute the " + interaction.commandName + " slash command.", services.state.state.pagedUsers);
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
             } else {
