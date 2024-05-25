@@ -14,7 +14,7 @@ export default class BoredCommand extends SlashCommand {
                 {
                     "title": "Version 4.0.0 changelog",
                     "color": 0x72bfed,
-                    "timestamp": "Thu May 23 2024 00:00:00 GMT+0100 (British Summer Time)",
+                    "timestamp": new Date(2024, 5, 24).toISOString(),
                     "author": {
                         "name": "Bot Bilby",
                         "url": "https://discord.com/blueyheeler",
