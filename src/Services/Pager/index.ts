@@ -13,6 +13,75 @@ export default class PagerService {
         });
     }
 
+    public async sendCrash(error: Error, origin: string) {
+        // This method is designed for paging a complete and total failure of Bot Bilby.
+        // If this is called, Bilby has already crashed and there's nothing we can do to prevent it.
+        // But before we exit, we send a "crash" page to the bilby channel to allow for debugging.
+        await this.loggingChannel.send({
+            "embeds": [
+                {
+                    "color": 15879747,
+                    "timestamp": new Date().toISOString(),
+                    "footer": {
+                        "text": "Crash occured at"
+                    },
+                    "title": "Bot Bilby has crashed.",
+                    "description": "Bot Bilby has encountered an error and has crashed. Further information is available below.",
+                    "fields": [
+                        {
+                            "name": "Message",
+                            "value": `${error.message}`,
+                            "inline": false
+                        },
+                        {
+                            "name": "Stack Trace",
+                            "value": `${error.stack}`,
+                            "inline": false
+                        },
+                        {
+                            "name": "Origin",
+                            "value": `${origin}`,
+                            "inline": false
+                        }
+                    ]
+                }
+            ]
+        });
+    }
+
+    public async sendError(error: Error, whileDoing: string) {
+        await this.loggingChannel.send({
+            "embeds": [
+                {
+                    "color": 15695665,
+                    "timestamp": new Date().toISOString(),
+                    "footer": {
+                        "text": "Error occured at"
+                    },
+                    "title": "Bot Bilby has encountered error.",
+                    "description": "Bot Bilby has encountered an error. More information is available below.",
+                    "fields": [
+                        {
+                            "name": "Message",
+                            "value": `${error.message}`,
+                            "inline": false
+                        },
+                        {
+                            "name": "Stack Trace",
+                            "value": `${error.stack}`,
+                            "inline": false
+                        },
+                        {
+                            "name": "While",
+                            "value": `${whileDoing}`,
+                            "inline": false
+                        }
+                    ]
+                }
+            ]
+        })
+    }
+
     public async sendPage(...message: string[]) {
         await this.loggingChannel.send("```\n" + message.join(" ") + "\n```");
     }
