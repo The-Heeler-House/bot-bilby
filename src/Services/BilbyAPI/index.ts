@@ -15,6 +15,10 @@ export default class BilbyAPIService {
     constructor(client: Client) {
         this.app = express();
 
+        this.app.use((req, res, next) => {
+            res.set("Access-Control-Allow-Origin", "*");
+        });
+
         client.on("ready", async () => {
             this.client = client;
 
