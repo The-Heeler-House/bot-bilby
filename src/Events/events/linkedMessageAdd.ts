@@ -48,7 +48,8 @@ export default class LinkedMessageAddEvent extends BotEvent {
                     services.state.state.trackedMessages.set(trackedMessage.messageId, trackedMessage);
                 } catch (error) {
                     if (error.code === 50001) { // Missing access
-                        message.reply("I can't seem to see that channel, so I can't track that message. Sorry!");
+                        const notifChannel = await message.client.channels.fetch(channelIds.bilby) as TextChannel;
+                        notifChannel.send(`${link}. I can't seem to see that channel, so I can't track that message. Sorry!`);
                         logger.warning("Tried tracking message id", messageId, "in channel id", channelId, "but lacked required permissions.");
                     } else {
                         logger.error(error);
