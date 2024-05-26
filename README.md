@@ -29,6 +29,7 @@ PREFIX="..." # text command prefix, can be any length.
 MONGO_URL="" # connection URL for MongoDB database (should be in the form of: "mongodb://...")
 API_PORT=8080 # port that the BilbyAPI service will listen on. used for non-bilby related projects where data from bilby is needed.
 ```
+5. Fill out `testingIds.json` with your appropriate channel and role ids.
 
 ### **Run the bot**
 Once everything have seen set up, compile and run the bot using:

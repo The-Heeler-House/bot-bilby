@@ -1,0 +1,16 @@
+{
+    "roleIds": {
+        "staff": "",
+        "mod": "",
+        "leadership": ""
+    },
+    "channelIds": {
+        "offTopic": "",
+        "staff": "",
+        "bilby": "807810443602427915",
+        "chatLog": "",
+        "mediaLog": "",
+        "reactionLog": "",
+        "announcements": ""
+    }
+}
