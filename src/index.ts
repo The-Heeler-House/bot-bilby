@@ -37,7 +37,7 @@ process.on("uncaughtException", async (error, origin) => {
 });
 
 client.on(Events.ClientReady, async () => {
-    commands.getSlashCommands(services);
+    await commands.getSlashCommands(services);
     commands.getTextCommands(services);
     await commands.registerSlashCommands(client, services);
     events.registerEvents(client, services);

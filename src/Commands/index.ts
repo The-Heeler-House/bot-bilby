@@ -18,25 +18,27 @@ export default class CommandPreprocessor {
     /**
      * Fetches the slash commands from their respective folder.
      */
-    getSlashCommands(services: Services) {
-        readdir(`${__dirname}/slash`)
-            .then(files => files.filter(file => file.endsWith(".js")))
-            .then(async commandsDir => {
-                for (const commandFile of commandsDir) {
-                    const command: SlashCommand = new (await import(`${__dirname}/slash/${commandFile}`)).default();
-
-                    if ("data" in command && "execute" in command) {
-                        this.slashCommands.set(command.data.name, command);
-                    } else {
-                        logger.warning("Attempted to add slash command", command, "but it is missing either the data property or the execute function. Skipping command...");
+    getSlashCommands(services: Services): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            readdir(`${__dirname}/slash`)
+                .then(files => files.filter(file => file.endsWith(".js")))
+                .then(async commandsDir => {
+                    for (const commandFile of commandsDir) {
+                        const command: SlashCommand = new (await import(`${__dirname}/slash/${commandFile}`)).default();
+                        if ("data" in command && "execute" in command) {
+                            this.slashCommands.set(command.data.name, command);
+                        } else {
+                            logger.warning("Attempted to add slash command", command, "but it is missing either the data property or the execute function. Skipping command...");
+                        }
                     }
-                }
-            })
-            .catch(async error => {
-                logger.error("Encountered an error when trying to get slash commands directory. See error below.\n", error, "\n", error.stack);
-                await services.pager.sendCrash(error, "Get slash commands", services.state.state.pagedUsers);
-                process.exit(1);
-            });
+                    resolve();
+                })
+                .catch(async error => {
+                    logger.error("Encountered an error when trying to get slash commands directory. See error below.\n", error, "\n", error.stack);
+                    await services.pager.sendCrash(error, "Get slash commands", services.state.state.pagedUsers);
+                    process.exit(1);
+                });
+        });
     }
 
     /**
