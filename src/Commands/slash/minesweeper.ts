@@ -1,3 +1,9 @@
+// TODO:
+//*  - Bluey-ify the game (if possible)
+//*  - Optimize the game so it uses as less resource as possible (if that's even a possibility)
+//*  - Maybe add a cool down?
+//! If not possible, maybe we could scrap the game all together.
+
 import {
     ActionRowBuilder,
     AttachmentBuilder,

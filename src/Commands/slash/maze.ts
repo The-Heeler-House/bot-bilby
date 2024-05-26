@@ -1,3 +1,7 @@
+// TODO:
+//*  - Bluey-ify the puzzle (if possible)
+//*  - Maybe add a cool down?
+
 import { AttachmentBuilder, ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js"
 import { Services } from "../../Services"
 import SlashCommand from "../SlashCommand"
