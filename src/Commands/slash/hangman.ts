@@ -130,7 +130,10 @@ export default class HangmanCommand extends SlashCommand {
             gameState.guessedLetters.push(letter)
         }
 
-        const stopCollector = () => LETTER_COLLECTOR_LIST.forEach(v => v.stop())
+        const stopCollector = () => {
+            LETTER_COLLECTOR_LIST.forEach(v => v.stop())
+            BUTTON_COLLECTOR.stop()
+        }
 
         const gameOver = async () => {
             gameState.currentTries = gameState.maxTries
