@@ -26,7 +26,11 @@ export default class LinkedMessageRemoveEvent extends BotEvent {
             } else if (messageId === message.id) {
               // Notify the channel about the deletion
               const channel = await message.client.channels.fetch(channelIds.staff) as TextChannel;
+
+              const filter = (m: Message) => m.channelId === channelIds.chatLog;
+
               const newMessage = await channel.awaitMessages({
+                filter,
                 max: 1,
                 time: 30000,
                 errors: ["time"],
