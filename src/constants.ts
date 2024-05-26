@@ -1,4 +1,4 @@
-import * as devConstants from '../.testingIds.json';
+import * as devConstants from '../testingIds.json';
 
 export const roleIds = {
     staff: devConstants.roleIds.staff || "1073391142881722400",
