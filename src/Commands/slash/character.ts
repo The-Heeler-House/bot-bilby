@@ -162,7 +162,7 @@ export default class CharacterCommand extends SlashCommand {
         const MENU_COLLECTOR = MESSAGE.createMessageComponentCollector({
             componentType: ComponentType.StringSelect,
             filter: i => i.user.id == interaction.user.id,
-            time: 30_000
+            time: 120_000
         })
 
         MENU_COLLECTOR.on("collect", async e => {

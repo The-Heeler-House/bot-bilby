@@ -21,7 +21,6 @@ type Episode = {
     description: string
 }
 
-// TODO: more strict type checking
 export default class GuessCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("guess")

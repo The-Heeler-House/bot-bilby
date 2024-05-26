@@ -12,14 +12,12 @@ export default class MuteMeCommand extends SlashCommand {
                 .setRequired(false))
 
     async execute(interaction: ChatInputCommandInteraction, services: Services) {
-        // TODO: maybe add a check for permission to see if the bot have perm to mute?
-
         const TIME = interaction.options.getInteger("length") ?? 1
         if (interaction.member instanceof GuildMember) {
             try {
-            interaction.member.timeout(
-                TIME * 3_600_000,
-                "Needed some time away from the server."
+                interaction.member.timeout(
+                    TIME * 3_600_000,
+                    "Needed some time away from the server."
             )
             } catch (error) {
                 interaction.reply("I was unable to mute you! Are you an admin?");
