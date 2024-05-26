@@ -2,7 +2,7 @@
 A recode of bot bilby so it doesn't crash every 5 seconds.
 
 ## Notices
-This project was designed with The Heeler House as it's main target, so many of the functionality (Text Commands & Events) **have been tailored** specifically to THH. While you can change the config (in `src/constant.ts`) to make the bot work for your own server, it is recommended that you install and use the bot only for development and testing purposes.
+This project was designed with The Heeler House as it's main target, so many of the functionality (Text Commands & Events) **have been tailored** specifically to THH. While you can change the config (in `testingIds.json`) to make the bot work for your own server, it is recommended that you install and use the bot only for development and testing purposes.
 
 ## Setting Up
 ### **Dependencies**
@@ -29,6 +29,7 @@ PREFIX="..." # text command prefix, can be any length.
 MONGO_URL="" # connection URL for MongoDB database (should be in the form of: "mongodb://...")
 API_PORT=8080 # port that the BilbyAPI service will listen on. used for non-bilby related projects where data from bilby is needed.
 ```
+5. Fill out `testingIds.json` with your appropriate channel and role ids.
 
 ### **Run the bot**
 Once everything have seen set up, compile and run the bot using:
