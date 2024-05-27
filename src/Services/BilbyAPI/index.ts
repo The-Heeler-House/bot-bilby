@@ -10,7 +10,7 @@ export default class BilbyAPIService {
     protected caching: Caching = {
         memberCount: { value: null, lastCacheTimestamp: 0 },
         upcomingEvents: { value: [], lastCacheTimestamp: 0 },
-        staffMembers: { value: [], lastCacheTimestamp: 0 }
+        staffMembers: { value: { leadership: [], mods: [], helpers: [] }, lastCacheTimestamp: 0 }
     };
 
     constructor(client: Client) {
@@ -84,7 +84,11 @@ export default class BilbyAPIService {
 
             await guild.members.fetch(); // Fetch all members
 
-            this.caching.staffMembers.value = guild.members.cache.filter(member => member.roles.cache.has(roleIds.staff)).map(member => member.id);
+            this.caching.staffMembers.value = {
+                leadership: guild.members.cache.filter(member => member.roles.cache.has(roleIds.leadership)).map(member => { return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } }),
+                mods: guild.members.cache.filter(member => member.roles.cache.has(roleIds.mod)).map(member => { return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } }),
+                helpers: guild.members.cache.filter(member => member.roles.cache.has(roleIds.helper)).map(member => { return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } }),
+            }
         }
 
         res.status(200).send(this.caching.staffMembers.value);
@@ -94,7 +98,7 @@ export default class BilbyAPIService {
 interface Caching {
     memberCount: { value: MemberCounts, lastCacheTimestamp: number},
     upcomingEvents: { value: UpcomingEvents[], lastCacheTimestamp: number },
-    staffMembers: { value: Snowflake[], lastCacheTimestamp: number }
+    staffMembers: { value: StaffMembers, lastCacheTimestamp: number }
 }
 
 interface MemberCounts {
@@ -109,4 +113,10 @@ interface UpcomingEvents {
     start: Date,
     url: string,
     image: string
+}
+
+interface StaffMembers {
+    leadership: { id: Snowflake, name: string, avatar: string }[],
+    mods: { id: Snowflake, name: string, avatar: string }[],
+    helpers: { id: Snowflake, name: string, avatar: string }[]
 }
