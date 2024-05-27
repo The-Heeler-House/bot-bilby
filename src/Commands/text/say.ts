@@ -13,6 +13,10 @@ export default class SayCommand extends TextCommand {
 
     async execute(message: Message, args: string[], services: Services) {
         let channel = await message.guild.channels.fetch(channelIds.offTopic) as TextChannel;
+        if (args.length === 0) {
+            await message.reply("You need to provide a message to send!");
+            return;
+        }
         await channel.send(args.join(" "));
     }
 }
