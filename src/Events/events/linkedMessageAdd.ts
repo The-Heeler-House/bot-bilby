@@ -46,6 +46,7 @@ export default class LinkedMessageAddEvent extends BotEvent {
                     
                     // Add the tracked message to the map
                     services.state.state.trackedMessages.set(trackedMessage.messageId, trackedMessage);
+                    services.state.save();
                 } catch (error) {
                     if (error.code === 50001) { // Missing access
                         const notifChannel = await message.client.channels.fetch(channelIds.bilby) as TextChannel;
