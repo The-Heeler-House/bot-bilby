@@ -83,11 +83,27 @@ export default class BilbyAPIService {
             this.caching.staffMembers.lastCacheTimestamp = Date.now()
 
             await guild.members.fetch(); // Fetch all members
+            let alreadyAddedStaffMembers: Snowflake[] = [];
 
             this.caching.staffMembers.value = {
-                leadership: guild.members.cache.filter(member => member.roles.cache.has(roleIds.leadership)).map(member => { return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } }),
-                mods: guild.members.cache.filter(member => member.roles.cache.has(roleIds.mod)).map(member => { return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } }),
-                helpers: guild.members.cache.filter(member => member.roles.cache.has(roleIds.helper)).map(member => { return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } }),
+                leadership: guild.members.cache.filter(member => member.roles.cache.has(roleIds.leadership))
+                .filter(member => !alreadyAddedStaffMembers.includes(member.id))
+                .map(member => { 
+                    alreadyAddedStaffMembers.push(member.id); 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                }),
+                mods: guild.members.cache.filter(member => member.roles.cache.has(roleIds.mod))
+                .filter(member => !alreadyAddedStaffMembers.includes(member.id))
+                .map(member => { 
+                    alreadyAddedStaffMembers.push(member.id); 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                }),
+                helpers: guild.members.cache.filter(member => member.roles.cache.has(roleIds.helper))
+                .filter(member => !alreadyAddedStaffMembers.includes(member.id))
+                .map(member => { 
+                    alreadyAddedStaffMembers.push(member.id); 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                }),
             }
         }
 
