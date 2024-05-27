@@ -36,7 +36,7 @@ export default class BoredCommand extends SlashCommand {
         const SELECTED = BORED_THINGS_TO_DO[randomInt(0, BORED_THINGS_TO_DO.length)]
 
         await interaction.reply({
-            content: `So you're bored, ${interaction.user.tag}? You should ${SELECTED}`
+            content: `So you're bored, <@${interaction.user.id}>? You should ${SELECTED}`
         })
     }
 }
