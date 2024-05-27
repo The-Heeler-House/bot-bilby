@@ -25,13 +25,13 @@ export default class GuessCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("guess")
         .setDescription(
-            "Can you guess the Bluey episode title just from it's description?"
+            "Can you guess the Bluey episode title just from its description?"
         )
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("play")
                 .setDescription(
-                    "Can you guess the Bluey episode title just from it's description?"
+                    "Can you guess the Bluey episode title just from its description?"
                 )
         )
         .addSubcommand((subcommand) =>
@@ -64,7 +64,7 @@ export default class GuessCommand extends SlashCommand {
         }
 
         async function getTopLeaderboard() {
-            const cursor = leaderboard.find().sort({ score: -1 }).limit(10);
+            const cursor = leaderboard.find().sort({ score: -1 }).limit(20);
             const leaderboardArray = await cursor.toArray();
             return leaderboardArray;
         }
@@ -118,15 +118,16 @@ export default class GuessCommand extends SlashCommand {
                 .setTimestamp()
                 .setFooter({ text: "Bot Bilby" })
             var desc = "";
-            for (let i = 0; i < topLeaderboard.length; i++) {
+            var skipped = 0;
+            for (let i = 0; i < 10 + skipped; i++) {
                 const player = topLeaderboard[i];
                 // ${player.user} is in the format <@id>. change it to id
                 const id = player.user.slice(2, -1);
                 try {
                     const user = await interaction.guild.members.fetch(id);
-                    desc += `${i + 1}. ${user.nickname || user.user.globalName || user.user.username}: ${player.score} Episodes\n`;
+                    desc += `${i + 1}. \`${user.displayName}\`: **${player.score} Episodes**\n`;
                 } catch (err) {
-                    desc += `${i + 1}. Unknown : ${player.score} Episodes\n`;
+                    skipped++;
                 }
             }
             leaderboardEmbed.setDescription(desc);

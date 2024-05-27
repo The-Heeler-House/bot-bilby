@@ -8,7 +8,7 @@ export default class MuterouletteCommand extends SlashCommand {
 
     public data = new SlashCommandBuilder()
         .setName("muteroulette")
-        .setDescription("Try your luck at the mute roulette!")
+        .setDescription("Try your luck at the muteroulette!")
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("play")
@@ -17,7 +17,7 @@ export default class MuterouletteCommand extends SlashCommand {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("stats")
-                .setDescription("View your mute roulette stats!")
+                .setDescription("View your muteroulette stats!")
                 .addMentionableOption((option) =>
                     option
                         .setName("person")
@@ -30,7 +30,7 @@ export default class MuterouletteCommand extends SlashCommand {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("leaders")
-                .setDescription("View the mute roulette leaderboard!")
+                .setDescription("View the muteroulette leaderboard!")
         ) as SlashCommandBuilder;
     async execute(
         interaction: ChatInputCommandInteraction,
@@ -141,7 +141,10 @@ export default class MuterouletteCommand extends SlashCommand {
             async function muted(time: number) {
                 if (interaction.inCachedGuild() && interaction.member) {
                     await interaction.member
-                        .timeout(time * 60000)
+                        .timeout(
+                            time * 60000,
+                            "Played with fate and lost."
+                        )
                         .catch(async (error: any) => {
                             await interaction.followUp({
                                 content: `I was unable to mute you! Are you an admin?`,
@@ -621,7 +624,7 @@ export default class MuterouletteCommand extends SlashCommand {
             // 41-45: Disable Muteroulette for everyone for 10 minutes
             if (randomNumber <= 45) {
                 const tripleMessage = [
-                    "You have disabled mute roulette for everyone for 10 minutes! Enjoy the peace and quiet.",
+                    "You have disabled muteroulette for everyone for 10 minutes! Enjoy the peace and quiet.",
                 ];
                 await interaction.reply({
                     content: `You landed on ${randomNumber}. ${
@@ -679,7 +682,7 @@ export default class MuterouletteCommand extends SlashCommand {
                 const giftedUser = await users.findOne({ user: user });
                 if (giftedUser == null) {
                     await interaction.channel.send(
-                        "That user has not run the mute roulette yet! Gift wasted."
+                        "That user has not run the muteroulette yet! Gift wasted."
                     );
                     return;
                 }
@@ -767,7 +770,7 @@ export default class MuterouletteCommand extends SlashCommand {
 
             if (user == null) {
                 await interaction.reply({
-                    content: "You have not run the mute roulette yet!",
+                    content: "You have not run the muteroulette yet!",
                     ephemeral: true,
                 });
                 return;
@@ -780,7 +783,7 @@ export default class MuterouletteCommand extends SlashCommand {
             const mutePercentage = user.mutePercentage;
 
             const embed = new EmbedBuilder()
-                .setTitle(`Mute Roulette Stats`)
+                .setTitle(`Muteroulette Stats!`)
                 .setDescription(
                     `<@${specifiedUser.id}>\nTotal Mutes: **${numMutesTotal}**\nTotal Rolls: **${numAllTotal}**\nCurrent Streak: **${numStreak}**\nMax Streak: **${numMaxStreak}**\nMute Percentage: **${mutePercentage}%**`
                 )
@@ -837,7 +840,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     const topMutesUser = await interaction.guild.members.fetch(
                         topMutes[i].user
                     );
-                    description += `Highest Number of Mutes: **${topMutesUser.displayName}** - **${topMutesData} mutes**\n`;
+                    description += `Highest Number of Mutes: **\`${topMutesUser.displayName}\`** - **${topMutesData} mutes**\n`;
                 } catch (error) {
                     if (i === topMutes.length - 1) {
                         description += "Highest Number of Mutes: **No one yet**\n";
@@ -852,7 +855,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     const topAllUser = await interaction.guild.members.fetch(
                         topAll[i].user
                     );
-                    description += `Highest Number of Rolls: **${topAllUser.displayName}** - **${topAllData} rolls**\n`;
+                    description += `Highest Number of Rolls: **\`${topAllUser.displayName}\`** - **${topAllData} rolls**\n`;
                 } catch (error) {
                     if (i === topAll.length - 1) {
                         description += "Highest Number of Rolls: **No one yet**\n";
@@ -867,7 +870,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     const topStreakUser = await interaction.guild.members.fetch(
                         topStreak[i].user
                     );
-                    description += `Highest Unmuted Streak: **${topStreakUser.displayName}** - **${topStreakData} rolls**\n`;
+                    description += `Highest Unmuted Streak: **\`${topStreakUser.displayName}\`** - **${topStreakData} rolls**\n`;
                 } catch (error) {
                     if (i === topStreak.length - 1) {
                         description += "Highest Unmuted Streak: **No one yet**\n";
@@ -884,7 +887,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         await interaction.guild.members.fetch(
                             lowestPercentage[i].user
                         );
-                    description += `Lowest Mute Percentage: **${lowestPercentageUser.displayName}** - **${lowestPercentageData}%**\n`;
+                    description += `Lowest Mute Percentage: **\`${lowestPercentageUser.displayName}\`** - **${lowestPercentageData}%**\n`;
                 } catch (error) {
                     if (i === lowestPercentage.length - 1) {
                         description += "Lowest Mute Percentage: **No one yet**\n";
@@ -901,7 +904,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         await interaction.guild.members.fetch(
                             highestPercentage[i].user
                         );
-                    description += `Highest Mute Percentage: **${highestPercentageUser.displayName}** - **${highestPercentageData}%**\n`;
+                    description += `Highest Mute Percentage: **\`${highestPercentageUser.displayName}\`** - **${highestPercentageData}%**\n`;
                 } catch (error) {
                     if (i === highestPercentage.length - 1) {
                         description += "Highest Mute Percentage: **No one yet**\n";
@@ -913,7 +916,7 @@ export default class MuterouletteCommand extends SlashCommand {
 
             // create the embed
             const embed = new EmbedBuilder()
-                .setTitle("Mute Roulette Leaderboard")
+                .setTitle("Muteroulette Leaderboard!")
                 .setDescription(description)
                 .setColor(0x72bfed)
                 .setTimestamp()
