@@ -2,6 +2,7 @@
     "roleIds": {
         "staff": "",
         "mod": "",
+        "helper": "",
         "leadership": ""
     },
     "channelIds": {

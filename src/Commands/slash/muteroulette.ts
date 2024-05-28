@@ -354,7 +354,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         ]
                     }`,
                 });
-                await muted(60);
+                await muted(10);
                 return;
             }
 
