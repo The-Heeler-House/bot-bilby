@@ -46,6 +46,16 @@ export default class HangmanCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("hangman")
         .setDescription("Play Hangman with Bluey themed words!")
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName("play")
+                .setDescription("Play Hangman with Bluey themed words!")
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName("multiplayer")
+                .setDescription("Start a multiplayer game of Bluey Themed Hangman!")
+        ) as SlashCommandBuilder
 
     async execute(interaction: ChatInputCommandInteraction, services: Services) {
         const SELECTED_WORD = WORD_BANK[randomInt(0, WORD_BANK.length)].trim()
@@ -73,6 +83,7 @@ export default class HangmanCommand extends SlashCommand {
             .setColor("Yellow")
             .setTitle("Initializing")
             .setFooter({ text: "Bot Bilby" })
+            .setTimestamp()
 
         const LETTER_COLLECTOR_LIST: ReactionCollector[] = []
 
@@ -94,9 +105,13 @@ export default class HangmanCommand extends SlashCommand {
             const EMBED_COLOR = parseInt(
                 HANGMAN_STATE[gameState.currentTries - 1].slice(-6), 16)
 
+            const SCOPE_STRING = interaction.options.getSubcommand() === "multiplayer"
+                ? "This bot will read all reactions."
+                : "Only reactions from the game host will be accepted."
+
             return new EmbedBuilder()
                 .setColor(EMBED_COLOR)
-                .setTitle("Hangman - Bluey Themed!")
+                .setTitle("Bluey Themed Hangman!")
                 .addFields([
                     {
                         name: "Your word to guess",
@@ -110,8 +125,8 @@ export default class HangmanCommand extends SlashCommand {
                     },
                 ])
                 .setDescription(
-                    `This game session was created by <@${interaction.user.id}>.\n` +
-                    `Only reactions from this user will be accepted.\n` +
+                    `<@${interaction.user.id}> is the game host.\n` +
+                    `${SCOPE_STRING}\n` +
                     "```\n" +
                     //? remove the last 7 characters (6 hex colors mentioned above + 1 break line)
                     HANGMAN_STATE[gameState.currentTries - 1].slice(0, -7) +
@@ -131,7 +146,13 @@ export default class HangmanCommand extends SlashCommand {
         }
 
         const stopCollector = () => {
-            LETTER_COLLECTOR_LIST.forEach(v => v.stop())
+            LETTER_COLLECTOR_LIST.forEach(v => v.stop());
+            const DISABLED_QUIT_BUTTON = QUIT_BUTTON.setDisabled(true)
+            const DISABLED_BUTTON_ROW = new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(DISABLED_QUIT_BUTTON)
+            interaction.editReply({
+                components: [DISABLED_BUTTON_ROW]
+            })
             BUTTON_COLLECTOR.stop()
         }
 
@@ -152,16 +173,22 @@ export default class HangmanCommand extends SlashCommand {
         const BUTTON_COLLECTOR = REPLY.createMessageComponentCollector(
             {
                 componentType: ComponentType.Button,
-                filter: i => interaction.user.id == i.user.id,
                 time: TIMEOUT
             }
         )
 
         BUTTON_COLLECTOR.on("collect", async e => {
+            if (interaction.user.id != e.user.id) {
+                e.reply({
+                    content: "Only the game host can end the game!",
+                    ephemeral: true
+                })
+                return
+            }
             if (e.customId == "quit") {
                 await gameOver()
                 e.reply({
-                    content: "At least you could've used up all your guess..."
+                    content: "You could have at least used up all your guesses..."
                 })
             }
         })
@@ -173,13 +200,20 @@ export default class HangmanCommand extends SlashCommand {
                 //const LETTER = j.split(":")[1]
                 await MESSAGE.react(EMOJI)
             }
+
+            const COLLECTOR_FILTER = interaction.options.getSubcommand() === "multiplayer"
+                ? (reaction, user) =>
+                    reaction.message.id == MESSAGE.id &&
+                    i.includes(reaction.emoji.name)
+                : (reaction, user) =>
+                    reaction.message.id == MESSAGE.id &&
+                    i.includes(reaction.emoji.name) &&
+                    user.id == interaction.user.id
+            
             LETTER_COLLECTOR_LIST.push(
                 MESSAGE.createReactionCollector({
                     time: TIMEOUT,
-                    filter: (reaction, user) =>
-                        reaction.message.id == MESSAGE.id &&
-                        i.includes(reaction.emoji.name) &&
-                        user.id == interaction.user.id
+                    filter: COLLECTOR_FILTER
                 })
             )
         }
