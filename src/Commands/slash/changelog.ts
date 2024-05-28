@@ -9,7 +9,7 @@ export default class BoredCommand extends SlashCommand {
         .setDescription("See what's new with Bot Bilby.")
 
     async execute(interaction: ChatInputCommandInteraction, services: Services) {
-        const VERSION = "4.0.1"
+        const VERSION = "4.0.0"
         const DATE = new Date(2024, 5, 28)
         const CHANGES = [
             "- Complete recode from the ground up.",
