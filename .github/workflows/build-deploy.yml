@@ -17,6 +17,7 @@ jobs:
                 script: |
                     cd bot-bilby/
                     pm2 delete all
+                    git fetch --all && git reset --hard origin/master
                     git pull origin main --force
                     npm install
                     pm2 start npm -- run "bot-unix"
