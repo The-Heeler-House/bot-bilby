@@ -64,7 +64,7 @@ export default class BingoCommand extends SlashCommand {
             .setDescription(
                 "<:Bluey:965545191270400000> Bluey, <:Bingo:965564211642105867> Bingo!\n" +
                 "A Bingo card to play along to while you watch episodes of Bluey!\n" +
-                `This card is for <@${interaction.user.id}>.`
+                `This card is for <@${interaction.user.id}>`
             )
             .setImage(`attachment://${BINGO_FILENAME}`)
             .setTimestamp()
