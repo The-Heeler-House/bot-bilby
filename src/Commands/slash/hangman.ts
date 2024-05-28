@@ -105,7 +105,9 @@ export default class HangmanCommand extends SlashCommand {
             const EMBED_COLOR = parseInt(
                 HANGMAN_STATE[gameState.currentTries - 1].slice(-6), 16)
 
-            const SCOPE_STRING = interaction.options.getSubcommand() === "multiplayer" ? "This bot will read all reactions." : "Only reactions from the game host will be accepted."
+            const SCOPE_STRING = interaction.options.getSubcommand() === "multiplayer"
+                ? "This bot will read all reactions."
+                : "Only reactions from the game host will be accepted."
 
             return new EmbedBuilder()
                 .setColor(EMBED_COLOR)
@@ -199,7 +201,14 @@ export default class HangmanCommand extends SlashCommand {
                 await MESSAGE.react(EMOJI)
             }
 
-            const COLLECTOR_FILTER = interaction.options.getSubcommand() === "multiplayer" ? (reaction, user) => reaction.message.id == MESSAGE.id && i.includes(reaction.emoji.name) : (reaction, user) => reaction.message.id == MESSAGE.id && i.includes(reaction.emoji.name) && user.id == interaction.user.id
+            const COLLECTOR_FILTER = interaction.options.getSubcommand() === "multiplayer"
+                ? (reaction, user) =>
+                    reaction.message.id == MESSAGE.id &&
+                    i.includes(reaction.emoji.name)
+                : (reaction, user) =>
+                    reaction.message.id == MESSAGE.id &&
+                    i.includes(reaction.emoji.name) &&
+                    user.id == interaction.user.id
             
             LETTER_COLLECTOR_LIST.push(
                 MESSAGE.createReactionCollector({
