@@ -1,5 +1,5 @@
 import { Message, Snowflake } from "discord.js";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
 const STATE_PATH = path.join(__dirname, "../../Assets/state.json");
@@ -17,7 +17,13 @@ export default class StateService {
                 trackedMessages: new Map(),
                 pagedUsers: []
             }
+
+            this.save();
         }
+    }
+
+    save() {
+        writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 4));
     }
 }
 

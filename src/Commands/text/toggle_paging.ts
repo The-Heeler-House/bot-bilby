@@ -14,10 +14,12 @@ export default class TogglePagingCommand extends TextCommand {
     async execute(message: Message, args: string[], services: Services) {
         if (services.state.state.pagedUsers.includes(message.author.id)) {
             services.state.state.pagedUsers = services.state.state.pagedUsers.filter(userid => userid != message.author.id);
+            services.state.save();
 
             await message.reply("You will no longer be pinged (paged) for Bot Bilby errors.");
         } else {
             services.state.state.pagedUsers.push(message.author.id);
+            services.state.save();
 
             await message.reply("You will now be pinged (paged) for Bot Bilby errors.");
         }

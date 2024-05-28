@@ -9,7 +9,9 @@ export default class MuteMeCommand extends SlashCommand {
         .addIntegerOption(option =>
             option.setName("length")
                 .setDescription('Length in hours that you desire to be muted for. Default is 1 hour.')
-                .setRequired(false))
+                .setRequired(false)
+                .setMinValue(0)
+                .setMaxValue(730))
 
     async execute(interaction: ChatInputCommandInteraction, services: Services) {
         const TIME = interaction.options.getInteger("length") ?? 1

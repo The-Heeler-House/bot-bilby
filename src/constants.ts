@@ -2,6 +2,7 @@ import * as devConstants from '../testingIds.json';
 
 export const roleIds = {
     staff: devConstants.roleIds.staff || "1073391142881722400",
+    helper: devConstants.roleIds.helper || "1079592438819205130",
     mod: devConstants.roleIds.mod || "960044331572547654",
     leadership: devConstants.roleIds.leadership || "1073388656183742514"
 }
