@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import { randomInt } from "crypto";
@@ -31,13 +31,16 @@ export default class FortuneCommand extends SlashCommand {
         ]
         const SELECTED = FORTUNES[randomInt(0, FORTUNES.length)]
         const TARGET = interaction.options.getMentionable("person")
-
-        var output = ""
-        if (TARGET == null) {
-            output = `Your fortune: ${SELECTED}`
-        } else {
-            output = `${TARGET}'s fortune: ${SELECTED}`
+        // check if target is a member
+        if (!(TARGET instanceof GuildMember)) {
+            await interaction.reply({
+                content: "I couldn't find that user!",
+                ephemeral: true
+            })
+            return
         }
+
+        var output = TARGET === null ? `Your fortune: ${SELECTED}` : `\`${TARGET.displayName}\`'s fortune: ${SELECTED}`
 
         await interaction.reply({
             content: output

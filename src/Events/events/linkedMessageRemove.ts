@@ -18,6 +18,7 @@ export default class LinkedMessageRemoveEvent extends BotEvent {
             if (timeElapsed >= expirationTime) {
               // Remove the expired tracked message from the map
               const check = services.state.state.trackedMessages.delete(messageId);
+              services.state.save();
               if (check) {
                 logger.command(
                   `Tracked message (${messageId}) has expired and was removed from the map.`
@@ -25,8 +26,12 @@ export default class LinkedMessageRemoveEvent extends BotEvent {
               }
             } else if (messageId === message.id) {
               // Notify the channel about the deletion
-              const channel = await message.client.channels.fetch(channelIds.staff) as TextChannel;
+              const channel = await message.client.channels.fetch(channelIds.chatLog) as TextChannel;
+
+              const filter = (m: Message) => m.channelId === channelIds.chatLog;
+
               const newMessage = await channel.awaitMessages({
+                filter,
                 max: 1,
                 time: 30000,
                 errors: ["time"],
@@ -41,6 +46,7 @@ export default class LinkedMessageRemoveEvent extends BotEvent {
         
               // Remove the deleted tracked message from the map
               const check = services.state.state.trackedMessages.delete(messageId);
+              services.state.save();
               if (check) {
                 logger.command(
                   `Tracked message (${message.id}) was deleted and was removed from the map.`

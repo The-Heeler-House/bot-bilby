@@ -13,7 +13,8 @@ export default class ToggleGateCommand extends TextCommand {
     async execute(message: Message, args: string[], services: Services) {
         let joinGate = !services.state.state.joinGate;
 
-        services.state.set("joinGate", joinGate);
+        services.state.state.joinGate = joinGate;
+        services.state.save();
 
         await message.reply(`Successfully **${joinGate ? "enabled" : "disabled"}** the join gate.`);
     }

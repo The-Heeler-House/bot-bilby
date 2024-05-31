@@ -1,6 +1,6 @@
-import { Client, Guild, GuildScheduledEventPrivacyLevel, Status } from "discord.js";
+import { Client, Guild, GuildScheduledEventPrivacyLevel, Snowflake, Status } from "discord.js";
 import express, { Request, Response } from "express";
-import { THH_SERVER_ID } from "../../constants";
+import { THH_SERVER_ID, roleIds } from "../../constants";
 import * as logger from "../../logger";
 
 export default class BilbyAPIService {
@@ -9,11 +9,17 @@ export default class BilbyAPIService {
 
     protected caching: Caching = {
         memberCount: { value: null, lastCacheTimestamp: 0 },
-        upcomingEvents: { value: [], lastCacheTimestamp: 0 }
+        upcomingEvents: { value: [], lastCacheTimestamp: 0 },
+        staffMembers: { value: { leadership: [], mods: [], helpers: [] }, lastCacheTimestamp: 0 }
     };
 
     constructor(client: Client) {
         this.app = express();
+
+        this.app.use((req, res, next) => {
+            res.set("Access-Control-Allow-Origin", "*");
+            next();
+        });
 
         client.on("ready", async () => {
             this.client = client;
@@ -24,6 +30,7 @@ export default class BilbyAPIService {
 
             this.app.get("/members", async (req, res) => await this.serverMembers(guild, req, res));
             this.app.get("/events", async (req, res) => await this.serverEvents(guild, req, res));
+            this.app.get("/staff", async (req, res) => await this.serverStaff(guild, req, res));
 
             this.app.listen(process.env.API_PORT, () => logger.bilby("Bilby API running on port", process.env.API_PORT));
         });
@@ -70,11 +77,44 @@ export default class BilbyAPIService {
 
         res.status(200).send(this.caching.upcomingEvents.value);
     }
+
+    async serverStaff(guild: Guild, req: Request, res: Response) {
+        if (Date.now() - this.caching.staffMembers.lastCacheTimestamp >= 1 * 60 * 1000) {
+            this.caching.staffMembers.lastCacheTimestamp = Date.now()
+
+            await guild.members.fetch(); // Fetch all members
+            let alreadyAddedStaffMembers: Snowflake[] = [];
+
+            this.caching.staffMembers.value = {
+                leadership: guild.members.cache.filter(member => member.roles.cache.has(roleIds.leadership))
+                .filter(member => !alreadyAddedStaffMembers.includes(member.id))
+                .map(member => { 
+                    alreadyAddedStaffMembers.push(member.id); 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                }),
+                mods: guild.members.cache.filter(member => member.roles.cache.has(roleIds.mod))
+                .filter(member => !alreadyAddedStaffMembers.includes(member.id))
+                .map(member => { 
+                    alreadyAddedStaffMembers.push(member.id); 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                }),
+                helpers: guild.members.cache.filter(member => member.roles.cache.has(roleIds.helper))
+                .filter(member => !alreadyAddedStaffMembers.includes(member.id))
+                .map(member => { 
+                    alreadyAddedStaffMembers.push(member.id); 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                }),
+            }
+        }
+
+        res.status(200).send(this.caching.staffMembers.value);
+    }
 }
 
 interface Caching {
     memberCount: { value: MemberCounts, lastCacheTimestamp: number},
-    upcomingEvents: { value: UpcomingEvents[], lastCacheTimestamp: number }
+    upcomingEvents: { value: UpcomingEvents[], lastCacheTimestamp: number },
+    staffMembers: { value: StaffMembers, lastCacheTimestamp: number }
 }
 
 interface MemberCounts {
@@ -89,4 +129,10 @@ interface UpcomingEvents {
     start: Date,
     url: string,
     image: string
+}
+
+interface StaffMembers {
+    leadership: { id: Snowflake, name: string, avatar: string }[],
+    mods: { id: Snowflake, name: string, avatar: string }[],
+    helpers: { id: Snowflake, name: string, avatar: string }[]
 }
