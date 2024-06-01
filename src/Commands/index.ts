@@ -109,11 +109,11 @@ export default class CommandPreprocessor {
     }
 
     /**
-     * Registers the slash commands globally with Discord.
+     * Registers the application commands globally with Discord.
      * If the DEVELOPMENT_GUILD environment variable is defined, commands will be registered as guild commands instead.
      * @param client The Discord client to register the commands on.
      */
-    async registerSlashCommands(client: Client, services: Services) {
+    async registerApplicationCommands(client: Client, services: Services) {
         const commands = [];
 
         this.slashCommands.forEach(command => {

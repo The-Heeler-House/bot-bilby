@@ -40,7 +40,7 @@ client.on(Events.ClientReady, async () => {
     await commands.getContextCommands(services);
     await commands.getSlashCommands(services);
     commands.getTextCommands(services);
-    await commands.registerSlashCommands(client, services);
+    await commands.registerApplicationCommands(client, services);
     events.registerEvents(client, services);
 
     logger.command("Online!");
