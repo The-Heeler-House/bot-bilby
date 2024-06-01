@@ -30,6 +30,7 @@ export default class DatabaseService {
         this.collections.muteroulette = databases.bilby.collection("muteroulette");
         this.collections.guess = databases.bilby.collection("guess");
         this.collections.rplaceIdMap = databases.rplace.collection("rplaceIdMap");
+        this.collections.rplaceAlliances = databases.rplace.collection("rplaceAlliances");
     }
 }
 
@@ -38,4 +39,5 @@ export interface DatabaseCollections {
     muteroulette?: mongoDB.Collection,
     guess?: mongoDB.Collection,
     rplaceIdMap?: mongoDB.Collection
+    rplaceAlliances?: mongoDB.Collection
 }
