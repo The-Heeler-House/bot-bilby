@@ -26,16 +26,20 @@ class Cell {
     }
 }
 
-enum WallType {
-    TOP_WALL_NORMAL,
-    LEFT_WALL_NORMAL,
-    BOTTOM_RIGHT_CORNER_NORMAL
+enum TextureType {
+    TOP_WALL,
+    LEFT_WALL,
+    BOTTOM_RIGHT_WALL_CORNER,
+    CUSTOM_TEXTURE_WALL,
 }
 
-const TEXTURE_MAPPING: { [x: number]: [number, number] } = {
-    [WallType.TOP_WALL_NORMAL]: [0, 0],
-    [WallType.LEFT_WALL_NORMAL]: [1, 0],
-    [WallType.BOTTOM_RIGHT_CORNER_NORMAL]: [2, 0]
+const TEXTURE_MAPPING: { [x: number]: [number, number][] } = {
+    [TextureType.TOP_WALL]: [[0, 0]],
+    [TextureType.LEFT_WALL]: [[1, 0]],
+    [TextureType.BOTTOM_RIGHT_WALL_CORNER]: [[2, 0]],
+    [TextureType.CUSTOM_TEXTURE_WALL]: [
+        [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0]
+    ],
 }
 
 const MAZE_TEXTURE_DIR = path.join(__dirname, "../../Assets/maze-data")
@@ -234,8 +238,11 @@ export default class MazeCommand extends SlashCommand {
 
         const MAIN_TEXTURE_CTX = MAIN_TEXTURE_CANVAS.getContext("2d")
         MAIN_TEXTURE_CTX.drawImage(MAIN_TEXTURE, 0, 0)
+
+        //? this data should reflect the texture image data
         const TEXTURE_INFO = {
-            size: 64
+            size: 64,
+            wallWidth: 8
         }
 
         const getTexture = (mapping: [number, number]) =>
@@ -251,21 +258,66 @@ export default class MazeCommand extends SlashCommand {
             height: interaction.options.getInteger("height")
         }
 
+        //? this will hold just the maze wall, without any other data
+        const RAW_MAZE_BOARD = new Canvas(
+            TEXTURE_INFO.size * MAZE_CONFIG.width + TEXTURE_INFO.wallWidth,
+            TEXTURE_INFO.size * MAZE_CONFIG.height + TEXTURE_INFO.wallWidth,
+        )
+        const RAW_MAZE_BOARD_CTX = RAW_MAZE_BOARD.getContext("2d")
+
+        //? this will hold the final output
         const MAZE_BOARD = new Canvas(
-            TEXTURE_INFO.size * (MAZE_CONFIG.width + 1),
-            TEXTURE_INFO.size * (MAZE_CONFIG.height + 1),
+            TEXTURE_INFO.size * MAZE_CONFIG.width + TEXTURE_INFO.wallWidth,
+            TEXTURE_INFO.size * MAZE_CONFIG.height + TEXTURE_INFO.wallWidth,
         )
         const MAZE_BOARD_CTX = MAZE_BOARD.getContext("2d")
+
+        //? fill bg with white
+        MAZE_BOARD_CTX.fillStyle = "white"
+        MAZE_BOARD_CTX.fillRect(0, 0, RAW_MAZE_BOARD.width, RAW_MAZE_BOARD.height)
+
         const maze = generateMaze(MAZE_CONFIG.height, MAZE_CONFIG.width)
 
+        //? draw the wall
         for (const i of maze) {
             for (const j of i) {
                 const textures: ImageData[] = []
                 if (j.topWall)
-                    textures.push(getTexture(TEXTURE_MAPPING[WallType.TOP_WALL_NORMAL]))
+                    textures.push(getTexture(TEXTURE_MAPPING[TextureType.TOP_WALL][0]))
 
                 if (j.leftWall)
-                    textures.push(getTexture(TEXTURE_MAPPING[WallType.LEFT_WALL_NORMAL]))
+                    textures.push(getTexture(TEXTURE_MAPPING[TextureType.LEFT_WALL][0]))
+
+                // //? randomly placing custom texture that will act like a wall
+                // const CUSTOM_TEXTURE_CHANCE = 10
+                // if (randomInt(0, 100) < CUSTOM_TEXTURE_CHANCE) {
+                //     try {
+                //         const CUSTOM_TEXTURES = TEXTURE_MAPPING[TextureType.CUSTOM_TEXTURE_WALL]
+                //         //* empty wall: right wall of the cell
+                //         if ([j.topWall, j.leftWall, maze[j.y + 1][j.x].topWall].every(v => v)) {
+                //             textures.push(getTexture(CUSTOM_TEXTURES[randomInt(0, CUSTOM_TEXTURES.length)]))
+                //             j.leftWall = false
+                //         }
+
+                //         //* empty wall: left wall
+                //         if ([j.topWall, maze[j.y + 1][j.x].topWall, maze[j.y][j.x + 1].leftWall].every(v => v)) {
+                //             textures.push(getTexture(CUSTOM_TEXTURES[randomInt(0, CUSTOM_TEXTURES.length)]))
+                //             maze[j.y][j.x + 1].leftWall = false
+                //         }
+
+                //         //* empty wall: top wall
+                //         if ([j.leftWall, maze[j.y + 1][j.x].topWall, maze[j.y][j.x + 1].leftWall].every(v => v)) {
+                //             textures.push(getTexture(CUSTOM_TEXTURES[randomInt(0, CUSTOM_TEXTURES.length)]))
+                //             maze[j.y + 1][j.x].topWall = false
+                //         }
+
+                //         //* empty wall: bottom wall
+                //         if ([j.topWall, j.leftWall, maze[j.y][j.x + 1].leftWall].every(v => v)) {
+                //             textures.push(getTexture(CUSTOM_TEXTURES[randomInt(0, CUSTOM_TEXTURES.length)]))
+                //             j.topWall = false
+                //         }
+                //     } catch (e) {}
+                // }
 
                 //? handle edge cases where if the current cell doesn't have any wall set,
                 //? it would cause the bottom-right corner for the cell at (x - 1, y - 1)
@@ -276,12 +328,12 @@ export default class MazeCommand extends SlashCommand {
                         maze[j.y - 1][j.x].leftWall &&
                         maze[j.y][j.x - 1].topWall
                     )
-                        textures.push(getTexture(TEXTURE_MAPPING[WallType.BOTTOM_RIGHT_CORNER_NORMAL]))
+                        textures.push(getTexture(TEXTURE_MAPPING[TextureType.BOTTOM_RIGHT_WALL_CORNER][0]))
                     else continue
                 }
 
                 const BLENDED_DATA = blendImageData(textures)
-                MAZE_BOARD_CTX.putImageData(
+                RAW_MAZE_BOARD_CTX.putImageData(
                     BLENDED_DATA,
                     j.x * TEXTURE_INFO.size, j.y * TEXTURE_INFO.size,
                 )
@@ -290,25 +342,34 @@ export default class MazeCommand extends SlashCommand {
 
         //? fill in the bottom border of the maze
         for (var i = 0; i < MAZE_CONFIG.width; i++) {
-            MAZE_BOARD_CTX.putImageData(
-                getTexture(TEXTURE_MAPPING[WallType.TOP_WALL_NORMAL]),
+            RAW_MAZE_BOARD_CTX.putImageData(
+                getTexture(TEXTURE_MAPPING[TextureType.TOP_WALL][0]),
                 i * TEXTURE_INFO.size, MAZE_CONFIG.height * TEXTURE_INFO.size
             )
         }
 
         //? fill in the right border of the maze
         for (var i = 0; i < MAZE_CONFIG.height; i++) {
-            MAZE_BOARD_CTX.putImageData(
-                getTexture(TEXTURE_MAPPING[WallType.LEFT_WALL_NORMAL]),
+            RAW_MAZE_BOARD_CTX.putImageData(
+                getTexture(TEXTURE_MAPPING[TextureType.LEFT_WALL][0]),
                 MAZE_CONFIG.width * TEXTURE_INFO.size, i * TEXTURE_INFO.size
             )
         }
 
         //? fill in the bottom-right corner of the maze
-        MAZE_BOARD_CTX.putImageData(
-            getTexture(TEXTURE_MAPPING[WallType.BOTTOM_RIGHT_CORNER_NORMAL]),
+        RAW_MAZE_BOARD_CTX.putImageData(
+            getTexture(TEXTURE_MAPPING[TextureType.BOTTOM_RIGHT_WALL_CORNER][0]),
             MAZE_CONFIG.width * TEXTURE_INFO.size,
             MAZE_CONFIG.height * TEXTURE_INFO.size,
+        )
+
+        //? merge raw data of maze with background
+        MAZE_BOARD_CTX.putImageData(
+            blendImageData([
+                MAZE_BOARD_CTX.getImageData(0, 0, MAZE_BOARD.width, MAZE_BOARD.height),
+                RAW_MAZE_BOARD_CTX.getImageData(0, 0, RAW_MAZE_BOARD.width, RAW_MAZE_BOARD.height),
+            ]),
+            0, 0
         )
 
         const MAZE_FILE = new AttachmentBuilder(
