@@ -3,12 +3,28 @@ import { Services } from "../../Services";
 import rplaceAlliance, { Template } from "../../Services/Database/models/rplaceAlliance";
 
 async function createAlliance(interaction: ChatInputCommandInteraction, services: Services) {
-    const templates = await parseEndu(interaction.options.getString("template"), interaction.options.getString("faction"), services);
+    const templates = await parseEndu(interaction.options.getString("template"), interaction.options.getString("faction"), services)
+        .catch(() => {
+            interaction.reply({ content: "Failed to parse link. Check if the template is Endu compliant.", ephemeral: true });
+            return;
+        });
+
+    const invite = await interaction.client.fetchInvite(interaction.options.getString("invite"))
+        .catch(() => {
+            interaction.reply({ content: "Failed to fetch. Bad Invite.", ephemeral: true });
+            return;
+        });
+
+    if (!invite) {
+        interaction.reply({ content: "Failed to fetch. Bad Invite.", ephemeral: true });
+        return;
+    }
+    
     const alliance : rplaceAlliance = {
         name: interaction.options.getString("faction"),
         templates: templates || [],
         enduTemplate: interaction.options.getString("template"),
-        inviteUrl: interaction.options.getString("invite"),
+        inviteUrl: invite.url,
         theirDiplos: [interaction.options.getUser("theirdiplo").id],
         ourDiplos: [interaction.options.getUser("ourdiplo").id],
         ticket: interaction.channelId
@@ -29,13 +45,23 @@ async function editAlliance(interaction: ChatInputCommandInteraction, services: 
         return;
     }
 
-    const templates = await parseEndu(interaction.options.getString("template"), alliance.name, services);
+    const templates = await parseEndu(interaction.options.getString("template"), alliance.name, services)
+        .catch(() => {
+            interaction.reply({ content: "Failed to parse link. Check if the template is Endu compliant.", ephemeral: true });
+            return;
+        });
+
+    const invite = await interaction.client.fetchInvite(interaction.options.getString("invite"))
+        .catch(() => {
+            interaction.reply({ content: "Failed to fetch. Bad invite.", ephemeral: true });
+            return;
+        });
     
     const newAlliance : rplaceAlliance = {
         name: alliance.name,
         templates: templates || alliance.templates,
         enduTemplate: interaction.options.getString("template") || alliance.enduTemplate,
-        inviteUrl: interaction.options.getString("invite") || alliance.inviteUrl,
+        inviteUrl: (invite && invite.url) || alliance.inviteUrl,
         theirDiplos: [interaction.options.getUser("theirdiplo")?.id || alliance.theirDiplos[0]],
         ourDiplos: [interaction.options.getUser("ourdiplo")?.id || alliance.ourDiplos[0]],
         ticket: interaction.channelId || alliance.ticket
@@ -81,7 +107,7 @@ async function listAlliances(interaction: ChatInputCommandInteraction, services:
     const embed = new EmbedBuilder()
         .setColor(0x72bfed)
         .setTitle("Bluey's r/Place Alliances")
-        .setDescription(`${alliances.map(alliance => "\`"+ alliance.name +"\`").join(", ") || "No alliances found."}`);
+        .setDescription(`${alliances.map(alliance => "\`"+ alliance.name +"\`").join(", ") || "No alliances found. Add one with `/rplace alliance create`."}`);
 
     await interaction.reply({ embeds: [embed] });
 }
@@ -177,8 +203,9 @@ async function editCustomTemplate(interaction: ChatInputCommandInteraction, serv
     await interaction.reply({ content: `Custom template \`${template.name}\` edited in alliance with faction \`${alliance.name}\`.`, embeds: embed });
 }
 
+// TODO: support for more then 10 embeds
 async function embedAlliance(alliance: rplaceAlliance, interaction: ChatInputCommandInteraction) {
-    const invite = await interaction.client.fetchInvite(alliance.inviteUrl);
+    const invite = await interaction.client.fetchInvite(alliance.inviteUrl)
 
     const embeds : EmbedBuilder[] = [];
     const embed = new EmbedBuilder()
@@ -211,6 +238,10 @@ async function embedAlliance(alliance: rplaceAlliance, interaction: ChatInputCom
             .setImage(template.source);
 
         embeds.push(templateEmbed);
+
+        if (embeds.length === 10) {
+            break;
+        }
     }
 
     if (embeds.length === 1) {
@@ -234,6 +265,7 @@ async function parseEndu(endu: string, faction: string, services: Services) {
     if (!response) {
         return;
     }
+
     const unparsedTemplates = response.templates;
     const templates : Template[] = [];
 

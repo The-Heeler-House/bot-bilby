@@ -22,6 +22,10 @@ export default class EventManager {
                 }
             })
             .catch(async error => {
+                if (error.code === "ENOENT") {
+                    logger.warning("No context commands directory found. Skipping context commands.");
+                    return;
+                }
                 logger.error("Encountered an error when trying to get events directory. See error below.\n", error.message, "\n", error.stack);
                 await services.pager.sendCrash(error, "Event registeration", services.state.state.pagedUsers);
                 process.exit(1);
