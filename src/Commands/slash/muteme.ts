@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
+import { AUTHOR_FIELD } from "../constants";
 
 export default class MuteMeCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -18,12 +19,12 @@ export default class MuteMeCommand extends SlashCommand {
         const hour = TIME === 1 ? "hour" : "hours"
         if (interaction.member instanceof GuildMember) {
             const EMBED = new EmbedBuilder()
+                .setAuthor(AUTHOR_FIELD)
                 .setColor(0xe27a37)
                 .setTitle("Muted!")
                 .setDescription(`You have been muted for ${TIME} ${hour}! Thank you for using the Heeler House's detox service.`)
                 .setImage("https://c.tenor.com/Y1rAFV25rVEAAAAC/tenor.gif")
                 .setTimestamp()
-                .setFooter({ text: "Bot Billy" })
             await interaction.reply({
                 embeds: [EMBED]
             })
