@@ -52,14 +52,14 @@ export default class CharacterCommand extends SlashCommand {
                 .setImage(IMAGE_URL)
                 .setTimestamp()
                 .setFooter({ text: 'Fetched from Blueypedia by Bot Bilby' })
-            
+
             if (data["breed"]){ embed.addFields([{name: "Breed", value: data["breed"], inline: true}])};
             if (data["gender"]){ embed.addFields([{name: "Gender", value: data["gender"], inline: true}])};
             if (data["age"]){ embed.addFields([{name: "Age", value: data["age"], inline: true}])};
-            
+
             return embed
         }
-        
+
         try {
             await interaction.reply({
                 embeds: [await generateCharacterEmbed(BLUEYPEDIA_URL + OPTION)],
@@ -70,9 +70,9 @@ export default class CharacterCommand extends SlashCommand {
                 content: "Character not found! Are you sure you selected a valid character from the list?",
                 ephemeral: true
             })
-        } 
+        }
     }
-    
+
     async autocomplete(interaction: AutocompleteInteraction, services: Services) {
         const BLUEYPEDIA_URL = "https://blueypedia.fandom.com"
         const CHARACTER_CATEGORY_URL = `${BLUEYPEDIA_URL}/wiki/Category:Characters`
@@ -90,14 +90,18 @@ export default class CharacterCommand extends SlashCommand {
             .toArray()
             .filter(v => !v.text.startsWith("Category:"))
             .filter(v => !EXCLUDED_PAGE.includes(v.text))
-        
+
         const focusedValue = interaction.options.getFocused();
 
-        const filtered = LIST_OF_CHARACTERS.filter(choice => choice.text.toLowerCase().startsWith(focusedValue))
-            .slice(0, 25);
+        const filtered = LIST_OF_CHARACTERS.filter(choice =>
+            choice.text
+                .toLowerCase()
+                .trim()
+                .includes(focusedValue.toLowerCase().trim()))
+            .slice(0, 25)
 
         await interaction.respond(
 			filtered.map(choice => ({ name: choice.text, value: choice.url }))
-		);
+		)
     }
 }
