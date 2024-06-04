@@ -5,8 +5,10 @@ import {
     ChatInputCommandInteraction,
     ComponentType,
     EmbedBuilder,
+    MessageReaction,
     ReactionCollector,
-    SlashCommandBuilder
+    SlashCommandBuilder,
+    User
 } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
@@ -202,14 +204,14 @@ export default class HangmanCommand extends SlashCommand {
             }
 
             const COLLECTOR_FILTER = interaction.options.getSubcommand() === "multiplayer"
-                ? (reaction, user) =>
+                ? (reaction: MessageReaction, _: User) =>
                     reaction.message.id == MESSAGE.id &&
                     i.includes(reaction.emoji.name)
-                : (reaction, user) =>
+                : (reaction: MessageReaction, user: User) =>
                     reaction.message.id == MESSAGE.id &&
                     i.includes(reaction.emoji.name) &&
                     user.id == interaction.user.id
-            
+
             LETTER_COLLECTOR_LIST.push(
                 MESSAGE.createReactionCollector({
                     time: TIMEOUT,
@@ -235,6 +237,7 @@ export default class HangmanCommand extends SlashCommand {
 
                 if (FOUND_CHAR_IN.length == 0) {
                     gameState.guessedLetters.push(CHAR)
+                    gameState.guessedLetters.sort()
                     gameState.currentTries++
 
                     if (gameState.currentTries >= gameState.maxTries) {
