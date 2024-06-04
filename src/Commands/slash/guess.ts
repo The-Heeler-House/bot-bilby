@@ -13,6 +13,7 @@ import { Services } from "../../Services"
 import SlashCommand from "../SlashCommand"
 import * as fs from "fs"
 import * as path from "path"
+import { AUTHOR_FIELD } from "../constants"
 
 type Episode = {
     season: string
@@ -79,10 +80,10 @@ export default class GuessCommand extends SlashCommand {
             topLeaderboard = topLeaderboard.slice(0, 10)
 
             const leaderboardEmbed = new EmbedBuilder()
+                .setAuthor(AUTHOR_FIELD)
                 .setColor(0x72bfed)
                 .setTitle("Guesser Leaderboard!")
                 .setTimestamp()
-                .setFooter({ text: "Bot Bilby" })
             var desc = "", cnt = 1
             for (const player of topLeaderboard) {
                 // ${player.user} is in the format <@id>. change it to id
@@ -237,10 +238,10 @@ export default class GuessCommand extends SlashCommand {
                 scores: [string, number][]
             ) {
                 const leaderboardEmbed = new EmbedBuilder()
+                    .setAuthor(AUTHOR_FIELD)
                     .setColor(0x72bfed)
                     .setTitle("Multiplayer Guesser Results!")
                     .setTimestamp()
-                    .setFooter({ text: "Bot Bilby" })
                 var desc = ""
 
                 scores.sort((a, b) => b[1] - a[1])

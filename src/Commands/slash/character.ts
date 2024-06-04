@@ -9,6 +9,7 @@ import { Services } from "../../Services"
 import SlashCommand from "../SlashCommand"
 import { load as parse } from "cheerio"
 import { getAverageColor } from "fast-average-color-node"
+import { AUTHOR_FIELD } from "../constants"
 
 export default class CharacterCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -46,12 +47,13 @@ export default class CharacterCommand extends SlashCommand {
             }
 
             const embed = new EmbedBuilder()
+                .setAuthor(AUTHOR_FIELD)
                 .setColor(IMAGE_COLOR.hex as ColorResolvable)
                 .setTitle($CHARACTER(CHARACTER_NAME_PATH).text())
                 .setURL(url)
                 .setImage(IMAGE_URL)
                 .setTimestamp()
-                .setFooter({ text: 'Fetched from Blueypedia by Bot Bilby' })
+                .setFooter({ text: 'Fetched from Blueypedia' })
 
             if (data["breed"]){ embed.addFields([{name: "Breed", value: data["breed"], inline: true}])};
             if (data["gender"]){ embed.addFields([{name: "Gender", value: data["gender"], inline: true}])};
