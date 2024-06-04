@@ -31,6 +31,7 @@ export default class DatabaseService {
         this.collections.guess = databases.bilby.collection("guess");
         this.collections.rplaceIdMap = databases.rplace.collection("rplaceIdMap");
         this.collections.rplaceAlliances = databases.rplace.collection("rplaceAlliances");
+        this.collections.rplaceTemplates = databases.rplace.collection("rplaceTemplates");
     }
 }
 
@@ -40,4 +41,5 @@ export interface DatabaseCollections {
     guess?: mongoDB.Collection,
     rplaceIdMap?: mongoDB.Collection
     rplaceAlliances?: mongoDB.Collection
+    rplaceTemplates?: mongoDB.Collection
 }
