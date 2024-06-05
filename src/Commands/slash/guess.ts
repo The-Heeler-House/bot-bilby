@@ -562,12 +562,16 @@ export default class GuessCommand extends SlashCommand {
             }
         }
 
-        if (interaction.options.getSubcommand() === "leaders") {
-            interaction.reply({ embeds: [await generateLeaderboard()] })
-        } else if (interaction.options.getSubcommand() === "multiplayer") {
-            await playMultiplayerInit()
-        } else {
-            await playSingleplayer()
+        switch (interaction.options.getSubcommand()) {
+            case "leaders":
+                await interaction.reply({ embeds: [await generateLeaderboard()] })
+                break
+            case "multiplayer":
+                await playMultiplayerInit()
+                break
+            case "play":
+                await playSingleplayer()
+                break
         }
     }
 }
