@@ -24,12 +24,12 @@ export default class LinkedMessageAddEvent extends BotEvent {
 
                 try {
                     if (isTHHorDevServer(guildId)) continue // Skip if the linked message is NOT from THH or the dev server
+                    if (message.author.bot) continue; // Skip if the message author is a bot
+                    if (message.channel.id != channelIds.staff) continue; // Skip if the channel is not #staff
 
                     const channel = await message.client.channels.fetch(channelId);
                     if (!channel) continue; // Skip if the channel is not available
                     if (channel.type !== ChannelType.GuildText) continue; // Skip if the channel is not a text channel
-                    if (message.author.bot) continue; // Skip if the message author is a bot
-                    if (message.channel.id != channelIds.staff) continue; // Skip if the channel is not #staff
 
                     const linkedMessage = await channel.messages.fetch(messageId);
 
