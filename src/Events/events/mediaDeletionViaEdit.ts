@@ -9,7 +9,7 @@ export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageUpdate;
 
     async execute(services: Services, oldMessage: Message, newMessage: Message) {
-        if (isTHHorDevServer(oldMessage.guild.id)) return;
+        if (!isTHHorDevServer(oldMessage.guild.id)) return;
 
         if ([ChannelType.DM, ChannelType.GroupDM].includes(oldMessage.channel.type)) return; // Don't log DMs.
 

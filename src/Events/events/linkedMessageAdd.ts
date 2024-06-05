@@ -9,7 +9,7 @@ export default class LinkedMessageAddEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(services: Services, message: Message) {
-        if (isTHHorDevServer(message.guild.id)) return;
+        if (!isTHHorDevServer(message.guild.id)) return;
 
         const messageLinks = message.content.match(
             /https?:\/\/discord\.com\/channels\/\d+\/\d+\/\d+/g
@@ -23,7 +23,7 @@ export default class LinkedMessageAddEvent extends BotEvent {
                 );
 
                 try {
-                    if (isTHHorDevServer(guildId)) continue // Skip if the linked message is NOT from THH or the dev server
+                    if (!isTHHorDevServer(guildId)) continue // Skip if the linked message is NOT from THH or the dev server
                     if (message.author.bot) continue; // Skip if the message author is a bot
                     if (message.channel.id != channelIds.staff) continue; // Skip if the channel is not #staff
 

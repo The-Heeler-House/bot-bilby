@@ -9,7 +9,7 @@ export default class ReactionTrackingAddEvent extends BotEvent {
     public eventName = Events.MessageReactionRemove;
 
     async execute(services: Services, reaction: MessageReaction, user: User) {
-        if (isTHHorDevServer(reaction.message.guildId)) return;
+        if (!isTHHorDevServer(reaction.message.guildId)) return;
 
         if (reaction.message.partial) {
             // The message is only partial, try to fetch the full message.

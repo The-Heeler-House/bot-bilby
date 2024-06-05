@@ -8,7 +8,7 @@ export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(services: Services, message: Message) {
-        if (isTHHorDevServer(message.guild.id)) return;
+        if (!isTHHorDevServer(message.guild.id)) return;
 
         if (message.mentions.roles.has(roleIds.staff) || message.mentions.roles.has(roleIds.mod)) {
             const staffChatChannel = await message.client.channels.fetch(channelIds.staff) as TextChannel;
