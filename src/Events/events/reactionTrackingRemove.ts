@@ -1,14 +1,15 @@
-import { Events, GuildEmoji, GuildMember, Message, MessageReaction, TextChannel, User } from "discord.js";
-import BotEvent, { MessageCreateEventData } from "../BotEvent";
-import { THH_SERVER_ID, channelIds } from "../../constants";
+import { Events, GuildEmoji, MessageReaction, TextChannel, User } from "discord.js";
+import BotEvent from "../BotEvent";
+import { channelIds } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
+import { isTHHorDevServer } from "../HelperFunction";
 
 export default class ReactionTrackingAddEvent extends BotEvent {
     public eventName = Events.MessageReactionRemove;
 
     async execute(services: Services, reaction: MessageReaction, user: User) {
-        if (process.env.DEVELOPMENT_GUILD ? reaction.message.guildId != process.env.DEVELOPMENT_GUILD : reaction.message.guildId != THH_SERVER_ID) return;
+        if (isTHHorDevServer(reaction.message.guildId)) return;
 
         if (reaction.message.partial) {
             // The message is only partial, try to fetch the full message.
