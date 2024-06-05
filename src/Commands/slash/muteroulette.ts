@@ -515,19 +515,19 @@ export default class MuterouletteCommand extends SlashCommand {
                 } else {
                     // checks if the user has a double trouble powerup
                     if (powerUps.includes("Double Trouble")) {
-                        await doubleTrouble(604800);
+                        await doubleTrouble(10080);
                         return;
                     }
 
                     // checks if the user has a raise the stakes powerup
                     if (powerUps.includes("Raise the Stakes")) {
-                        await raiseTheStakes(604800);
+                        await raiseTheStakes(10080);
                         return;
                     }
 
                     // checks if the user has a shield powerup
                     if (powerUps.includes("Shield")) {
-                        await shield(604800);
+                        await shield(10080);
                         return;
                     }
 
@@ -543,7 +543,7 @@ export default class MuterouletteCommand extends SlashCommand {
                             ]
                         }`,
                     });
-                    await muted(604800);
+                    await muted(10080);
                     return;
                 }
             }
