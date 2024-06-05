@@ -8,7 +8,7 @@ export default class AccountAgeGateEvent extends BotEvent {
     public eventName = Events.GuildMemberAdd;
 
     async execute(services: Services, member: GuildMember) {
-        if (isTHHorDevServer(member.guild.id)) return;
+        if (!isTHHorDevServer(member.guild.id)) return;
 
         if (!services.state.state.joinGate) return; // The join age gate is disabled.
 

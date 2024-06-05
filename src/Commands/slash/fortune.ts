@@ -31,16 +31,13 @@ export default class FortuneCommand extends SlashCommand {
         ]
         const SELECTED = FORTUNES[randomInt(0, FORTUNES.length)]
         const TARGET = interaction.options.getMentionable("person")
-        // check if target is a member
-        if (!(TARGET instanceof GuildMember)) {
-            await interaction.reply({
-                content: "I couldn't find that user!",
-                ephemeral: true
-            })
-            return
-        }
 
-        var output = TARGET === null ? `Your fortune: ${SELECTED}` : `\`${TARGET.displayName}\`'s fortune: ${SELECTED}`
+        var output = ""
+        // check if target is a member
+        if (!(TARGET instanceof GuildMember))
+            output = `:fortune_cookie: Your fortune: ${SELECTED}`
+        else
+            output = `:fortune_cookie: \`${TARGET.displayName}\`'s fortune: ${SELECTED}`
 
         await interaction.reply({
             content: output

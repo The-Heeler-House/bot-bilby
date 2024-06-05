@@ -123,7 +123,7 @@ export default class CommandPreprocessor {
      * @param message The message received from Discord.
      */
     async onTextCommandPreprocess(message: Message, services: Services) {
-        if (isTHHorDevServer(message.guildId)) return;
+        if (!isTHHorDevServer(message.guildId)) return;
 
         if (!message.content.startsWith(process.env.PREFIX)) return;
         let content = message.content.replace(process.env.PREFIX, "");
