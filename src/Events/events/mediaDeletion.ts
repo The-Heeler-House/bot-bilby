@@ -1,14 +1,15 @@
-import { ChannelType, Events, GuildMember, Message, TextChannel } from "discord.js";
-import BotEvent, { MessageCreateEventData } from "../BotEvent";
-import { THH_SERVER_ID, channelIds } from "../../constants";
+import { ChannelType, Events, Message, TextChannel } from "discord.js";
+import BotEvent from "../BotEvent";
+import { channelIds } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
+import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
 export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageDelete;
 
     async execute(services: Services, message: Message) {
-        if (process.env.DEVELOPMENT_GUILD ? message.guild.id != process.env.DEVELOPMENT_GUILD : message.guild.id != THH_SERVER_ID) return;
+        if (isTHHorDevServer(message.guild.id)) return;
 
         if ([ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return; // Don't log DMs.
 
