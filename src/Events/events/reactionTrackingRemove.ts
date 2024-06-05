@@ -3,7 +3,7 @@ import BotEvent from "../BotEvent";
 import { channelIds } from "../../constants";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
-import { isTHHorDevServer } from "../HelperFunction";
+import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
 export default class ReactionTrackingAddEvent extends BotEvent {
     public eventName = Events.MessageReactionRemove;

@@ -5,7 +5,7 @@ import { readdir } from "fs/promises";
 import { THH_SERVER_ID } from "../constants";
 import * as logger from "../logger";
 import { Services } from "../Services";
-import { isTHHorDevServer } from "../Events/HelperFunction";
+import { isTHHorDevServer } from "../Helper/EventsHelper";
 
 /**
  * The Command Preprocessor is in charge of registering commands and executing them if they meet the right conditions.

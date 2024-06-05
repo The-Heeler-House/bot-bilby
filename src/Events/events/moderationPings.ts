@@ -2,7 +2,7 @@ import { Events, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { roleIds, channelIds } from "../../constants";
 import { Services } from "../../Services";
-import { isTHHorDevServer } from "../HelperFunction";
+import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
 export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageCreate;

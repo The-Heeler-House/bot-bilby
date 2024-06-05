@@ -2,7 +2,7 @@ import { Events, GuildMember } from "discord.js";
 import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
-import { isTHHorDevServer } from "../HelperFunction";
+import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
 export default class AccountAgeGateEvent extends BotEvent {
     public eventName = Events.GuildMemberAdd;
