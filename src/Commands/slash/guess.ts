@@ -68,16 +68,10 @@ export default class GuessCommand extends SlashCommand {
             }
         }
 
-        async function getTopLeaderboard() {
-            const cursor = leaderboard.find().sort({ score: -1 }).limit(20)
-            const leaderboardArray = await cursor.toArray()
-            return leaderboardArray
-        }
-
         async function generateLeaderboard() {
-            var topLeaderboard = await getTopLeaderboard()
+            const entryGenerator = leaderboard.find().sort({ score: -1 })
             // get only the first 10 people, for some reason
-            topLeaderboard = topLeaderboard.slice(0, 10)
+            const MAX_ENTRY = 10
 
             const leaderboardEmbed = new EmbedBuilder()
                 .setAuthor(AUTHOR_FIELD)
@@ -85,14 +79,25 @@ export default class GuessCommand extends SlashCommand {
                 .setTitle("Guesser Leaderboard!")
                 .setTimestamp()
             var desc = "", cnt = 1
-            for (const player of topLeaderboard) {
+            while (cnt <= MAX_ENTRY) {
                 // ${player.user} is in the format <@id>. change it to id
-                const id = player.user.slice(2, -1)
+                const playerEntry = await entryGenerator.tryNext()
+                if (playerEntry == null) break
+                const id = playerEntry.user.slice(2, -1)
                 try {
                     const user = await interaction.guild.members.fetch(id)
-                    desc += `${cnt}. \`${user.displayName}\`: **${player.score} Episodes**\n`
+                    desc += `${cnt}. \`${user.displayName}\`: **${playerEntry.score} Episodes**\n`
                     cnt++
                 } catch (err) {}
+            }
+
+            const thisUserScore = await leaderboard
+                .findOne({ user: `<@${interaction.user.id}>` }, { sort: {score: -1} })
+
+            if (thisUserScore) {
+                desc += `\nYour highscore: **${thisUserScore.score} Episodes**`
+            } else {
+                desc += `\nYour highscore: **none yet**`
             }
             leaderboardEmbed.setDescription(desc)
             return leaderboardEmbed
@@ -195,7 +200,7 @@ export default class GuessCommand extends SlashCommand {
                         currentEpisode.name.toLowerCase()
                     ) {
                         interaction.channel.send(
-                            `:Yes: **Correct!** <@${id}> receives 1 point!`
+                            `<:Yes:1090051438828326912> **Correct!** <@${id}> receives 1 point!`
                         )
                         var location = userID.findIndex(
                             (inner) => inner.indexOf(id) >= 0
@@ -467,7 +472,7 @@ export default class GuessCommand extends SlashCommand {
                         currentEpisode.name.toLowerCase()
                     ) {
                         score++
-                        await interaction.channel.send(":Yes: **Correct!**")
+                        await interaction.channel.send("<:Yes:1090051438828326912> **Correct!**")
                         timer -= 100
 
                         // ask the next question after a short delay to avoid flooding the channel
@@ -477,7 +482,7 @@ export default class GuessCommand extends SlashCommand {
                     } else {
                         // if the user's answer is incorrect and no hint has been given yet, ask for more information
                         await interaction.channel.send(
-                            ":No: **Incorrect!** Would you like to ask for a hint or exit the game? (h/e). Otherwise, guess again below!"
+                            "<:No:1090051727732002907> **Incorrect!** Would you like to ask for a hint or exit the game? (h/e). Otherwise, guess again below!"
                         )
 
                         const hintMessage =
@@ -499,7 +504,7 @@ export default class GuessCommand extends SlashCommand {
                         var useHint = false
                         if (option === "h") {
                             await interaction.channel.send(
-                                `:BlueyThinkHard: **Hint**: Season ${currentEpisode.season}, Episode ${currentEpisode.episode}`
+                                `<:BlueyThinkHard:1172021947580821554> **Hint**: Season ${currentEpisode.season}, Episode ${currentEpisode.episode}`
                             )
                             const retryMessage =
                                 await interaction.channel.awaitMessages({
@@ -520,7 +525,7 @@ export default class GuessCommand extends SlashCommand {
                         ) {
                             score += 0.5
                             await interaction.channel.send(
-                                `:Yes: **Correct!** ${
+                                `<:Yes:1090051438828326912> **Correct!** ${
                                     useHint ? "(With Hint)" : "(Second Guess)"
                                 }`
                             )
@@ -533,7 +538,7 @@ export default class GuessCommand extends SlashCommand {
                             // reveal the answer and move on to the next question
                             remainingLives--
                             await interaction.channel.send(
-                                `:No: **Incorrect!** The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`
+                                `<:No:1090051727732002907> **Incorrect!** The answer is "${currentEpisode.name}". You have ${remainingLives} lives remaining.`
                             )
                             // ask the next question after a short delay to avoid flooding the channel
                             setTimeout(() => {
