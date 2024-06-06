@@ -20,5 +20,5 @@ jobs:
                     git fetch --all && git reset --hard origin/main
                     git pull origin main --force
                     npm install
-                    pm2 start npm -- run "bot-unix"
+                    pm2 start --name "production" npm -- run "bot-unix"
                     echo 'Deployment successful to DigitalOcean'
