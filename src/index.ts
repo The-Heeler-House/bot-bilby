@@ -44,6 +44,8 @@ client.on(Events.ClientReady, async () => {
 
     logger.command("Online!");
 
+    services.pager.sendPage("Bot Bilby is online!");
+    
     client.user.setPresence({
         activities: [
             {
