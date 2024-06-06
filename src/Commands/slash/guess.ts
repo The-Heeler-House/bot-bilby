@@ -90,6 +90,15 @@ export default class GuessCommand extends SlashCommand {
                     cnt++
                 } catch (err) {}
             }
+
+            const thisUserScore = await leaderboard
+                .findOne({ user: `<@${interaction.user.id}>` }, { sort: {score: -1} })
+
+            if (thisUserScore) {
+                desc += `\nYour highscore: **${thisUserScore.score} Episodes**`
+            } else {
+                desc += `\nYour highscore: **none yet**`
+            }
             leaderboardEmbed.setDescription(desc)
             return leaderboardEmbed
         }
