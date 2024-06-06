@@ -1,6 +1,5 @@
 import {EmbedBuilder, Message } from "discord.js";
 import { Services } from "../../Services";
-import { AUTHOR_FIELD } from "../constants";
 import os from "os";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 
@@ -79,7 +78,6 @@ export default class StatusCommand extends TextCommand {
         ]
 
         const UPTIME_EMBED = new EmbedBuilder()
-            .setAuthor(AUTHOR_FIELD)
             .setColor(0x72bfed)
             .setDescription(OUTPUT.join("\n"))
             .setTimestamp()

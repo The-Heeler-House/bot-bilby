@@ -10,7 +10,6 @@ import SlashCommand from "../SlashCommand"
 import path from "path"
 import { readdir } from "fs/promises"
 import { createCanvas, loadImage } from "canvas"
-import { AUTHOR_FIELD } from "../constants"
 
 const BINGO_IMAGE_DIR = path.join(__dirname, "../../Assets/bingo-data")
 const FREE_SPACE_ITEM = "freespace.png"
@@ -60,7 +59,6 @@ export default class BingoCommand extends SlashCommand {
             BINGO_CARD.toBuffer(), {name: BINGO_FILENAME})
 
         const BINGO_EMBED = new EmbedBuilder()
-            .setAuthor(AUTHOR_FIELD)
             .setColor(0xe27a37)
             .setTitle("Bingo!")
             .setDescription(
