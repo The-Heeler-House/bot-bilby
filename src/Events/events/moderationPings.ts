@@ -1,14 +1,14 @@
-import { Events, GuildMember, Message, TextChannel } from "discord.js";
-import BotEvent, { MessageCreateEventData } from "../BotEvent";
-import { THH_SERVER_ID, roleIds, channelIds } from "../../constants";
+import { Events, Message, TextChannel } from "discord.js";
+import BotEvent from "../BotEvent";
+import { roleIds, channelIds } from "../../constants";
 import { Services } from "../../Services";
-import * as logger from "../../logger";
+import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
 export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(services: Services, message: Message) {
-        if (process.env.DEVELOPMENT_GUILD ? message.guild.id != process.env.DEVELOPMENT_GUILD : message.guild.id != THH_SERVER_ID) return;
+        if (!isTHHorDevServer(message.guild.id)) return;
 
         if (message.mentions.roles.has(roleIds.staff) || message.mentions.roles.has(roleIds.mod)) {
             const staffChatChannel = await message.client.channels.fetch(channelIds.staff) as TextChannel;

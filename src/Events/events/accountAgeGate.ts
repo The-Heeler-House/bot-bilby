@@ -1,14 +1,14 @@
-import { Events, GuildMember, Message } from "discord.js";
-import BotEvent, { MessageCreateEventData } from "../BotEvent";
-import { THH_SERVER_ID } from "../../constants";
+import { Events, GuildMember } from "discord.js";
+import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import * as logger from "../../logger";
+import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
 export default class AccountAgeGateEvent extends BotEvent {
     public eventName = Events.GuildMemberAdd;
 
     async execute(services: Services, member: GuildMember) {
-        if (process.env.DEVELOPMENT_GUILD ? member.guild.id != process.env.DEVELOPMENT_GUILD : member.guild.id != THH_SERVER_ID) return;
+        if (!isTHHorDevServer(member.guild.id)) return;
 
         if (!services.state.state.joinGate) return; // The join age gate is disabled.
 

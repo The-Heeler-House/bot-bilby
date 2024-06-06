@@ -6,6 +6,7 @@ import { readdir } from "fs/promises";
 import { THH_SERVER_ID } from "../constants";
 import * as logger from "../logger";
 import { Services } from "../Services";
+import { isTHHorDevServer } from "../Helper/EventsHelper";
 
 /**
  * The Command Preprocessor is in charge of registering commands and executing them if they meet the right conditions.
@@ -187,7 +188,7 @@ export default class CommandPreprocessor {
      * @param message The message received from Discord.
      */
     async onTextCommandPreprocess(message: Message, services: Services) {
-        if (process.env.DEVELOPMENT_GUILD ? message.guildId != process.env.DEVELOPMENT_GUILD : message.guildId != THH_SERVER_ID) return;
+        if (!isTHHorDevServer(message.guildId)) return;
 
         if (!message.content.startsWith(process.env.PREFIX)) return;
         let content = message.content.replace(process.env.PREFIX, "");
