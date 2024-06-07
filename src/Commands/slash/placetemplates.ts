@@ -3,10 +3,11 @@ import {
     SlashCommandBuilder,
     EmbedBuilder,
     AttachmentBuilder,
+    AuditLogOptionsType,
 } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
-import { Template } from "../../Services/Database/models/rplaceAlliance";
+import rplaceAlliance, { Template } from "../../Services/Database/models/rplaceAlliance";
 import { createCanvas, loadImage } from "canvas";
 import sharp from "sharp";
 import fetch from "node-fetch";
@@ -34,19 +35,19 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                     option
                         .setName("source")
                         .setDescription("The image link of the template.")
-                        .setRequired(false)
+                        .setRequired(true)
                 )
                 .addIntegerOption((option) =>
                     option
                         .setName("x")
                         .setDescription("The X coordinate of the template.")
-                        .setRequired(false)
+                        .setRequired(true)
                 )
                 .addIntegerOption((option) =>
                     option
                         .setName("y")
                         .setDescription("The Y coordinate of the template.")
-                        .setRequired(false)
+                        .setRequired(true)
                 )
         )
         .addSubcommand((subcommand) =>
@@ -97,10 +98,14 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                 )
                 .addStringOption((option) =>
                     option
-                        .setName("name")
+                        .setName("group")
                         .setDescription("The name of the template group.")
                         .setRequired(true)
-                        .setAutocomplete(true)
+                        .setChoices(
+                            { name: "Bluey", value: "bluey" },
+                            { name: "Bluey and Allies", value: "allies" },
+                            { name: "Bluey and P3ACE", value: "p3ace"}
+                        )
                 )
         ) 
         .addSubcommand((subcommand) =>
@@ -204,7 +209,53 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                 files: result.media,
             });
         } else if (interaction.options.getSubcommand() === "render") {
-            interaction.reply("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            // read all the templates, and render them on a 1000px by 1000px transparent canvas, where the top left pixel is 1, 1.
+            const templates = await services.database.collections.rplaceTemplates.find().toArray() as unknown as Template[];
+
+            const canvas = createCanvas(1000, 1000);
+            const ctx = canvas.getContext("2d");
+
+            if (interaction.options.getString("group") === "allies") {
+                const alliances = await services.database.collections.rplaceAlliances.find().toArray() as unknown as rplaceAlliance[];
+                for (const alliance of alliances) {
+                    for (const template of alliance.templates) {
+                        const buffer = await fetch(template.source).then((res) => res.buffer());
+                        const converted = await sharp(buffer).toFormat('png').toBuffer();
+                        const img = await loadImage(converted);
+                        ctx.drawImage(img, template.x, template.y);
+                    }
+                }
+            }
+
+            if (interaction.options.getString("group") === "p3ace") {
+                const p3ace = await services.database.collections.rplaceAlliances.findOne<rplaceAlliance>({ name: "P3ACE" });
+                if (!p3ace) {
+                    await interaction.reply({
+                        content: "P3ACE alliance not found.",
+                        ephemeral: true,
+                    });
+                    return;
+                }
+                for (const template of p3ace.templates) {
+                    const buffer = await fetch(template.source).then((res) => res.buffer());
+                    const converted = await sharp(buffer).toFormat('png').toBuffer();
+                    const img = await loadImage(converted);
+                    ctx.drawImage(img, template.x, template.y);
+                }
+            }
+
+            for (const template of templates) {
+                const buffer = await fetch(template.source).then((res) => res.buffer());
+                const converted = await sharp(buffer).toFormat('png').toBuffer();
+                const img = await loadImage(converted);
+                ctx.drawImage(img, template.x, template.y);
+            }
+
+            const buffer = canvas.toBuffer();
+
+            const attachment = new AttachmentBuilder(buffer, { name: "rplace-templates.png" });
+
+            await interaction.reply({ files: [attachment] });
         } else if (interaction.options.getSubcommand() === "export") {
             interaction.reply("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         }
@@ -270,25 +321,67 @@ async function embedTemplates(
 
 async function quadPixels(image: string) {
     // Convert the image string to a buffer
-
     const buffer = await fetch(image).then((res) => res.buffer());
-
     const converted = await sharp(buffer).toFormat('png').toBuffer();
 
-    // Load the image into a canvas
+    // get imagedata form buffer
     const img = await loadImage(converted);
+    
+    // Get the original width and height
+    const originalWidth = img.width;
+    const originalHeight = img.height;
+        
+    const canvas = createCanvas(originalWidth, originalHeight);
+    
+    // Get the 2D context of the canvas
+    const context = canvas.getContext('2d');
+        
+    // Draw the original image onto the canvas with quadrupled dimensions
+    context.drawImage(img, 0, 0, originalWidth, originalHeight);
+        
+    // Get the modified image data
+    const modifiedImageData = context.getImageData(0, 0, originalWidth, originalHeight);
+        
+    // Directly manipulate the image data to quadruple the width and height
+    const modifiedWidth = modifiedImageData.width;
+    const modifiedHeight = modifiedImageData.height;
+    const modifiedData = modifiedImageData.data;
+    const scale = 4;
+    const newImageData = new Uint8ClampedArray(modifiedWidth * modifiedHeight * 4 * scale);
 
-    const canvas = createCanvas(img.width * 8, img.height * 8);
-    const ctx = canvas.getContext('2d');
+    if (newImageData.length > 4000000) {
+        return buffer;
+    }
+    
+    for (let y = 0; y < modifiedHeight; y++) {
+        for (let x = 0; x < modifiedWidth; x++) {
+            const sourceIndex = (y * modifiedWidth + x) * 4;
+            const targetIndex = (y * modifiedWidth * 4 * 4) + (x * 4 * 4);
+            
+            for (let i = 0; i < 4; i++) {
+                const value = modifiedData[sourceIndex + i];
+                
+                for (let j = 0; j < scale; j++) {
+                    for (let k = 0; k < scale; k++) {
+                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k)] = value;
+                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 4] = value;
+                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 8] = value;
+                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 12] = value;
+                    }
+                }
+            }
+        }
+    }
+        
+    // Update the modified image data with the quadrupled width and height
+    const newRetImageData = new ImageData(newImageData, modifiedWidth * 4, modifiedHeight * 4);
+    
+    const newCanvas = createCanvas(modifiedWidth * 4, modifiedHeight * 4);
+    const newContext = newCanvas.getContext('2d');
+    console.log(newRetImageData)
+    newContext.putImageData(newRetImageData, 0, 0);
 
-    // Disable image smoothing to prevent interpolation
-    ctx.imageSmoothingEnabled = false;
-
-    // Draw the image onto the canvas at the quadrupled size
-    ctx.drawImage(img, 0, 0, img.width * 8, img.height * 8);
-
-    // Convert the canvas to a Buffer and save to file
-    const newbuffer = canvas.toBuffer();
+    const newbuffer = newCanvas.toBuffer();
 
     return newbuffer;
 }

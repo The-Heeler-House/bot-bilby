@@ -30,6 +30,7 @@
     "fast-average-color-node": "^3.0.0",
     "mongodb": "^6.6.2",
     "node-fetch": "^2.7.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "webp-converter": "^2.3.3"
   }
 }
