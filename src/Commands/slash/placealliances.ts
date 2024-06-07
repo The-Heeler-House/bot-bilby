@@ -3,17 +3,16 @@ import {
     SlashCommandBuilder,
     EmbedBuilder,
     AttachmentBuilder,
+    ChannelType,
 } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import rplaceAlliance, {
     Template,
 } from "../../Services/Database/models/rplaceAlliance";
+import { createCanvas, loadImage, ImageData } from "canvas"
 import fetch from "node-fetch";
 import sharp from "sharp";
-import { createCanvas, loadImage, ImageData } from "canvas"
-import webp from 'webp-converter';
-import fs from 'fs';
 
 export default class rPlaceAlliancesCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -46,6 +45,13 @@ export default class rPlaceAlliancesCommand extends SlashCommand {
                         .setName("ourdiplo")
                         .setDescription("The main diplomat from our faction.")
                         .setRequired(true)
+                )
+                .addChannelOption((option) =>
+                    option
+                        .setName("ticket")
+                        .setDescription("The communication ticket for the alliance.")
+                        .setRequired(true)
+                        .addChannelTypes(ChannelType.GuildText)
                 )
                 .addStringOption((option) =>
                     option
@@ -83,6 +89,13 @@ export default class rPlaceAlliancesCommand extends SlashCommand {
                         .setName("ourdiplo")
                         .setDescription("The main diplomat from our faction.")
                         .setRequired(false)
+                )
+                .addChannelOption((option) =>
+                    option
+                        .setName("ticket")
+                        .setDescription("The communication ticket for the alliance.")
+                        .setRequired(false)
+                        .addChannelTypes(ChannelType.GuildText)
                 )
                 .addStringOption((option) =>
                     option
@@ -136,10 +149,10 @@ export default class rPlaceAlliancesCommand extends SlashCommand {
                         .setDescription("The name of the template.")
                         .setRequired(true)
                 )
-                .addStringOption((option) =>
+                .addAttachmentOption((option) =>
                     option
                         .setName("source")
-                        .setDescription("The image link of the template.")
+                        .setDescription("The image of the template.")
                         .setRequired(true)
                 )
                 .addIntegerOption((option) =>
@@ -188,10 +201,10 @@ export default class rPlaceAlliancesCommand extends SlashCommand {
                         .setDescription("The name of the template.")
                         .setRequired(true)
                 )
-                .addStringOption((option) =>
+                .addAttachmentOption((option) =>
                     option
                         .setName("source")
-                        .setDescription("The image link of the template.")
+                        .setDescription("The image of the template.")
                         .setRequired(false)
                 )
                 .addIntegerOption((option) =>
@@ -251,7 +264,7 @@ export default class rPlaceAlliancesCommand extends SlashCommand {
                 inviteUrl: invite.url,
                 theirDiplos: [interaction.options.getUser("theirdiplo").id],
                 ourDiplos: [interaction.options.getUser("ourdiplo").id],
-                ticket: interaction.channelId,
+                ticket: interaction.options.getChannel("ticket").id,
             };
 
             await services.database.collections.rplaceAlliances.insertOne(
@@ -319,7 +332,7 @@ export default class rPlaceAlliancesCommand extends SlashCommand {
                     interaction.options.getUser("ourdiplo")?.id ||
                         alliance.ourDiplos[0],
                 ],
-                ticket: interaction.channelId || alliance.ticket,
+                ticket: interaction.options.getChannel("ticket").id || alliance.ticket,
             };
 
             await services.database.collections.rplaceAlliances.updateOne(
@@ -410,9 +423,19 @@ export default class rPlaceAlliancesCommand extends SlashCommand {
                 return;
             }
 
+            const templateImage = interaction.options.getAttachment("source");
+
+            if (templateImage && templateImage.contentType !== "image/png") {
+                await interaction.reply({
+                    content: "For quality assurance, only PNG images are supported.",
+                    ephemeral: true,
+                });
+                return;
+            }
+
             const template: Template = {
                 name: interaction.options.getString("name"),
-                source: interaction.options.getString("source"),
+                source: templateImage.url,
                 x: interaction.options.getInteger("x"),
                 y: interaction.options.getInteger("y"),
                 custom: true,
@@ -526,10 +549,20 @@ export default class rPlaceAlliancesCommand extends SlashCommand {
                 return;
             }
 
+            const templateImage = interaction.options.getAttachment("source");
+
+            if (templateImage && templateImage.contentType !== "image/png") {
+                await interaction.reply({
+                    content: "For quality assurance, only PNG images are supported.",
+                    ephemeral: true,
+                });
+                return;
+            }
+
             const newTemplate = {
                 name: interaction.options.getString("name"),
                 source:
-                    interaction.options.getString("source") || template.source,
+                    (templateImage && templateImage.url) || template.source,
                 x: interaction.options.getInteger("x") || template.x,
                 y: interaction.options.getInteger("y") || template.y,
                 custom: true,
@@ -573,7 +606,7 @@ async function embedAlliance(
         .setColor(0x72bfed)
         .setTitle("r/Place Alliance Info")
         .setDescription(
-            `Faction Name: \`${alliance.name}\`\nServer Invite: [${invite.code}](${invite.url})\nTicket Channel: <#${alliance.ticket}>`
+            `Faction Name: \`${alliance.name}\`\nServer Invite: [${invite.code}](${invite.url})\nTicket Channel: <#${alliance.ticket}>` + (alliance.enduTemplate ? `\nEndu Template: [Link](${alliance.enduTemplate})` : "")
         )
         .setFields([
             {
@@ -599,6 +632,13 @@ async function embedAlliance(
         const coord = `Coordinates: [\`(${template.x}, ${template.y})\`](https://www.reddit.com/r/place/&cx=${template.x}&cy=${template.y})`;
 
         const scaledbuffer = await quadPixels(template.source)
+
+        const buffer = await fetch(template.source).then((res) => res.buffer());
+        const converted = await sharp(buffer).toFormat('png').toBuffer();
+        const img = await loadImage(converted);
+        const width = img.width;
+        const height = img.height;
+
         const highres = new AttachmentBuilder(scaledbuffer, { name: `${alliance.templates.indexOf(template)}.png` });
         
         media.push(highres);
@@ -607,9 +647,7 @@ async function embedAlliance(
             .setColor(0x72bfed)
             .setTitle(template.name)
             .setDescription(
-                template.custom
-                    ? coord
-                    : `Endu Template: [Link](${alliance.enduTemplate})\n${coord}`
+                coord + `\nWidth: \`${width}\` Height: \`${height}\`` + `\nImage Source: [Link](${template.source})`
             )
             .setFooter({
                 text: template.custom ? "Custom Template" : "Endu Template",
@@ -630,6 +668,8 @@ async function embedAlliance(
             .setDescription(
                 "No templates found. Add an Endu template with `/rplace alliance edit` or a custom template with `/rplace alliance customadd`."
             );
+
+        embeds.push(emptyEmbed);
     }
 
     return { embeds, media };
@@ -684,7 +724,7 @@ async function quadPixels(image: string) {
     // Convert the image string to a buffer
     const buffer = await fetch(image).then((res) => res.buffer());
     const converted = await sharp(buffer).toFormat('png').toBuffer();
-    
+
     // get imagedata form buffer
     const img = await loadImage(converted);
     
@@ -702,32 +742,28 @@ async function quadPixels(image: string) {
         
     // Get the modified image data
     const modifiedImageData = context.getImageData(0, 0, originalWidth, originalHeight);
-        
+    
     // Directly manipulate the image data to quadruple the width and height
     const modifiedWidth = modifiedImageData.width;
     const modifiedHeight = modifiedImageData.height;
     const modifiedData = modifiedImageData.data;
-    const scale = 4;
-    const newImageData = new Uint8ClampedArray(modifiedWidth * modifiedHeight * 4 * scale);
 
-    if (newImageData.length > 4000000) {
+    const scale = 4;
+    const newImageData = new Uint8ClampedArray(modifiedWidth * modifiedHeight * 4 * scale * scale);
+
+    if (newImageData.length > 16000000) {
         return buffer;
     }
     
     for (let y = 0; y < modifiedHeight; y++) {
         for (let x = 0; x < modifiedWidth; x++) {
             const sourceIndex = (y * modifiedWidth + x) * 4;
-            const targetIndex = (y * modifiedWidth * 4 * 4) + (x * 4 * 4);
+            const targetIndex = ((y * modifiedWidth * scale * scale) + (x * scale)) * 4;
             
-            for (let i = 0; i < 4; i++) {
-                const value = modifiedData[sourceIndex + i];
-                
+            for (let i = 0; i < scale; i++) {
                 for (let j = 0; j < scale; j++) {
-                    for (let k = 0; k < scale; k++) {
-                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k)] = value;
-                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 4] = value;
-                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 8] = value;
-                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 12] = value;
+                    for (let k = 0; k < 4; k++) {
+                        newImageData[targetIndex + i * scale + k + modifiedWidth * scale * scale * j] = modifiedData[sourceIndex + k];
                     }
                 }
             }
@@ -735,11 +771,10 @@ async function quadPixels(image: string) {
     }
         
     // Update the modified image data with the quadrupled width and height
-    const newRetImageData = new ImageData(newImageData, modifiedWidth * 4, modifiedHeight * 4);
+    const newRetImageData = new ImageData(newImageData, modifiedWidth * scale, modifiedHeight * scale);
     
-    const newCanvas = createCanvas(modifiedWidth * 4, modifiedHeight * 4);
+    const newCanvas = createCanvas(modifiedWidth * scale, modifiedHeight * scale);
     const newContext = newCanvas.getContext('2d');
-    console.log(newRetImageData)
     newContext.putImageData(newRetImageData, 0, 0);
 
     const newbuffer = newCanvas.toBuffer();

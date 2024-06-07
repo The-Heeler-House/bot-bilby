@@ -8,7 +8,7 @@ import {
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import rplaceAlliance, { Template } from "../../Services/Database/models/rplaceAlliance";
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage, ImageData } from "canvas";
 import sharp from "sharp";
 import fetch from "node-fetch";
 
@@ -31,7 +31,7 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                         .setDescription("The name of the template.")
                         .setRequired(true)
                 )
-                .addStringOption((option) =>
+                .addAttachmentOption((option) =>
                     option
                         .setName("source")
                         .setDescription("The image link of the template.")
@@ -60,7 +60,7 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                         .setDescription("The name of the template.")
                         .setRequired(true)
                 )
-                .addStringOption((option) =>
+                .addAttachmentOption((option) =>
                     option
                         .setName("source")
                         .setDescription("The image link of the template.")
@@ -129,9 +129,19 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
 
             await interaction.reply({ embeds: result.embeds, files: result.media });
         } else if (interaction.options.getSubcommand() === "add") {
+            const templateImage = interaction.options.getAttachment("source");
+
+            if (templateImage && templateImage.contentType !== "image/png") {
+                await interaction.reply({
+                    content: "For quality assurance, only PNG images are supported.",
+                    ephemeral: true,
+                });
+                return;
+            }
+
             const template: Template = {
                 name: interaction.options.getString("name"),
-                source: interaction.options.getString("source"),
+                source: templateImage.url,
                 x: interaction.options.getInteger("x"),
                 y: interaction.options.getInteger("y"),
                 custom: true,
@@ -160,10 +170,20 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                 return;
             }
 
+            const templateImage = interaction.options.getAttachment("source");
+
+            if (templateImage && templateImage.contentType !== "image/png") {
+                await interaction.reply({
+                    content: "For quality assurance, only PNG images are supported.",
+                    ephemeral: true,
+                });
+                return;
+            }
+
             const newTemplate = {
                 name: interaction.options.getString("name"),
                 source:
-                    interaction.options.getString("source") || template.source,
+                    (templateImage && templateImage.url) || template.source,
                 x: interaction.options.getInteger("x") || template.x,
                 y: interaction.options.getInteger("y") || template.y,
                 custom: true,
@@ -209,6 +229,7 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                 files: result.media,
             });
         } else if (interaction.options.getSubcommand() === "render") {
+            const topleft = { x: 1, y: 1 };
             // read all the templates, and render them on a 1000px by 1000px transparent canvas, where the top left pixel is 1, 1.
             const templates = await services.database.collections.rplaceTemplates.find().toArray() as unknown as Template[];
 
@@ -222,7 +243,7 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                         const buffer = await fetch(template.source).then((res) => res.buffer());
                         const converted = await sharp(buffer).toFormat('png').toBuffer();
                         const img = await loadImage(converted);
-                        ctx.drawImage(img, template.x, template.y);
+                        ctx.drawImage(img, template.x - topleft.x, template.y - topleft.y);
                     }
                 }
             }
@@ -240,7 +261,7 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                     const buffer = await fetch(template.source).then((res) => res.buffer());
                     const converted = await sharp(buffer).toFormat('png').toBuffer();
                     const img = await loadImage(converted);
-                    ctx.drawImage(img, template.x, template.y);
+                    ctx.drawImage(img, template.x - topleft.x, template.y - topleft.y);
                 }
             }
 
@@ -248,14 +269,24 @@ export default class rPlaceTemplatesCommand extends SlashCommand {
                 const buffer = await fetch(template.source).then((res) => res.buffer());
                 const converted = await sharp(buffer).toFormat('png').toBuffer();
                 const img = await loadImage(converted);
-                ctx.drawImage(img, template.x, template.y);
+                ctx.drawImage(img, template.x - topleft.x, template.y - topleft.y);
             }
 
             const buffer = canvas.toBuffer();
 
             const attachment = new AttachmentBuilder(buffer, { name: "rplace-templates.png" });
 
-            await interaction.reply({ files: [attachment] });
+            switch(interaction.options.getString("group")) {
+                case "bluey":
+                    await interaction.reply({ files: [attachment], content: `# Combined Bluey r/Place templates.` });
+                    break;
+                case "allies":
+                    await interaction.reply({ files: [attachment], content: `# Combined Bluey and Allied r/Place templates.` });
+                    break;
+                case "p3ace":
+                    await interaction.reply({ files: [attachment], content: `# Combined Bluey and P3ACE r/Place templates.` });
+                    break;
+            }
         } else if (interaction.options.getSubcommand() === "export") {
             interaction.reply("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         }
@@ -285,6 +316,13 @@ async function embedTemplates(
         const coord = `Coordinates: [\`(${template.x}, ${template.y})\`](https://www.reddit.com/r/place/&cx=${template.x}&cy=${template.y})`;
 
         const scaledbuffer = await quadPixels(template.source)
+        
+        const buffer = await fetch(template.source).then((res) => res.buffer());
+        const converted = await sharp(buffer).toFormat('png').toBuffer();
+        const img = await loadImage(converted);
+        const width = img.width;
+        const height = img.height;
+
         const highres = new AttachmentBuilder(scaledbuffer, { name: `${templates.indexOf(template)}.png` });
 
         media.push(highres);
@@ -292,12 +330,14 @@ async function embedTemplates(
         const templateEmbed = new EmbedBuilder()
             .setColor(0x72bfed)
             .setTitle(template.name)
-            .setDescription(coord)
+            .setDescription(
+                coord + `\nWidth: \`${width}\` Height: \`${height}\`` + `\nImage Source: [Link](${template.source})`
+            )
             .setFooter({
                 text: template.custom ? "Custom Template" : "Endu Template",
             })
-            .setThumbnail(template.source)
-            .setImage(`attachment://${templates.indexOf(template)}.png`);
+            .setImage(`attachment://${templates.indexOf(template)}.png`)
+            .setThumbnail(template.source);
 
         embeds.push(templateEmbed);
 
@@ -341,32 +381,28 @@ async function quadPixels(image: string) {
         
     // Get the modified image data
     const modifiedImageData = context.getImageData(0, 0, originalWidth, originalHeight);
-        
+    
     // Directly manipulate the image data to quadruple the width and height
     const modifiedWidth = modifiedImageData.width;
     const modifiedHeight = modifiedImageData.height;
     const modifiedData = modifiedImageData.data;
-    const scale = 4;
-    const newImageData = new Uint8ClampedArray(modifiedWidth * modifiedHeight * 4 * scale);
 
-    if (newImageData.length > 4000000) {
+    const scale = 4;
+    const newImageData = new Uint8ClampedArray(modifiedWidth * modifiedHeight * 4 * scale * scale);
+
+    if (newImageData.length > 16000000) {
         return buffer;
     }
     
     for (let y = 0; y < modifiedHeight; y++) {
         for (let x = 0; x < modifiedWidth; x++) {
             const sourceIndex = (y * modifiedWidth + x) * 4;
-            const targetIndex = (y * modifiedWidth * 4 * 4) + (x * 4 * 4);
+            const targetIndex = ((y * modifiedWidth * scale * scale) + (x * scale)) * 4;
             
-            for (let i = 0; i < 4; i++) {
-                const value = modifiedData[sourceIndex + i];
-                
+            for (let i = 0; i < scale; i++) {
                 for (let j = 0; j < scale; j++) {
-                    for (let k = 0; k < scale; k++) {
-                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k)] = value;
-                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 4] = value;
-                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 8] = value;
-                        newImageData[targetIndex + i + (modifiedWidth * 4 * scale * j) + (4 * k) + 12] = value;
+                    for (let k = 0; k < 4; k++) {
+                        newImageData[targetIndex + i * scale + k + modifiedWidth * scale * scale * j] = modifiedData[sourceIndex + k];
                     }
                 }
             }
@@ -374,11 +410,10 @@ async function quadPixels(image: string) {
     }
         
     // Update the modified image data with the quadrupled width and height
-    const newRetImageData = new ImageData(newImageData, modifiedWidth * 4, modifiedHeight * 4);
+    const newRetImageData = new ImageData(newImageData, modifiedWidth * scale, modifiedHeight * scale);
     
-    const newCanvas = createCanvas(modifiedWidth * 4, modifiedHeight * 4);
+    const newCanvas = createCanvas(modifiedWidth * scale, modifiedHeight * scale);
     const newContext = newCanvas.getContext('2d');
-    console.log(newRetImageData)
     newContext.putImageData(newRetImageData, 0, 0);
 
     const newbuffer = newCanvas.toBuffer();
