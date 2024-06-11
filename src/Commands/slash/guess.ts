@@ -13,7 +13,6 @@ import { Services } from "../../Services"
 import SlashCommand from "../SlashCommand"
 import * as fs from "fs"
 import * as path from "path"
-import { AUTHOR_FIELD } from "../constants"
 
 type Episode = {
     season: string
@@ -74,7 +73,6 @@ export default class GuessCommand extends SlashCommand {
             const MAX_ENTRY = 10
 
             const leaderboardEmbed = new EmbedBuilder()
-                .setAuthor(AUTHOR_FIELD)
                 .setColor(0x72bfed)
                 .setTitle("Guesser Leaderboard!")
                 .setTimestamp()
@@ -243,7 +241,6 @@ export default class GuessCommand extends SlashCommand {
                 scores: [string, number][]
             ) {
                 const leaderboardEmbed = new EmbedBuilder()
-                    .setAuthor(AUTHOR_FIELD)
                     .setColor(0x72bfed)
                     .setTitle("Multiplayer Guesser Results!")
                     .setTimestamp()

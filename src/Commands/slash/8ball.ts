@@ -10,8 +10,6 @@ import SlashCommand from "../SlashCommand"
 import path from "path"
 import { randomInt } from "crypto"
 import { readdir } from "fs/promises"
-import { AUTHOR_FIELD } from "../constants"
-
 
 export default class EightBallCommand extends SlashCommand {
     public data = (new SlashCommandBuilder()
@@ -34,7 +32,6 @@ export default class EightBallCommand extends SlashCommand {
             path.join(EIGHT_BALL_IMAGE_DIR, SELECTED_FILENAME))
 
         const EIGHT_BALL_EMBED = new EmbedBuilder()
-            .setAuthor(AUTHOR_FIELD)
             .setColor(0x72bfed)
             .setTitle("Magic 8-Ball!")
             .setDescription(`<@${interaction.user.id}>'s question: ${interaction.options.getString("question")}`)

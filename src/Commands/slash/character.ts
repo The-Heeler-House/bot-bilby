@@ -9,7 +9,6 @@ import { Services } from "../../Services"
 import SlashCommand from "../SlashCommand"
 import { load as parse } from "cheerio"
 import { getAverageColor } from "fast-average-color-node"
-import { AUTHOR_FIELD } from "../constants"
 
 export default class CharacterCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -47,7 +46,6 @@ export default class CharacterCommand extends SlashCommand {
             }
 
             const embed = new EmbedBuilder()
-                .setAuthor(AUTHOR_FIELD)
                 .setColor(IMAGE_COLOR.hex as ColorResolvable)
                 .setTitle($CHARACTER(CHARACTER_NAME_PATH).text())
                 .setURL(url)

@@ -2,7 +2,6 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import * as logger from "../../logger";
-import { AUTHOR_FIELD } from "../constants";
 
 export default class MuterouletteCommand extends SlashCommand {
     public disabledTime = new Date(0);
@@ -784,7 +783,6 @@ export default class MuterouletteCommand extends SlashCommand {
             const mutePercentage = user.mutePercentage;
 
             const embed = new EmbedBuilder()
-                .setAuthor(AUTHOR_FIELD)
                 .setTitle(`Muteroulette Stats!`)
                 .setDescription(
                     `<@${specifiedUser.id}>\nTotal Mutes: **${numMutesTotal}**\nTotal Rolls: **${numAllTotal}**\nCurrent Streak: **${numStreak}**\nMax Streak: **${numMaxStreak}**\nMute Percentage: **${mutePercentage}%**`
@@ -917,7 +915,6 @@ export default class MuterouletteCommand extends SlashCommand {
 
             // create the embed
             const embed = new EmbedBuilder()
-                .setAuthor(AUTHOR_FIELD)
                 .setTitle("Muteroulette Leaderboard!")
                 .setDescription(description)
                 .setColor(0x72bfed)

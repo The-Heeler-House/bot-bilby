@@ -15,7 +15,6 @@ import SlashCommand from "../SlashCommand";
 import path from "path";
 import { readFileSync } from "fs";
 import { randomInt } from "crypto";
-import { AUTHOR_FIELD } from "../constants";
 
 const HANGMAN_STATE_FILEPATH = path.join(__dirname, "../../Assets/hangman-data/hangman-state.txt")
 const HANGMAN_STATE_RAW_DATA = readFileSync(HANGMAN_STATE_FILEPATH, { encoding: "utf-8" })
@@ -83,7 +82,6 @@ export default class HangmanCommand extends SlashCommand {
             .addComponents(QUIT_BUTTON)
 
         const INIT_EMBED = new EmbedBuilder()
-            .setAuthor(AUTHOR_FIELD)
             .setColor("Yellow")
             .setTitle("Initializing")
             .setTimestamp()
@@ -113,7 +111,6 @@ export default class HangmanCommand extends SlashCommand {
                 : "Only reactions from the game host will be accepted."
 
             return new EmbedBuilder()
-                .setAuthor(AUTHOR_FIELD)
                 .setColor(EMBED_COLOR)
                 .setTitle("Bluey Themed Hangman!")
                 .addFields([

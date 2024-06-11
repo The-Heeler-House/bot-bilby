@@ -1,7 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
-import { AUTHOR_FIELD } from "../constants";
 
 export default class BoredCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -24,7 +23,6 @@ export default class BoredCommand extends SlashCommand {
         ]
 
         const changelogEmbed = new EmbedBuilder()
-            .setAuthor(AUTHOR_FIELD)
             .setTitle(`Version ${VERSION} changelog`)
             .setColor(0x72bfed)
             .setTimestamp(DATE)
