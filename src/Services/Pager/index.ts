@@ -19,7 +19,7 @@ export default class PagerService {
         // But before we exit, we send a "crash" page to the bilby channel to allow for debugging.
         await this.loggingChannel.send(`${pingList.map(userId => `<@${userId}>`).join(" ")} Crash thrown!\n\n` +
             `**Bot Bilby has crashed. Further information is available below.**\n\n` +
-            `**Message:**\n\`${error.message}\`\n\n` +
+            `**Message:**\n\`\`\`${error.message}\`\`\`\n\n` +
             `**Stack Trace:**\n\`\`\`${error.stack}\`\`\`\n` +
             `**Origin:**\n\`${origin}\``);
     }
@@ -27,7 +27,7 @@ export default class PagerService {
     public async sendError(error: Error, whileDoing: string, pingList: Snowflake[]) {
         await this.loggingChannel.send(`${pingList.map(userId => `<@${userId}>`).join(" ")} Error thrown!\n\n` +
             `**Bot Bilby has encountered an error. More information is available below.**\n\n` +
-            `**Message:**\n\`${error.message}\`\n\n` +
+            `**Message:**\n\`\`\`${error.message}\`\`\`\n\n` +
             `**Stack Trace:**\n\`\`\`${error.stack}\`\`\`\n` +
             `**While:**\n\`${whileDoing}\``);
     }
