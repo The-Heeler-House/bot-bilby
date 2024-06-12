@@ -3,7 +3,7 @@ import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import * as logger from "../../logger";
 
-export default class BoredCommand extends SlashCommand {
+export default class PlaceNotifyCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("notify")
         .setDescription("Sends a notification out to all overlay users.")
