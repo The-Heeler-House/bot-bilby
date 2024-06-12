@@ -1,6 +1,7 @@
 import SlashCommand from "./SlashCommand";
 import TextCommand from "./TextCommand";
-import { BaseInteraction, ChannelType, Client, InteractionType, Message, REST, Routes } from "discord.js";
+import ContextCommand from "./ContextCommand";
+import { BaseInteraction, ChannelType, Client, Message, REST, Routes } from "discord.js";
 import { readdir } from "fs/promises";
 import { THH_SERVER_ID } from "../constants";
 import * as logger from "../logger";
@@ -11,10 +12,43 @@ import { isTHHorDevServer } from "../Helper/EventsHelper";
  * The Command Preprocessor is in charge of registering commands and executing them if they meet the right conditions.
  */
 export default class CommandPreprocessor {
+    public contextCommands = new Map<string, ContextCommand>();
     public slashCommands = new Map<string, SlashCommand>()
     public textCommands = new Map<string, TextCommand>();
 
     constructor() {}
+
+    /**
+     * Fetches the context commands from their respective folder.
+     */
+    getContextCommands(services: Services): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            readdir(`${__dirname}/context`)
+                .then(files => files.filter(file => file.endsWith(".js")))
+                .then(async commandsDir => {
+                    for (const commandFile of commandsDir) {
+                        const command: ContextCommand = new (await import(`${__dirname}/context/${commandFile}`)).default();
+
+                        if ("data" in command && "execute" in command) {
+                            this.contextCommands.set(command.data.name, command);
+                        } else {
+                            logger.warning("Attempted to add context command", commandFile, "but it is missing either the data property or the execute function. Skipping command...");
+                        }
+                    }
+                    resolve();
+                })
+                .catch(async error => {
+                    if (error.code === "ENOENT") {
+                        logger.warning("No context commands directory found. Skipping context commands.");
+                        resolve();
+                        return;
+                    }
+                    logger.error("Encountered an error when trying to get context commands directory.\n", error, "\n", error.stack);
+                    await services.pager.sendCrash(error, "Get context commands", services.state.state.pagedUsers);
+                    process.exit(1);
+                });
+        });
+    }
 
     /**
      * Fetches the slash commands from their respective folder.
@@ -35,6 +69,11 @@ export default class CommandPreprocessor {
                     resolve();
                 })
                 .catch(async error => {
+                    if (error.code === "ENOENT") {
+                        logger.warning("No slash commands directory found. Skipping slash commands.");
+                        resolve();
+                        return;
+                    }
                     logger.error("Encountered an error when trying to get slash commands directory. See error below.\n", error, "\n", error.stack);
                     await services.pager.sendCrash(error, "Get slash commands", services.state.state.pagedUsers);
                     process.exit(1);
@@ -60,6 +99,10 @@ export default class CommandPreprocessor {
                 }
             })
             .catch(async error => {
+                if (error.code === "ENOENT") {
+                    logger.warning("No text commands directory found. Skipping text commands.");
+                    return;
+                }
                 logger.error("Encountered an error when trying to get text commands directory.\n", error, "\n", error.stack);
                 await services.pager.sendCrash(error, "Get text commands", services.state.state.pagedUsers);
                 process.exit(1);
@@ -67,14 +110,17 @@ export default class CommandPreprocessor {
     }
 
     /**
-     * Registers the slash commands globally with Discord.
+     * Registers the application commands globally with Discord.
      * If the DEVELOPMENT_GUILD environment variable is defined, commands will be registered as guild commands instead.
      * @param client The Discord client to register the commands on.
      */
-    async registerSlashCommands(client: Client, services: Services) {
+    async registerApplicationCommands(client: Client, services: Services) {
         const commands = [];
 
         this.slashCommands.forEach(command => {
+            commands.push(command.data.toJSON());
+        });
+        this.contextCommands.forEach(command => {
             commands.push(command.data.toJSON());
         });
 
@@ -113,6 +159,25 @@ export default class CommandPreprocessor {
                 logger.error("Encountered an error while trying to register all slash commands as global commands.\n", error, "\n", error.stack);
                 await services.pager.sendError(error, "Trying to register all slash commands as global commands.", services.state.state.pagedUsers);
             }
+        }
+    }
+
+    /**
+     * Handles processing of context commands.
+     * @param interaction The BaseInteraction received from Discord.
+     */
+    async onContextCommandPreprocess(interaction: BaseInteraction, services: Services) {
+        if (!interaction.isContextMenuCommand()) return;
+
+        const command = this.contextCommands.get(interaction.commandName);
+
+        try {
+            if (!command) throw new ReferenceError(`Slash command ${interaction.commandName} does not exist.`);
+
+            await command.execute(interaction, services);
+        } catch (error) {
+            logger.error("Encountered an error while trying to execute the", interaction.commandName, "context command.\n", error, "\n", error.stack);
+            await services.pager.sendError(error, "Trying to execute the " + interaction.commandName + " context command.", services.state.state.pagedUsers);
         }
     }
 

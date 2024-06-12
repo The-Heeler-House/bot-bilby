@@ -28,6 +28,13 @@ DEVELOPMENT_GUILD="..." # guild to register guild commands in. if this is omitte
 PREFIX="..." # text command prefix, can be any length.
 MONGO_URL="" # connection URL for MongoDB database (should be in the form of: "mongodb://...")
 API_PORT=8080 # port that the BilbyAPI service will listen on. used for non-bilby related projects where data from bilby is needed.
+
+# Rplace specific configuration
+REALTIME_HOST="..." # mqtt broker server host
+REALTIME_PORT=0000 # mqtt broker server port
+REALTIME_ID="..." # mqtt client id
+REALTIME_USERNAME="..." # mqtt client username
+REALTIME_PASSWORD="..." # mqtt client password
 ```
 5. Fill out `testingIds.json` with your appropriate channel and role ids.
 
