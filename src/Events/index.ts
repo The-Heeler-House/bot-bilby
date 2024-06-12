@@ -15,7 +15,11 @@ export default class EventManager {
                     const event: BotEvent = new (await import(`${__dirname}/events/${eventFile}`)).default();
 
                     if ("eventName" in event && "execute" in event) {
-                        client.addListener(event.eventName, async (...data) => await event.execute(services, ...(data as [])));
+                        try {
+                            client.addListener(event.eventName, async (...data) => await event.execute(services, ...(data as [])));
+                        } catch(error) {
+                            logger.error("Encountered an error while trying to execute event", event.eventName, ". See error below.\n", error.message, "\n", error.stack);
+                        }
                     } else {
                         logger.warning("Attempted to add event in file", eventFile, "but it is missing either the eventName property or the execute function. Skipping event...");
                     }
