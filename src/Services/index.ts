@@ -11,6 +11,8 @@ import CommandPreprocessor from "../Commands";
 import StateService from "./State";
 import BilbyAPIService from "./BilbyAPI";
 import PagerService from "./Pager";
+import PlaceAnalyticsService from "./PlaceAnalytics";
+import PlaceRealtimeService from "./PlaceRealtime";
 
 
 export default function getServices(client: Client, commands: CommandPreprocessor): Services {
@@ -22,7 +24,9 @@ export default function getServices(client: Client, commands: CommandPreprocesso
         commands,
         database: new DatabaseService(),
         state: new StateService(),
-        pager: new PagerService(client)
+        pager: new PagerService(client),
+        placeAnalytics: new PlaceAnalyticsService(),
+        placeRealtime: new PlaceRealtimeService()
     }
 }
 
@@ -30,5 +34,7 @@ export interface Services {
     commands: CommandPreprocessor,
     database: DatabaseService,
     state: StateService,
-    pager: PagerService
+    pager: PagerService,
+    placeAnalytics: PlaceAnalyticsService,
+    placeRealtime: PlaceRealtimeService
 }
