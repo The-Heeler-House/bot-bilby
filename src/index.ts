@@ -17,7 +17,7 @@ const client = new Client({ intents: [
     GatewayIntentBits.GuildPresences,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMembers
-]});
+] });
 
 const commands = new CommandPreprocessor();
 const events = new EventManager();
@@ -37,10 +37,9 @@ process.on("uncaughtException", async (error, origin) => {
 });
 
 client.on(Events.ClientReady, async () => {
-    await commands.getContextCommands(services);
     await commands.getSlashCommands(services);
     commands.getTextCommands(services);
-    await commands.registerApplicationCommands(client, services);
+    await commands.registerSlashCommands(client, services);
     events.registerEvents(client, services);
 
     logger.command("Online!");
@@ -63,7 +62,6 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-    await commands.onContextCommandPreprocess(interaction, services);
     await commands.onSlashCommandPreprocess(interaction, services);
     await commands.onSlashAutocompletePreprocess(interaction, services);
 });
