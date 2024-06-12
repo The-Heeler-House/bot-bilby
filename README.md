@@ -35,6 +35,9 @@ REALTIME_PORT=0000 # mqtt broker server port
 REALTIME_ID="..." # mqtt client id
 REALTIME_USERNAME="..." # mqtt client username
 REALTIME_PASSWORD="..." # mqtt client password
+
+CDN_ACCESS_KEY="..." # minio access key
+CDN_SECRET_KEY="..." # minio secret key
 ```
 5. Fill out `testingIds.json` with your appropriate channel and role ids.
 
