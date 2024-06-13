@@ -9,7 +9,13 @@ export default class StateService {
 
     constructor() {
         if (existsSync(STATE_PATH)) {
-            this.state = JSON.parse(readFileSync(STATE_PATH).toString());
+            let stateFile = JSON.parse(readFileSync(STATE_PATH).toString()) as State;
+            this.state = stateFile;
+            this.state.trackedMessages = new Map();
+
+            for (let key in stateFile.trackedMessages) {
+                this.state.trackedMessages.set(key, stateFile.trackedMessages[key]);
+            }
         } else {
             // Default values for the state are defined here.
             this.state = {
