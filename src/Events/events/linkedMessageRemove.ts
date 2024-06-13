@@ -11,7 +11,7 @@ export default class LinkedMessageRemoveEvent extends BotEvent {
     async execute(services: Services, message: Message) {
         if (!isTHHorDevServer(message.guild.id)) return;
 
-        for (const [messageId, trackedMessage] of services.state.state.trackedMessages) {
+        services.state.state.trackedMessages.forEach(async (trackedMessage, messageId) => {
             const currentTime = Date.now();
             const timeElapsed = currentTime - trackedMessage.timestamp;
             const expirationTime = 2 * 24 * 60 * 60 * 1000; // 2 days in milliseconds
@@ -52,6 +52,6 @@ export default class LinkedMessageRemoveEvent extends BotEvent {
                     );
                 }
             }
-        }
+        });
     }
 }

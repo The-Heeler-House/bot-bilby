@@ -2,14 +2,20 @@ import { Message, Snowflake } from "discord.js";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
-const STATE_PATH = path.join(__dirname, "../../Assets/state.json");
+const STATE_PATH = path.join(__dirname, "../../../state.json");
 
 export default class StateService {
     public state: State;
 
     constructor() {
         if (existsSync(STATE_PATH)) {
-            this.state = JSON.parse(readFileSync(STATE_PATH).toString());
+            let stateFile = JSON.parse(readFileSync(STATE_PATH).toString()) as State;
+            this.state = stateFile;
+            this.state.trackedMessages = new Map();
+
+            for (let key in stateFile.trackedMessages) {
+                this.state.trackedMessages.set(key, stateFile.trackedMessages[key]);
+            }
         } else {
             // Default values for the state are defined here.
             this.state = {
