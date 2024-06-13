@@ -44,8 +44,10 @@ export default class PlaceRealtimeService extends EventEmitter {
         });
     }
 
-    async publish(topic: string, data: any) {
-        return this.client.publishAsync(`templates/${this.faction}/${topic}`, Buffer.from(JSON.stringify(data)))
+    async publish(topic: string, data: any, retain: boolean = false) {
+        return this.client.publishAsync(`templates/${this.faction}/${topic}`, Buffer.from(JSON.stringify(data)), {
+            retain
+        })
         .catch((error: any) => {
           throw error;
         });
