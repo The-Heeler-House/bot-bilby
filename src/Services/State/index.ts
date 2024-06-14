@@ -7,7 +7,16 @@ const STATE_PATH = path.join(__dirname, "../../../state.json");
 const defaultState: State = {
     joinGate: true,
     trackedMessages: new Map<string, TrackedMessage>(),
-    pagedUsers: []
+    pagedUsers: [],
+    place: {
+        current_template_id: 0,
+        last_template_update_timestamp: new Date(0).toISOString(),
+        width: 1000,
+        height: 1000,
+        x_offset: 500,
+        y_offset: 500,
+        palette: []
+    }
 }
 
 export default class StateService {
@@ -69,6 +78,17 @@ export interface State {
     joinGate: boolean,
     trackedMessages: Map<string, TrackedMessage>,
     pagedUsers: Snowflake[];
+    place: PlaceState
+}
+
+export interface PlaceState {
+    current_template_id: number,
+    last_template_update_timestamp: string,
+    width: number,
+    height: number,
+    x_offset: number,
+    y_offset: number,
+    palette: number[][]
 }
 
 export interface TrackedMessage {

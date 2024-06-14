@@ -8,7 +8,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 export default class DatabaseService {
-    public collections: DatabaseCollections = { rplace: {} };
+    public collections: DatabaseCollections = { };
     
     constructor() {
         this.connect();
@@ -29,7 +29,7 @@ export default class DatabaseService {
         this.collections.botCharacters = databases.bilby.collection("botCharacters");
         this.collections.muteroulette = databases.bilby.collection("muteroulette");
         this.collections.guess = databases.bilby.collection("guess");
-        this.collections.rplace = {
+        this.collections.place = {
             idMap: databases.place.collection("idMap"),
             alliances: databases.place.collection("alliances"),
             artworks: databases.place.collection("artworks")
@@ -41,7 +41,7 @@ export interface DatabaseCollections {
     botCharacters?: mongoDB.Collection,
     muteroulette?: mongoDB.Collection,
     guess?: mongoDB.Collection,
-    rplace?: {
+    place?: {
         idMap?: mongoDB.Collection,
         alliances?: mongoDB.Collection,
         artworks?: mongoDB.Collection

@@ -6,6 +6,9 @@ import { THH_SERVER_ID } from "../constants";
 import * as logger from "../logger";
 import { Services } from "../Services";
 import { isTHHorDevServer } from "../Helper/EventsHelper";
+import { existsSync, lstatSync } from "fs";
+import { Worker } from "worker_threads";
+import { JSONfn } from "jsonfn";
 
 /**
  * The Command Preprocessor is in charge of registering commands and executing them if they meet the right conditions.
@@ -22,14 +25,26 @@ export default class CommandPreprocessor {
     getSlashCommands(services: Services): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             readdir(`${__dirname}/slash`)
-                .then(files => files.filter(file => file.endsWith(".js")))
                 .then(async commandsDir => {
                     for (const commandFile of commandsDir) {
-                        const command: SlashCommand = new (await import(`${__dirname}/slash/${commandFile}`)).default();
-                        if ("data" in command && "execute" in command) {
-                            this.slashCommands.set(command.data.name, command);
-                        } else {
-                            logger.warning("Attempted to add slash command", command, "but it is missing either the data property or the execute function. Skipping command...");
+                        if (commandFile.endsWith(".js")) {
+                            const command: SlashCommand = new (await import(`${__dirname}/slash/${commandFile}`)).default();
+                            if ("data" in command && "execute" in command) {
+                                this.slashCommands.set(command.data.name, command);
+                            } else {
+                                logger.warning("Attempted to add slash command", command, "but it is missing either the data property or the execute function. Skipping command...");
+                            }
+                        } else if (lstatSync(`${__dirname}/slash/${commandFile}`).isDirectory()) {
+                            // It's a directory, look for an index.js and treat it as a SlashCommandSubcommandsOnly
+                            if (existsSync(`${__dirname}/slash/${commandFile}/index.js`)) {
+                                // index.js does exist.
+                                const command: SlashCommand = new (await import(`${__dirname}/slash/${commandFile}`)).default();
+                                if ("data" in command && "execute" in command) {
+                                    this.slashCommands.set(command.data.name, command);
+                                } else {
+                                    logger.warning("Attempted to add slash command", command, "but it is missing either the data property or the execute function. Skipping command...");
+                                }
+                            }
                         }
                     }
                     resolve();
@@ -74,8 +89,14 @@ export default class CommandPreprocessor {
     async registerSlashCommands(client: Client, services: Services) {
         const commands = [];
 
-        this.slashCommands.forEach(command => {
-            commands.push(command.data.toJSON());
+        this.slashCommands.forEach(async command => {
+            try {
+                await command.preregister(client, services);
+                commands.push(command.data.toJSON());
+            } catch (error) {
+                console.error("SHIT " + error);
+                return;
+            }
         });
 
         const rest = new REST().setToken(client.token);
@@ -160,7 +181,7 @@ export default class CommandPreprocessor {
             if (command.data.permissions.allowedUsers.includes(message.author.id))
                 allowed = true; // The user's id is in the allowed users list.
 
-            if (allowed) command.execute(message, args, services);
+            if (allowed) await command.execute(message, args, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", commandName, "text command.\n", error, "\n", error.stack);
             await services.pager.sendError(error, "Trying to execute the " + commandName + " text command. See message " + message.url, services.state.state.pagedUsers);

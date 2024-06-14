@@ -36,6 +36,10 @@ process.on("uncaughtException", async (error, origin) => {
     process.exit(1);
 });
 
+client.on(Events.Error, async (error) => {
+    logger.error(error.stack);
+});
+
 client.on(Events.ClientReady, async () => {
     await commands.getSlashCommands(services);
     commands.getTextCommands(services);
