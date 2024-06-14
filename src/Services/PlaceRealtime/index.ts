@@ -4,7 +4,6 @@ import * as logger from "../../logger";
 
 export default class PlaceRealtimeService extends EventEmitter {
     private client: mqtt.MqttClient;
-    public faction: string = "lemmy";
 
     constructor() {
         super();
@@ -24,7 +23,8 @@ export default class PlaceRealtimeService extends EventEmitter {
 
         this.client.on("connect", (packet) => {
             logger.command("R/Place Realtime connected.");
-            this.client.subscribe(`templates/${this.faction}/#`);
+            this.client.subscribe(`templates/bluey/#`);
+            this.client.subscribe(`templates/bluey_allies/#`);
             this.emit("ready");
         });
 
@@ -37,6 +37,7 @@ export default class PlaceRealtimeService extends EventEmitter {
             try {
             let data = JSON.parse(dataBuffer.toString());
       
+            this.emit(`${topic[1]}-${topic[2]}`, data, packet.retain ?? false);
             this.emit(topic[2], data, packet.retain ?? false);
             } catch (error) {
                 logger.error("Encountered an error while trying to emit MQTT message as an event. See error below.\n", error.stack);
@@ -44,8 +45,8 @@ export default class PlaceRealtimeService extends EventEmitter {
         });
     }
 
-    async publish(topic: string, data: any, retain: boolean = false) {
-        return this.client.publishAsync(`templates/${this.faction}/${topic}`, Buffer.from(JSON.stringify(data)), {
+    async publish(template: "bluey" | "bluey_allies", topic: string, data: any, retain: boolean = false) {
+        return this.client.publishAsync(`templates/${template}/${topic}`, Buffer.from(JSON.stringify(data)), {
             retain
         })
         .catch((error: any) => {

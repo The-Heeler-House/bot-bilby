@@ -39,7 +39,12 @@ export default class PlaceNotifyCommand extends SlashCommand {
         await interaction.deferReply();
 
         try {
-            await services.placeRealtime.publish("notifications", {
+            await services.placeRealtime.publish("bluey", "notifications", {
+                level,
+                text,
+                date: new Date().toISOString()
+            });
+            await services.placeRealtime.publish("bluey_allies", "notifications", {
                 level,
                 text,
                 date: new Date().toISOString()
