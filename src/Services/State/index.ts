@@ -4,32 +4,64 @@ import path from "path";
 
 const STATE_PATH = path.join(__dirname, "../../../state.json");
 
+const defaultState: State = {
+    joinGate: true,
+    trackedMessages: new Map<string, TrackedMessage>(),
+    pagedUsers: []
+}
+
 export default class StateService {
     public state: State;
 
     constructor() {
         if (existsSync(STATE_PATH)) {
-            let stateFile = JSON.parse(readFileSync(STATE_PATH).toString()) as State;
-            this.state = stateFile;
-            this.state.trackedMessages = new Map();
+            this.state = JSON.parse(readFileSync(STATE_PATH).toString(), this.reviver) as State;
 
-            for (let key in stateFile.trackedMessages) {
-                this.state.trackedMessages.set(key, stateFile.trackedMessages[key]);
-            }
+            this.setDefaultState(defaultState, this.state);
+            this.save();
         } else {
             // Default values for the state are defined here.
-            this.state = {
-                joinGate: true,
-                trackedMessages: new Map(),
-                pagedUsers: []
-            }
+            this.state = defaultState
 
             this.save();
         }
     }
 
     save() {
-        writeFileSync(STATE_PATH, JSON.stringify(this.state, null, 4));
+        writeFileSync(STATE_PATH, JSON.stringify(this.state, this.replacer, 4));
+    }
+
+    private setDefaultState(defaultStateObject, target) {
+        for (let key in defaultStateObject) {
+            if (defaultStateObject[key] instanceof Object) {
+                this.setDefaultState(defaultStateObject[key], target[key]);
+                continue;
+            }
+        
+            if (target[key] == undefined) target[key] = defaultStateObject[key];
+        }
+    }
+
+    // Used in JSON.stringify to handle conversion of certain types.
+    private replacer(key: string, value: any) {
+        if(value instanceof Map) {
+            return {
+                dataType: 'Map',
+                value: Array.from(value.entries()), // or with spread: value: [...value]
+            };
+        } else {
+            return value;
+        }
+    }
+
+    // Used in JSON.parse to handle conversion to certain types.
+    private reviver(key: string, value: any) {
+        if(typeof value === 'object' && value !== null) {
+            if (value.dataType === 'Map') {
+                return new Map(value.value);
+            }
+        }
+        return value;
     }
 }
 
