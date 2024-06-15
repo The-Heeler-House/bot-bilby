@@ -13,7 +13,9 @@ export async function generateStandaloneTemplate(artworks: PlaceArtwork[], state
     for (let artwork of artworks) {
         logger.message(`Adding ${artwork.name} to template.`);
         try {
+            logger.debug("loading " + getArtworkURL(artwork.fileName));
             let image = await loadImage(getArtworkURL(artwork.fileName));
+            logger.debug("loaded, adding");
             ctx.drawImage(image, (artwork.x + state.x_offset), (artwork.y + state.y_offset));
         } catch (error) {
             drawMissingArtworkBox(ctx, artwork.x, artwork.y, 31, 31);
@@ -40,46 +42,95 @@ export async function generateTemplate(artworks: PlaceArtwork[], alliances: Plac
     }
 }
 
-export async function compareCurrentTemplateWithNew(template: Buffer, state: PlaceState): Promise<Buffer> {
-    let currentTemplate = await loadImage(getFullTemplateURL(state.current_template_id));
-
-    if (currentTemplate.width != state.width || currentTemplate.height != state.height) {
-        // Mismatch, can't generate a diff. Return with null to indicate that a full update is needed.
+export async function createTemplateDiff(templateName: "bluey" | "bluey_allies", template: Buffer, state: PlaceState): Promise<{ buffer: Buffer, dataURL: string, x: number, y: number }> {
+    let diff = await compareCurrentTemplateWithNew(templateName, template, state);
+    if (diff === undefined) {
+        // We need a full update.
         return null;
     }
+    if (diff === null) {
+        // There's been no change.
+        return {
+            dataURL: null,
+            buffer: diff,
+            x: null,
+            y: null
+        };
+    }
 
+    let croppedDiff = await cropTemplateDiff(diff, state);
+
+    return {
+        buffer: diff,
+        dataURL: croppedDiff.dataURL,
+        x: croppedDiff.x,
+        y: croppedDiff.y
+    }
+}
+
+export async function compareCurrentTemplateWithNew(templateName: "bluey" | "bluey_allies", template: Buffer, state: PlaceState): Promise<Buffer> {
+    logger.debug("Getting " + getFullTemplateURL(templateName, templateName == "bluey" ? state.current_template_id.standalone : state.current_template_id.allies));
+    let currentTemplate = await loadImage(getFullTemplateURL(templateName, templateName == "bluey" ? state.current_template_id.standalone : state.current_template_id.allies));
+    logger.debug("gotten");
+
+    if (currentTemplate.width != state.width || currentTemplate.height != state.height) {
+        // Mismatch, can't generate a diff. Return with undefined to indicate that a full update is needed.
+        logger.debug("Need full update.");
+        return undefined;
+    }
+
+    logger.debug("Creating current canvas");
     let currentCanvas = createCanvas(currentTemplate.width, currentTemplate.height);
     let currentCtx = currentCanvas.getContext("2d");
     currentCtx.drawImage(currentTemplate, 0, 0);
 
+    logger.debug("Creating new canvas");
     let newCanvas = createCanvas(state.width, state.height);
     let newCtx = newCanvas.getContext("2d");
     newCtx.drawImage(await loadImage(template), 0, 0);
 
+    logger.debug("Creating diff canvas");
     let diffCanvas = createCanvas(state.width, state.height);
     let diffCtx = diffCanvas.getContext("2d");
+
+    let changesOccured = false;
     
-    for (let i = 0; i < (state.width * state.height); i++) {
-        let x = Math.floor(i % state.height);
-        let y = Math.floor(i / state.height);
+    logger.debug("Assembling changes...");
+    for (let i = 0; i < state.width; i++) {
+        //let x = Math.floor((i * state.width) % state.height);
 
-        let currentColor = currentCtx.getImageData(x, y, 1, 1).data;
-        let newColor = newCtx.getImageData(x, y, 1, 1).data;
+        let currentColor = currentCtx.getImageData(i, 0, 1, state.height).data;
+        let newColor = newCtx.getImageData(i, 0, 1, state.height).data;
 
-        if (currentColor[0] == newColor[0] && currentColor[1] == newColor[1] && currentColor[2] == newColor[2] && currentColor[3] == newColor[3]) {
-            // Colors match.
-            diffCtx.fillStyle = "rgba(0,255,255," + 254 / 255 + ")";
-            diffCtx.fillRect(x, y, 1, 1);
+        if (!compareUint8ClampedArrays(currentColor, newColor)) {
+            changesOccured = true;
+            logger.debug("Found row that doesn't match.");
+            for (let j = 0; j < state.height; j++) {
+                let currentColor = currentCtx.getImageData(i, j, 1, 1).data;
+                let newColor = newCtx.getImageData(i, j, 1, 1).data;
+
+                if (currentColor[0] == newColor[0] && currentColor[1] == newColor[1] && currentColor[2] == newColor[2] && currentColor[3] == newColor[3]) {
+                    // Colors match.
+                    diffCtx.fillStyle = "rgba(0,255,255," + 254 / 255 + ")";
+                    diffCtx.fillRect(i, j, 1, 1);
+                } else {
+                    diffCtx.fillStyle = `rgba(${newColor[0]}, ${newColor[1]}, ${newColor[2]}, ${newColor[3]/255})`;
+                    diffCtx.fillRect(i, j, 1, 1);
+                }
+            }
         } else {
-            diffCtx.fillStyle = `rgba(${newColor[0]}, ${newColor[1]}, ${newColor[2]}, ${newColor[3]/255})`;
-            diffCtx.fillRect(x, y, 1, 1);
+            diffCtx.fillStyle = "rgba(0,255,255," + 254 / 255 + ")";
+            diffCtx.fillRect(i, 0, 1, state.height);
         }
     }
+    logger.debug("Finished assembling changes.");
 
+    if (!changesOccured) return null;
+    logger.debug("Changes have occurred.");
     return diffCanvas.toBuffer();
 }
 
-export async function cropTemplateDiff(diff: Buffer, state: PlaceState): Promise<{ buffer: Buffer, x: number, y: number }> {
+export async function cropTemplateDiff(diff: Buffer, state: PlaceState): Promise<{ dataURL: string, x: number, y: number }> {
     let diffCanvas = createCanvas(state.width, state.height);
     let diffCtx = diffCanvas.getContext("2d");
     diffCtx.drawImage(await loadImage(diff), 0, 0);
@@ -133,18 +184,30 @@ export async function cropTemplateDiff(diff: Buffer, state: PlaceState): Promise
         if (right < diffCanvas.width - 1) break;
     }
 
-    console.log(`${top} ${left} ${bottom} ${right}`);
-
     let croppedCanvas = createCanvas(right - left + 1, bottom - top + 1);
     let croppedCtx = croppedCanvas.getContext("2d");
 
     croppedCtx.drawImage(diffCanvas, left, top, croppedCanvas.width, croppedCanvas.height, 0, 0, croppedCanvas.width, croppedCanvas.height);
 
     return {
-        buffer: croppedCanvas.toBuffer(),
-        x: left - state.x_offset,
-        y: top - state.y_offset
+        dataURL: croppedCanvas.toDataURL(),
+        x: left,
+        y: top
     }
+}
+
+function compareUint8ClampedArrays(arr1: Uint8ClampedArray, arr2: Uint8ClampedArray): boolean {
+    if (arr1.length !== arr2.length) {
+        return false; // Arrays have different lengths
+    }
+  
+    for (let i = 0; i < arr1.length; i++) {
+          if (arr1[i] !== arr2[i]) {
+            return false; // Values at index i differ
+        }
+    }
+  
+    return true; // All values match
 }
 
 export async function palettize(canvas: Canvas, palette: number[][]) {

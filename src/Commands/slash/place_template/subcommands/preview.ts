@@ -7,10 +7,35 @@ export default class PlaceTemplatePreviewSubCommand extends SlashSubCommand {
     public data = new SlashCommandSubcommandBuilder()
         .setName("preview")
         .setDescription("Previews the current template.")
+        .addStringOption(option =>
+            option.setName("template")
+                .setDescription("The template to preview.")
+                .setRequired(true)
+                .setChoices([
+                    {
+                        name: "Bluey Standalone",
+                        value: "bluey"
+                    },
+                    {
+                        name: "Bluey & Allies",
+                        value: "bluey_allies"
+                    }
+                ])
+        )
 
     async execute(interaction: ChatInputCommandInteraction<CacheType>, services: Services) {
-        let id = services.state.state.place.current_template_id;
+        let id = "00000";
+        let template = interaction.options.getString("template", true) as "bluey" | "bluey_allies";
 
+        switch (template) {
+            case "bluey":
+                id = services.state.state.place.current_template_id.standalone
+                break;
+            case "bluey_allies":
+                id = services.state.state.place.current_template_id.allies
+                break;
+        }
+        
         await interaction.reply({
             embeds: [
                 {
@@ -39,7 +64,7 @@ export default class PlaceTemplatePreviewSubCommand extends SlashSubCommand {
                     ],
                     color: 2326507,
                     image: {
-                        url: getFullTemplateURL(id)
+                        url: getFullTemplateURL(template, id)
                     }
                 }
             ]

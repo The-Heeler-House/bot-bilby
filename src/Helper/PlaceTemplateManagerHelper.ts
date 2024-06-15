@@ -28,7 +28,7 @@ async function generateAlliesTemplate(allies: PlaceAlliance[], state: PlaceState
         processedUrls = assembledTemplate.processedUrls;
 
         assembledTemplate.missingArtworks.forEach(artwork => {
-            missing.push(`${alliance.name} - ${artwork}`);
+            missing.push(`${alliance.name} -> ${artwork}`);
         });
 
         if (assembledTemplate.buffer != null) {
@@ -98,7 +98,7 @@ export async function generateTemplateManagerTemplate(url: string, blacklist: st
                 processedUrls = assembledTemplate.processedUrls;
 
                 assembledTemplate.missingArtworks.forEach(artwork => {
-                    missing.push(`${whitelisted.name} - ${artwork}`);
+                    missing.push(`${whitelisted.name} -> ${artwork}`);
                 });
 
                 if (assembledTemplate.buffer != null) {

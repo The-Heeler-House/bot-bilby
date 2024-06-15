@@ -9,7 +9,10 @@ const defaultState: State = {
     trackedMessages: new Map<string, TrackedMessage>(),
     pagedUsers: [],
     place: {
-        current_template_id: 0,
+        current_template_id: {
+            standalone: "00000",
+            allies: "00000"
+        },
         last_template_update_timestamp: new Date(0).toISOString(),
         width: 1000,
         height: 1000,
@@ -82,7 +85,10 @@ export interface State {
 }
 
 export interface PlaceState {
-    current_template_id: number,
+    current_template_id: {
+        standalone: string,
+        allies: string
+    },
     last_template_update_timestamp: string,
     width: number,
     height: number,

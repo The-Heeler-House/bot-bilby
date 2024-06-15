@@ -22,19 +22,18 @@ export default class PingCommand extends TextCommand {
             services.state.state.place,
             async (data) => {
                 await msg.edit({
-                    content: "hello!\n crop coords: (" + data.croppedDiff.x + ", " + data.croppedDiff.y + ")\n\n" + data.missingArtworks,
+                    content: "hello!\n crop coords: (" + data.standalone.diff.x + ", " + data.standalone.diff.y + ")\n\n" + data.missing,
                     files: [
-                        new AttachmentBuilder(Buffer.from(data.template.buffer.data), {
+                        new AttachmentBuilder(Buffer.from(data.standalone.template.data), {
                             name: "template.png",
                             description: "template generator yes"
                         }),
-                        new AttachmentBuilder(Buffer.from(data.diff.data), {
+                        new AttachmentBuilder(Buffer.from(data.standalone.diff.buffer.data), {
                             name: "diff.png",
                             description: "template diff generator yes"
                         }),
-                        new AttachmentBuilder(Buffer.from(data.croppedDiff.buffer.data), {
-                            name: "cropped.png",
-                            description: "this took way too long"
+                        new AttachmentBuilder(Buffer.from(data.standalone.diff.dataURL), {
+                            name: "cropped.txt"
                         })
                     ]
                 });

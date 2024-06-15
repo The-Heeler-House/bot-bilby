@@ -8,7 +8,6 @@ import { Services } from "../Services";
 import { isTHHorDevServer } from "../Helper/EventsHelper";
 import { existsSync, lstatSync } from "fs";
 import { Worker } from "worker_threads";
-import { JSONfn } from "jsonfn";
 
 /**
  * The Command Preprocessor is in charge of registering commands and executing them if they meet the right conditions.
