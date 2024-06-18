@@ -1,8 +1,9 @@
 import { ObjectId } from "mongodb";
 
-export default interface AutoResponse {
+export default interface Triggers {
     id?: ObjectId
     trigger: string,
     response: string,
-    cooldown: number
+    cooldown: number,
+    caseSensitive: boolean
 }
