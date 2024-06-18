@@ -5,5 +5,7 @@ export default interface Triggers {
     trigger: string,
     response: string,
     cooldown: number,
-    caseSensitive: boolean
+    meta: {
+        uses: number
+    }
 }
