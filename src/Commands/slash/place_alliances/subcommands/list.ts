@@ -17,6 +17,6 @@ export default class PlaceAlliancesListSubCommand extends SlashSubCommand {
 
         let alliancesString = alliances.map((alliance) => `**${alliance.name}**`);
 
-        interaction.reply(`Here's a list of our current alliances:\nLast updated <t:${Math.floor(Date.parse(services.state.state.place.last_template_update_timestamp) / 1000)}:R>\n\n${alliancesString.join("\n")}`);
+        interaction.reply(`Here's a list of our current alliances:\nLast updated <t:${Math.floor(Date.parse(services.state.state.place.last_template_update_timestamp) / 1000)}:R>\n\n${alliancesString.join(", ")}`);
     }
 }

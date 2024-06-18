@@ -3,6 +3,8 @@ import { PlaceState } from "../Services/State"
 import { drawMissingArtworkBox, palettize } from "./PlaceCanvasHelper";
 import PlaceAlliance from "../Services/Database/models/placeAlliance";
 import * as logger from "../logger";
+import PlaceArtwork from "../Services/Database/models/placeArtwork";
+import { getArtworkURL } from "./PlaceURLHelper";
 
 export async function generateImmediateAlliesTemplate(allies: PlaceAlliance[], state: PlaceState, shouldPalettize: boolean = false): Promise<{ buffer: Buffer, missingArtworks: string[] }> {
     return generateAlliesTemplate(allies, state, shouldPalettize, false);
@@ -23,7 +25,7 @@ async function generateAlliesTemplate(allies: PlaceAlliance[], state: PlaceState
         if (processedUrls.includes(alliance.url)) continue; // Don't infinitly recurse.
 
         logger.debug("Going to process " + alliance.name);
-        let assembledTemplate = await generateTemplateManagerTemplate(alliance.url, blacklist, state, shouldPalettize, crawlAlliances, processedUrls);
+        let assembledTemplate = await generateTemplateManagerTemplateImage(alliance.url, blacklist, state, shouldPalettize, crawlAlliances, processedUrls);
         blacklist = assembledTemplate.blacklist;
         processedUrls = assembledTemplate.processedUrls;
 
@@ -48,7 +50,7 @@ async function generateAlliesTemplate(allies: PlaceAlliance[], state: PlaceState
     }
 }
 
-export async function generateTemplateManagerTemplate(url: string, blacklist: string[], state: PlaceState, shouldPalettize: boolean = true, crawlAlliances: boolean = false, processedUrls: string[] = []): Promise<{ buffer: Buffer, missingArtworks: string[], blacklist: string[], processedUrls: string[] }> {
+export async function generateTemplateManagerTemplateImage(url: string, blacklist: string[], state: PlaceState, shouldPalettize: boolean = true, crawlAlliances: boolean = false, processedUrls: string[] = []): Promise<{ buffer: Buffer, missingArtworks: string[], blacklist: string[], processedUrls: string[] }> {
     // TODO: Get JSON and use to assemble template.    
     logger.message("Processing " + url);
     let canvas = createCanvas(state.width, state.height);
@@ -93,7 +95,7 @@ export async function generateTemplateManagerTemplate(url: string, blacklist: st
                 if (processedUrls.includes(whitelisted.url)) continue; // Don't infinitly recurse.
 
                 logger.debug("Going to process " + whitelisted.name);
-                let assembledTemplate = await generateTemplateManagerTemplate(whitelisted.url, blacklist, state, shouldPalettize, crawlAlliances, processedUrls);
+                let assembledTemplate = await generateTemplateManagerTemplateImage(whitelisted.url, blacklist, state, shouldPalettize, crawlAlliances, processedUrls);
                 blacklist = assembledTemplate.blacklist;
                 processedUrls = assembledTemplate.processedUrls;
 
@@ -132,6 +134,38 @@ export async function generateTemplateManagerTemplate(url: string, blacklist: st
     }
 }
 
+export async function generateTemplateManagerJSON(artworks: PlaceArtwork[], alliances?: PlaceAlliance[]): Promise<TemplateManagerTemplate> {
+    let templates: TemplateManagerArtwork[] = [];
+    let whitelist: TemplateManagerExternalArtwork[] = [];
+
+    for (let artwork of artworks) {
+        templates.push({
+            name: artwork.name,
+            sources: [
+                getArtworkURL(artwork.fileName)
+            ],
+            x: artwork.x,
+            y: artwork.y
+        });
+    }
+
+    if (alliances) {
+        for (let alliance of alliances) {
+            whitelist.push({
+                name: alliance.name,
+                url: alliance.url
+            });
+        }
+    }
+
+    return {
+        faction: `Bluey`,
+        contact: "https://discord.gg/blueyheeler",
+        templates,
+        whitelist
+    }
+}
+
 /**
  * Tries to load the image from an array of sources in order.
  * @param sources An array of sources to try.
@@ -150,7 +184,7 @@ async function tryLoadImageFromSources(sources: string[]): Promise<Image> {
     }
 }
 
-interface TemplateManagerTemplate {
+export interface TemplateManagerTemplate {
     faction: string,
     contact: string,
     templates: TemplateManagerArtwork[],
@@ -158,7 +192,7 @@ interface TemplateManagerTemplate {
     blacklist?: TemplateManagerExternalArtwork[]
 }
 
-interface TemplateManagerArtwork {
+export interface TemplateManagerArtwork {
     name?: string,
     sources: string[],
     x: number,
@@ -169,7 +203,7 @@ interface TemplateManagerArtwork {
     frameCount?: number
 }
 
-interface TemplateManagerExternalArtwork {
+export interface TemplateManagerExternalArtwork {
     name: string,
     url: string
 }

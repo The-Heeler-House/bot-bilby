@@ -4,7 +4,7 @@ import { PlaceState } from "../Services/State";
 import * as logger from "../logger";
 import { getArtworkURL, getFullTemplateURL } from "./PlaceURLHelper";
 import PlaceAlliance from "../Services/Database/models/placeAlliance";
-import { generateAllAlliesTemplate, generateImmediateAlliesTemplate } from "./PlaceTemplateManagerHelper";
+import { TemplateManagerTemplate, generateAllAlliesTemplate, generateImmediateAlliesTemplate } from "./PlaceTemplateManagerHelper";
 
 export async function generateStandaloneTemplate(artworks: PlaceArtwork[], state: PlaceState, shouldPalettize: boolean = false): Promise<Buffer> {
     let canvas = createCanvas(state.width, state.height);
@@ -256,4 +256,15 @@ export function drawMissingArtworkBox(ctx: CanvasRenderingContext2D, x: number, 
 
         ctx.fillRect(x + x_offset, y + y_offset, 1, 1);
     }
+}
+
+export async function urlToImageBuffer(url: string, width: number, height: number): Promise<Buffer> {
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext("2d");
+
+    let image = await loadImage(url);
+
+    ctx.drawImage(image, 0, 0);
+
+    return canvas.toBuffer();
 }

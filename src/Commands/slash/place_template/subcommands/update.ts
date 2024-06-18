@@ -1,7 +1,7 @@
 import { AttachmentBuilder, CacheType, ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import SlashSubCommand from "../../../SlashSubCommand";
 import { Services } from "../../../../Services";
-import { BuiltTemplates, buildAndUploadTemplate, generateId } from "../../../../Helper/PlaceHelper";
+import { BuiltTemplates, buildAndUploadTemplate, generateId, missingArtworkText } from "../../../../Helper/PlaceHelper";
 import PlaceArtwork from "../../../../Services/Database/models/placeArtwork";
 import PlaceAlliance from "../../../../Services/Database/models/placeAlliance";
 
@@ -22,7 +22,7 @@ export default class PlaceTemplateUpdateSubCommand extends SlashSubCommand {
                 content: standloneUpdateMessage
             });
         }, async (type, newId, missing) => {
-            alliesUpdateMessage = "Successfully updated allies template to #" + newId + " with a " + type + " template update.\n\n" + (missing.length != 0 ? `:warning: **The following artworks are missing:** ${missing.splice(0, 20).map(missing => `\`${missing}\``).join(", ")}${missing.length > 20 ? `(...${missing.length - 20} more)` : ``}` : ``);
+            alliesUpdateMessage = "Successfully updated allies template to #" + newId + " with a " + type + " template update." + missingArtworkText(missing)
             await interaction.editReply({
                 content: standloneUpdateMessage + alliesUpdateMessage
             });

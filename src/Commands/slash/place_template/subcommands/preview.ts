@@ -62,7 +62,7 @@ export default class PlaceTemplatePreviewSubCommand extends SlashSubCommand {
                             inline: true
                         }
                     ],
-                    color: 2326507,
+                    color: 2918143,
                     image: {
                         url: getFullTemplateURL(template, id)
                     }
