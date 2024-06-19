@@ -16,7 +16,7 @@ export default class EditTriggerCommand extends TextCommand {
     async execute(message: Message, args: string[], services: Services) {
         let trigger = args.join(" ");
 
-        const dbTrigger = await services.database.collections.botCharacters.findOne({ trigger }) as unknown as BotCharacter;
+        const dbTrigger = await services.database.collections.triggers.findOne({ trigger }) as unknown as BotCharacter;
         if (!dbTrigger) {
             await message.reply(`I don't seem to know about that trigger. Maybe you meant to add it?`);
             return;
@@ -44,7 +44,7 @@ export default class EditTriggerCommand extends TextCommand {
                     message.reply("The trigger edit has been cancelled due to 2 minutes passing without response being received.");
             });
 
-            await message.reply(`Editing trigger \`${trigger}\`. Please send the response you want the bot to send when the trigger is sent.\n**Hint:** *If you are using Regexp for the trigger, you can refer to any capture groups with \`{group <number>}\`.*`);
+            await message.reply(`Editing trigger \`${trigger}\`. Please send the response you want the bot to send when the trigger is sent.`);
         } catch (error) {
             logger.error("Encountered error while trying to edit trigger", trigger, "\n", error, "\n", error.stack);
             await services.pager.sendError(error, "Trying to edit trigger " + trigger, services.state.state.pagedUsers);

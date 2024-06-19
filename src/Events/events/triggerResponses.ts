@@ -6,7 +6,7 @@ import { isTHHorDevServer } from "../../Helper/EventsHelper";
 import AutoResponse from "../../Services/Database/models/triggers";
 import { ObjectId } from "mongodb";
 
-export default class TriggerResponses extends BotEvent {
+export default class TriggerResponseEvent extends BotEvent {
     public eventName = Events.MessageCreate;
     private lastTriggered: Map<ObjectId, number> = new Map();
 

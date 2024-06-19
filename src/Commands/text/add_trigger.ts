@@ -5,7 +5,6 @@ import { roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
 import * as logger from "../../logger";
 import { CollectionTimeoutError, getUpcomingMessage } from "../../Helper/FlowHelper";
-import { escapeRegex } from "../../Helper/ScriptHelper";
 
 export default class AddTriggerCommand extends TextCommand {
     public data = new TextCommandBuilder()
@@ -38,7 +37,7 @@ export default class AddTriggerCommand extends TextCommand {
                 return;
             }
 
-            await triggerTrigger.reply(`Gotcha! We're making a ${type}-based trigger triggerd by \`${triggerTrigger.content}\`. What do you want the response to be?${type == "regex" ? "\n**Hint:** *You can refer to any capture groups you've created by using the \`{group <id>}\` trigger. For example to refer to group 1, use \`{group 1}\`.*" : ""}`);
+            await triggerTrigger.reply(`Gotcha! We're making a ${type}-based trigger triggerd by \`${triggerTrigger.content}\`. What do you want the response to be?`);
             let triggerResponse = await getUpcomingMessage(message.channel as TextChannel, (msg) => msg.author.id == message.author.id, 120_000);
             let response: string = triggerResponse.content;
 
@@ -59,4 +58,8 @@ export default class AddTriggerCommand extends TextCommand {
             }
         }
     }
+}
+
+function escapeRegex(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
