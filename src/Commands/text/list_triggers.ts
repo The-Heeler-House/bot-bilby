@@ -1,7 +1,7 @@
 import { EmbedBuilder, Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
-import { roleIds } from "../../constants";
+import { devIds, roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
 import * as logger from "../../logger";
 import Triggers from "../../Services/Database/models/triggers";
@@ -11,6 +11,7 @@ export default class ListTriggersCommand extends TextCommand {
         .setName("list triggers")
         .setDescription("Gets a list of all triggers.")
         .addAllowedRoles(roleIds.staff)
+        .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
     async execute(message: Message, args: string[], services: Services) {

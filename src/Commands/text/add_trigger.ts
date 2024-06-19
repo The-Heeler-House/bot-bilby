@@ -1,7 +1,7 @@
 import { Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
-import { roleIds } from "../../constants";
+import { devIds, roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
 import * as logger from "../../logger";
 import { CollectionTimeoutError, getUpcomingMessage } from "../../Helper/FlowHelper";
@@ -11,6 +11,7 @@ export default class AddTriggerCommand extends TextCommand {
         .setName("add trigger")
         .setDescription("Adds a trigger for Bot Bilby respond to.")
         .addAllowedRoles(roleIds.staff)
+        .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
     async execute(message: Message, args: string[], services: Services) {

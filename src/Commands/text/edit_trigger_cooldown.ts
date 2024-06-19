@@ -1,7 +1,7 @@
 import { Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
-import { roleIds } from "../../constants";
+import { devIds, roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
 import * as logger from "../../logger";
 
@@ -11,6 +11,7 @@ export default class EditTriggerCooldownCommand extends TextCommand {
         .setDescription("Edits a trigger's cooldown length.")
         .addArgument("trigger", "The trigger to edit the cooldown length of.")
         .addAllowedRoles(roleIds.staff)
+        .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
     async execute(message: Message, args: string[], services: Services) {

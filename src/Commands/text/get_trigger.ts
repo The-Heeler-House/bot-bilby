@@ -1,7 +1,7 @@
 import { Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
-import { roleIds } from "../../constants";
+import { devIds, roleIds } from "../../constants";
 import * as logger from "../../logger";
 import Triggers from "../../Services/Database/models/triggers";
 
@@ -11,6 +11,7 @@ export default class GetTriggerCommand extends TextCommand {
         .setDescription("Gets information about a trigger.")
         .addArgument("trigger", "The trigger to get information for.")
         .addAllowedRoles(roleIds.staff)
+        .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
     async execute(message: Message, args: string[], services: Services) {
