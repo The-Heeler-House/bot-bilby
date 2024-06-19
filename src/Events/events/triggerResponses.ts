@@ -13,6 +13,7 @@ export default class TriggerResponses extends BotEvent {
     async execute(services: Services, message: Message) {
         if (!isTHHorDevServer(message.guild.id)) return;
         if (message.content.startsWith(process.env.PREFIX)) return;
+        if (message.author.bot) return;
 
         let triggers = await services.database.collections.triggers.find().toArray() as unknown as AutoResponse[];
         
