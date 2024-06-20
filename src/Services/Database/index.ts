@@ -28,11 +28,13 @@ export default class DatabaseService {
         this.collections.botCharacters = databases.bilby.collection("botCharacters");
         this.collections.muteroulette = databases.bilby.collection("muteroulette");
         this.collections.guess = databases.bilby.collection("guess");
+        this.collections.triggers = databases.bilby.collection("triggers");
     }
 }
 
 export interface DatabaseCollections {
     botCharacters?: mongoDB.Collection,
     muteroulette?: mongoDB.Collection,
-    guess?: mongoDB.Collection
+    guess?: mongoDB.Collection,
+    triggers?: mongoDB.Collection
 }

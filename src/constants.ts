@@ -17,4 +17,6 @@ export const channelIds = {
     announcements: devConstants.channelIds.announcements || "961056736398172200"
 }
 
+export const devIds = devConstants.devIds || [ "186730180872634368", "763377551963717653", "640921495245422632" ];
+
 export const THH_SERVER_ID = "959534476520730724"
