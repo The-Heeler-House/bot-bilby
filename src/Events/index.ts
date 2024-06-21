@@ -31,7 +31,7 @@ export default class EventManager {
                     return;
                 }
                 logger.error("Encountered an error when trying to get events directory. See error below.\n", error.message, "\n", error.stack);
-                await services.pager.sendCrash(error, "Event registeration", services.state.state.pagedUsers);
+                await services.pager.sendCrash(error, "Event registration", services.state.state.pagedUsers);
                 process.exit(1);
             });
     }

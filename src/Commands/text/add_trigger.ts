@@ -38,7 +38,7 @@ export default class AddTriggerCommand extends TextCommand {
                 return;
             }
 
-            await triggerTrigger.reply(`Gotcha! We're making a ${type}-based trigger triggerd by \`${triggerTrigger.content}\`. What do you want the response to be?`);
+            await triggerTrigger.reply(`Gotcha! We're making a ${type}-based trigger triggered by \`${triggerTrigger.content}\`. What do you want the response to be?`);
             let triggerResponse = await getUpcomingMessage(message.channel as TextChannel, (msg) => msg.author.id == message.author.id, 120_000);
             let response: string = triggerResponse.content;
 
