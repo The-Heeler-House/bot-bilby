@@ -4,25 +4,7 @@ import { Services } from "../../Services";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
 import AutoResponse from "../../Services/Database/models/triggers";
 import { ObjectId } from "mongodb";
-import moment from "moment-timezone"
-
-function processDirectives(args: string[]): string {
-    const command = args[0], argv = args.slice(1)
-    let output = ""
-    switch (command) {
-        /*
-        ? ${cur_time;<iana_timezone>?;<moment.js_format>?}
-        */
-        case "cur_time":
-            let defaultTz = Intl.DateTimeFormat().resolvedOptions().timeZone
-            let defaultFormat = "LTS"
-            output = moment()
-                .tz(argv[0] ?? defaultTz)
-                .format(argv[1] ?? defaultFormat)
-            break
-    }
-    return output
-}
+import { processResponse } from "../../Helper/DirectiveHelper";
 
 export default class TriggerResponseEvent extends BotEvent {
     public eventName = Events.MessageCreate;
@@ -43,13 +25,8 @@ export default class TriggerResponseEvent extends BotEvent {
             let trigger = triggerCanidates[0];
 
             // TODO: Do scripting logic.
-            let response = trigger.response
-            response = response.replace(/\{(.+?)}/gi, (_, x) => {
-                const args = x.split(";")
-                return processDirectives(args)
-            })
+            await processResponse(message, trigger, services);
 
-            message.channel.send(response);
             this.lastTriggered.set(trigger.id, Date.now());
             await services.database.collections.triggers.updateOne({ id: trigger.id }, {
                 $inc: {
