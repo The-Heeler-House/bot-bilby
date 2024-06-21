@@ -3,7 +3,7 @@ import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { devIds, roleIds } from "../../constants";
 import * as logger from "../../logger";
-import Triggers from "../../Services/Database/models/triggers";
+import Triggers from "../../Services/Database/models/trigger";
 
 export default class RemoveTriggerCommand extends TextCommand {
     public data = new TextCommandBuilder()

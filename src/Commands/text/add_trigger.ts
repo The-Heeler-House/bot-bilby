@@ -45,7 +45,10 @@ export default class AddTriggerCommand extends TextCommand {
             await services.database.collections.triggers.insertOne({
                 trigger,
                 response,
-                cooldown: 10
+                cooldown: 10,
+                meta: {
+                    uses: 0
+                }
             });
 
             await triggerResponse.reply(`Created the ${type}-based trigger \`${triggerTrigger.content}\` with a cooldown of 10 seconds. You can modify this cooldown with the \`edit trigger cooldown\` text command.`);

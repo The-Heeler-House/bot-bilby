@@ -1,7 +1,8 @@
 import { Message } from "discord.js";
-import { ObjectId } from "mongodb";
+import { ObjectId, WithId } from "mongodb";
 import { Services } from "../Services";
 import moment from "moment-timezone";
+import Trigger from "../Services/Database/models/trigger";
 
 /**
  * Gets all the directive tags in a string.
@@ -27,10 +28,25 @@ function getDirectiveTags(string: string): string[] {
     return directives;
 }
 
-function processDirectives(args: string[]): string {
+async function processDirectives(args: string[], message: Message, trigger: { regexp: RegExpExecArray, id: ObjectId, response: string }, services: Services): Promise<string> {
     const command = args[0], argv = args.slice(1);
     let output = "";
 
+    /*
+    ? {<variable>[.path_if_applicable]}
+    */
+    let variables = {
+        uses: (await services.database.collections.triggers.findOne({ _id: trigger.id }) as WithId<Trigger>).meta.uses,
+        user: {
+            id: message.author.id,
+            name: message.author.username,
+            toString: () => `<@${message.author.id}>`
+        },
+        group: trigger.regexp.slice(1)
+    }
+    
+    // custom toStrings
+    variables.group.toString = () => `[${variables.group.join(", ")}]`;
 
     switch (command) {
         /*
@@ -43,6 +59,28 @@ function processDirectives(args: string[]): string {
                 .tz(argv[0] ?? defaultTz)
                 .format(argv[1] ?? defaultFormat)
             break
+        default:
+            let path = command.split(".")
+            let root = path[0], extra = path.slice(1);
+            if (variables[root] != undefined) {
+                if (typeof variables[root] === "object") {
+                    let current = variables[root];
+
+                    if (extra.length == 0) {
+                        output = current;
+                    } else {
+                        for (let i = 0; i < extra.length; i++) {
+                            current = current[extra[i]];
+                        
+                            if (i == extra.length - 1) {
+                                output = current;
+                            }
+                        }
+                    }
+                } else {
+                    output = variables[root];
+                }
+            }
     }
     return output
 }
@@ -53,7 +91,7 @@ export async function processResponse(message: Message, trigger: { regexp: RegEx
     let directives = getDirectiveTags(response);
 
     for await (const directive of directives) {
-        response = response.replace(`{${directive}}`, processDirectives(directive.split(":")));
+        response = response.replace(`{${directive}}`, await processDirectives(directive.split(":"), message, trigger, services));
     }
 
     message.channel.send(response);
