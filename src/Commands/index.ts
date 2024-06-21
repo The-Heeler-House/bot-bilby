@@ -1,8 +1,7 @@
 import SlashCommand from "./SlashCommand";
 import TextCommand from "./TextCommand";
-import { BaseInteraction, ChannelType, Client, InteractionType, Message, REST, Routes } from "discord.js";
+import { BaseInteraction, ChannelType, Client, Message, REST, Routes } from "discord.js";
 import { readdir } from "fs/promises";
-import { THH_SERVER_ID } from "../constants";
 import * as logger from "../logger";
 import { Services } from "../Services";
 import { isTHHorDevServer } from "../Helper/EventsHelper";

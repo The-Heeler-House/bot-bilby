@@ -15,7 +15,7 @@ function getDirectiveTags(string: string): string[] {
     for (let i = 0; i < string.length; i++) {
         const ch = string[i];
         const prev = string[i-1] || "";
-        
+
         if (ch == "{" && prev != "\\") {
             starts.push(i);
         }
@@ -28,7 +28,16 @@ function getDirectiveTags(string: string): string[] {
     return directives;
 }
 
-async function processDirectives(args: string[], message: Message, trigger: { regexp: RegExpExecArray, id: ObjectId, response: string }, services: Services): Promise<string> {
+async function processDirectives(
+    args: string[],
+    message: Message,
+    trigger: {
+        regexp: RegExpExecArray,
+        id: ObjectId,
+        response: string
+    },
+    services: Services
+): Promise<string> {
     const command = args[0], argv = args.slice(1);
     let output = "";
 
@@ -44,13 +53,13 @@ async function processDirectives(args: string[], message: Message, trigger: { re
         },
         group: trigger.regexp.slice(1)
     }
-    
+
     // custom toStrings
     variables.group.toString = () => `[${variables.group.join(", ")}]`;
 
     switch (command) {
         /*
-        ? {cur_time;<iana_timezone>?:<moment.js_format>?}
+        ? {cur_time[:<iana_timezone>][:<moment.js_time_format>]}
         */
         case "cur_time":
             let defaultTz = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -71,7 +80,7 @@ async function processDirectives(args: string[], message: Message, trigger: { re
                     } else {
                         for (let i = 0; i < extra.length; i++) {
                             current = current[extra[i]];
-                        
+
                             if (i == extra.length - 1) {
                                 output = current;
                             }
@@ -85,13 +94,22 @@ async function processDirectives(args: string[], message: Message, trigger: { re
     return output
 }
 
-export async function processResponse(message: Message, trigger: { regexp: RegExpExecArray, id: ObjectId, response: string }, services: Services) {
+export async function processResponse(
+    message: Message,
+    trigger: {
+        regexp: RegExpExecArray,
+        id: ObjectId,
+        response: string
+    }, services: Services
+) {
     let response = trigger.response
 
     let directives = getDirectiveTags(response);
 
     for await (const directive of directives) {
-        response = response.replace(`{${directive}}`, await processDirectives(directive.split(":"), message, trigger, services));
+        response = response.replace(
+            `{${directive}}`,
+            await processDirectives(directive.split(":"), message, trigger, services));
     }
 
     message.channel.send(response);
