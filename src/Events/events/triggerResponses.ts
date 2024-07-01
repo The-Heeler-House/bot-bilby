@@ -25,7 +25,7 @@ export default class TriggerResponseEvent extends BotEvent {
             let trigger = triggerCanidates[0];
 
             // TODO: Do scripting logic.
-            message.channel.send(trigger.response);
+            await message.channel.send(trigger.response);
             this.lastTriggered.set(trigger.id, Date.now());
             await services.database.collections.triggers.updateOne({ id: trigger.id }, {
                 $inc: { 

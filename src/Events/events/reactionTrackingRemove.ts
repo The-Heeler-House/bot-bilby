@@ -40,6 +40,6 @@ export default class ReactionTrackingAddEvent extends BotEvent {
 
         const member = await reaction.message.guild.members.fetch(user.id);
 
-        staffChatChannel.send(`${emote} **removed** by \`${member.displayName}\`: ${messageLink}`);
+        await staffChatChannel.send(`${emote} **removed** by \`${member.displayName}\`: ${messageLink}`);
     }
 }
