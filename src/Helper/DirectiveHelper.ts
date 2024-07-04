@@ -36,62 +36,50 @@ async function processDirectives(
         id: ObjectId,
         response: string
     },
+    variables: any,
     services: Services
-): Promise<string> {
+): Promise<{ text: string, variables: any, terminate: boolean }> {
     const command = args[0], argv = args.slice(1);
-    let output = "";
+    let output = {
+        text: "",
+        variables,
+        terminate: false
+    };
+    
+    let path = command.split(".");
+    let root = path[0], extra = path.slice(1);
+    if (variables[root] != undefined) {
+        if (typeof variables[root] === "function") {
+            // Support for functions in variables.
+            let funcOutput = variables[root](argv);
+            if (typeof funcOutput === "object") {
+                output.text = funcOutput.text;
+                output.terminate = funcOutput.terminate;
+            } else {
+                output.text = funcOutput;
+            }
+        } else
+        if (typeof variables[root] === "object") {
+            let current = variables[root];
 
-    /*
-    ? {<variable>[.path_if_applicable]}
-    */
-    let variables = {
-        uses: (await services.database.collections.triggers.findOne({ _id: trigger.id }) as WithId<Trigger>).meta.uses,
-        user: {
-            id: message.author.id,
-            name: message.author.username,
-            toString: () => `<@${message.author.id}>`
-        },
-        group: trigger.regexp.slice(1)
-    }
+            if (extra.length == 0) {
+                output.text = current;
+            } else {
+                for (let i = 0; i < extra.length; i++) {
+                    current = current[extra[i]];
 
-    // custom toStrings
-    variables.group.toString = () => `[${variables.group.join(", ")}]`;
-
-    switch (command) {
-        /*
-        ? {cur_time[:<iana_timezone>][:<moment.js_time_format>]}
-        */
-        case "cur_time":
-            let defaultTz = Intl.DateTimeFormat().resolvedOptions().timeZone
-            let defaultFormat = "LTS"
-            output = moment()
-                .tz(argv[0] ?? defaultTz)
-                .format(argv[1] ?? defaultFormat)
-            break
-        default:
-            let path = command.split(".")
-            let root = path[0], extra = path.slice(1);
-            if (variables[root] != undefined) {
-                if (typeof variables[root] === "object") {
-                    let current = variables[root];
-
-                    if (extra.length == 0) {
-                        output = current;
-                    } else {
-                        for (let i = 0; i < extra.length; i++) {
-                            current = current[extra[i]];
-
-                            if (i == extra.length - 1) {
-                                output = current;
-                            }
-                        }
+                    if (i == extra.length - 1) {
+                        output.text = current;
                     }
-                } else {
-                    output = variables[root];
                 }
             }
-    }
-    return output
+        } else {
+            output.text = variables[root];
+        }
+    } else
+        output.text = args.join(":");
+
+    return output;
 }
 
 export async function processResponse(
@@ -102,15 +90,112 @@ export async function processResponse(
         response: string
     }, services: Services
 ) {
-    let response = trigger.response
+    // All variables for the currently running trigger are stored here. This includes trigger-defined variables via the var function.
+    let variables = {
+        // Built-in variables.
+        uses: (await services.database.collections.triggers.findOne({ _id: trigger.id }) as WithId<Trigger>).meta.uses,
+        user: {
+            id: message.author.id,
+            name: message.author.username,
+            toString: () => `<@${message.author.id}>`
+        },
+        group: trigger.regexp.slice(1),
 
-    let directives = getDirectiveTags(response);
+        // Functions.
+        // Outputs the current time. Used as {cur_time:[timezone]:[format]}. Default timezone is host server timezone, default format is LTS (Hour:Minute:Second AM/PM).
+        cur_time: function(argv) {
+            let defaultTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            let defaultFormat = "LTS";
+            return moment().tz(argv[0] ?? defaultTz).format(argv[1] ?? defaultFormat); // 2:00:00 PM
+        },
+        // Assigns a variable. Used as {var:<variable_name>:<value>}. Does not output anything.
+        var: function(argv) {
+            variables[argv[0]] = argv.slice(1).join(":")
+            return "";
+        },
+        // Checks if the operation is true and outputs respectively. Used as {if:<operation>:<true_output>:[false_output]}. If no false_output is provided, this directive outputs nothing.
+        if: function(argv) {
+            let operation = argv[0];
+            let trueOutput = argv[1];
+            let falseOutput = argv[2];
 
-    for await (const directive of directives) {
-        response = response.replace(
-            `{${directive}}`,
-            await processDirectives(directive.split(":"), message, trigger, services));
+            if (operation == "true") {
+                return trueOutput;
+            } else {
+                return falseOutput || "";
+            }
+        },
+        // Checks if the operation is true and if it is, the output is the only content and no further directives are ran aside from the ones in the output. If not then this directive outputs nothing.
+        // If no output is provided and the operation is true, no response is sent.
+        // Usage: {break:<operation>:[output]}
+        break: function(argv) {
+            let operation = argv[0];
+            let output = argv.slice(1).join(":");
+
+            if (operation == "true") {
+                return {
+                    text: output || "",
+                    terminate: true
+                }
+            }
+            return "";
+        },
+
+        // Comparitor functions. Used as {<comparer>:<value>:<value>}, returns "true" or "false".
+        "==": function(argv) {
+            return (argv[0] == argv[1]).toString();
+        },
+        ">": function(argv) {
+            return (parseInt(argv[0]) > parseInt(argv[1])).toString();
+        },
+        ">=": function(argv) {
+            return (parseInt(argv[0]) >= parseInt(argv[1])).toString();
+        },
+        "<": function(argv) {
+            return (parseInt(argv[0]) < parseInt(argv[1])).toString();
+        },
+        "<=": function(argv) {
+            return (parseInt(argv[0]) <= parseInt(argv[1])).toString();
+        },
+        // Special comparer function for ranges. Used as {range:<min_value>:<value>:<max_value>}. Returns "true" if within range, "false" if outside range
+        "range": function(argv) {
+            return (parseInt(argv[0]) < parseInt(argv[1]) && parseInt(argv[2]) > parseInt(argv[1])).toString();
+        }
     }
 
-    message.channel.send(response);
+    // custom toStrings
+    variables.group.toString = () => `[${variables.group.join(", ")}]`;
+
+    let response = trigger.response;
+
+    let directives = getDirectiveTags(response);
+    let terminated = false;
+
+    for await (const directive of directives) {
+        if (terminated) return;
+        console.log(directive)
+        let result = await processDirectives(directive.split(":"), message, trigger, variables, services);
+        variables = result.variables;
+
+        if (result.terminate) {
+            // Terminate execution while still processing the output.
+            terminated = true;
+            response = "";
+            return processResponse(message, { regexp: trigger.regexp, id: trigger.id, response: result.text }, services);
+        }
+
+        response = response.replace(`{${directive}}`, result.text);
+        
+        let currentIndex = directives.indexOf(directive);
+        for (var i = currentIndex+1; i < directives.length; i++) {
+            // Replace all instances of this directive in future directives.
+            if (!directives[i].includes(`{${directive}}`)) continue;
+            console.log(`replacing {${directive}} in ${directives[i]} with ${result.text}`);
+            console.log(result.text);
+            directives[i] = directives[i].replace(`{${directive}}`, result.text);
+        }
+    }
+
+    if (response.trim() != "")
+        message.channel.send(response.trim());
 }
