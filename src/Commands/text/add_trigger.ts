@@ -38,14 +38,17 @@ export default class AddTriggerCommand extends TextCommand {
                 return;
             }
 
-            await triggerTrigger.reply(`Gotcha! We're making a ${type}-based trigger triggerd by \`${triggerTrigger.content}\`. What do you want the response to be?`);
+            await triggerTrigger.reply(`Gotcha! We're making a ${type}-based trigger triggered by \`${triggerTrigger.content}\`. What do you want the response to be?`);
             let triggerResponse = await getUpcomingMessage(message.channel as TextChannel, (msg) => msg.author.id == message.author.id, 120_000);
             let response: string = triggerResponse.content;
 
             await services.database.collections.triggers.insertOne({
                 trigger,
                 response,
-                cooldown: 10
+                cooldown: 10,
+                meta: {
+                    uses: 0
+                }
             });
 
             await triggerResponse.reply(`Created the ${type}-based trigger \`${triggerTrigger.content}\` with a cooldown of 10 seconds. You can modify this cooldown with the \`edit trigger cooldown\` text command.`);

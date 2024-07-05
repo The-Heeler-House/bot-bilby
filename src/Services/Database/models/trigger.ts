@@ -1,7 +1,4 @@
-import { ObjectId } from "mongodb";
-
-export default interface Triggers {
-    id?: ObjectId
+export default interface Trigger {
     trigger: string,
     response: string,
     cooldown: number,

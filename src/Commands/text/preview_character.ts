@@ -4,6 +4,7 @@ import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
 import * as logger from "../../logger";
+import { WithId } from "mongodb";
 
 export default class PreviewCharacterCommand extends TextCommand {
     public data = new TextCommandBuilder()
@@ -14,7 +15,7 @@ export default class PreviewCharacterCommand extends TextCommand {
         .allowInDMs(false);
 
     async execute(message: Message, args: string[], services: Services) {
-        const character = await services.database.collections.botCharacters.findOne({ name: args.join(" ") }) as unknown as BotCharacter;
+        const character = await services.database.collections.botCharacters.findOne({ name: args.join(" ") }) as WithId<BotCharacter>;
         if (!character) {
             await message.reply(`I don't recognise the character named ${args.join(" ")}. Please say \`${process.env.PREFIX}list characters\` to see the character list.`);
             return;
@@ -26,7 +27,7 @@ export default class PreviewCharacterCommand extends TextCommand {
                 iconURL: character.avatar
             })
             .setFooter({
-                text: `ID: ${character.id}`
+                text: `ID: ${character._id}`
             });
 
         await message.reply({

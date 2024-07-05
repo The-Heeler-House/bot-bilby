@@ -1,12 +1,16 @@
-// Responsible for turning EventEmmitter-powered tasks into asyncronous code.
+// Responsible for turning EventEmitter-powered tasks into asynchronous code.
 
-import { Channel, Collection, CollectorFilter, Message, MessageCollectorOptions, TextChannel } from "discord.js";
+import { Collection, CollectorFilter, Message, TextChannel } from "discord.js";
 
 
-export function getUpcomingMessage(channel: TextChannel, filter: CollectorFilter<[Message<boolean>, Collection<string, Message<boolean>>]>, timeout: number): Promise<Message> {
+export function getUpcomingMessage(
+    channel: TextChannel,
+    filter: CollectorFilter<[Message<boolean>, Collection<string, Message<boolean>>]>,
+    timeout: number
+): Promise<Message> {
     return new Promise((result, reject) => {
         let collector = channel.createMessageCollector({ filter, time: timeout, max: 1 });
-        
+
         collector.on("collect", message => {
             result(message);
             collector.stop();
