@@ -14,7 +14,7 @@ export default class ModerationPingEvent extends BotEvent {
             const staffChatChannel = await message.client.channels.fetch(channelIds.staff) as TextChannel;
             // Send the message link to the #staff-chat channel
             const messageLink = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`;
-            staffChatChannel.send(`Moderator ping detected!\n${messageLink}`);
+            await staffChatChannel.send(`Moderator ping detected!\n${messageLink}`);
         }
     }
 }

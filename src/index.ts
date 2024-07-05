@@ -26,6 +26,7 @@ const services = getServices(client, commands);
 process.on("uncaughtException", async (error, origin) => {
     // Bilby has crashed at this point, best we can do is log the errors and exit.
     logger.error("Detected an uncaught exception with origin", origin, ".\n",error.message,"\n",error.stack);
+    console.error(error); // Log the full error to STDERR.
 
     await services.pager.sendCrash(error, origin, services.state.state.pagedUsers);
 

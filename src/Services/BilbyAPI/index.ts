@@ -89,20 +89,23 @@ export default class BilbyAPIService {
                 leadership: guild.members.cache.filter(member => member.roles.cache.has(roleIds.leadership))
                 .filter(member => !alreadyAddedStaffMembers.includes(member.id))
                 .map(member => { 
+                    let topRole = member.roles.cache.filter(role => role.id != "1135376645956571186").sort((roleA, roleB) => roleB.comparePositionTo(roleA)).first();
                     alreadyAddedStaffMembers.push(member.id); 
-                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL(), highestRole: { name: topRole.name, color: topRole.hexColor, icon: topRole.iconURL() } } 
                 }),
                 mods: guild.members.cache.filter(member => member.roles.cache.has(roleIds.mod))
                 .filter(member => !alreadyAddedStaffMembers.includes(member.id))
                 .map(member => { 
+                    let topRole = member.roles.cache.filter(role => role.id != "1135376645956571186").sort((roleA, roleB) => roleB.comparePositionTo(roleA)).first()
                     alreadyAddedStaffMembers.push(member.id); 
-                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL(), highestRole: { name: topRole.name, color: topRole.hexColor, icon: topRole.iconURL() } } 
                 }),
-                helpers: guild.members.cache.filter(member => member.roles.cache.has(roleIds.helper))
+                helpers: guild.members.cache.filter(member => member.roles.cache.has(roleIds.helper)/* || member.roles.cache.has(roleIds.helperInTraining)*/)
                 .filter(member => !alreadyAddedStaffMembers.includes(member.id))
                 .map(member => { 
+                    let topRole = member.roles.cache.filter(role => role.id != "1135376645956571186").sort((roleA, roleB) => roleB.comparePositionTo(roleA)).first()
                     alreadyAddedStaffMembers.push(member.id); 
-                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL() } 
+                    return { id: member.id, name: member.displayName, avatar: member.displayAvatarURL(), highestRole: { name: topRole.name, color: topRole.hexColor, icon: topRole.iconURL() } } 
                 }),
             }
         }
