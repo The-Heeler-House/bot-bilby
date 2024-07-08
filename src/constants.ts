@@ -15,6 +15,7 @@ export const channelIds = {
     chatLog: devConstants.channelIds.chatLog || "961201095038873630",
     mediaLog: devConstants.channelIds.mediaLog || "1098673855809204294",
     reactionLog: devConstants.channelIds.reactionLog || "1241199271022301266",
+    threadLog: devConstants.channelIds.threadLog || "",
     announcements: devConstants.channelIds.announcements || "961056736398172200"
 }
 
