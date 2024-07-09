@@ -31,13 +31,14 @@ export default class StateService {
         writeFileSync(STATE_PATH, JSON.stringify(this.state, this.replacer, 4));
     }
 
-    private setDefaultState(defaultStateObject, target) {
+    private setDefaultState(defaultStateObject: State, target: State) {
         for (let key in defaultStateObject) {
             if (defaultStateObject[key] instanceof Object) {
                 this.setDefaultState(defaultStateObject[key], target[key]);
                 continue;
             }
-        
+
+            if (key === "__proto__" || key === "constructor") continue;
             if (target[key] == undefined) target[key] = defaultStateObject[key];
         }
     }
