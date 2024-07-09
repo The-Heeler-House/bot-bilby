@@ -76,7 +76,7 @@ export class PageBuilder {
     }
 
     /**
-     * Use the base embed for the message if the `type` was set to `embed`
+     * Use the base embed as the template for the message if the `type` was set to `embed`
      * @param embed The base embed to use
      */
     setBaseEmbed(embed: EmbedBuilder) {
@@ -85,9 +85,9 @@ export class PageBuilder {
     }
 
     /**
-     * Send the pager to the channel of the `message`
+     * Send the pager to the channel of the origin `message`
      * @param message
-     * @param inputTimeout Timeout in milliseconds before the button stop working
+     * @param inputTimeout Timeout in milliseconds before the buttons are disabled
      */
     async send(message: Message, inputTimeout = 600_000) {
         let sentMessage = await this.createMessage(await this.getContent(this.index), message);
@@ -109,8 +109,7 @@ export class PageBuilder {
             }
 
             await this.update(await this.getContent(this.index), sentMessage)
-
-            button.update({})
+            await button.update({})
         })
 
         collector.on("end", async () => {

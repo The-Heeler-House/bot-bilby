@@ -29,7 +29,7 @@ export default class PingCommand extends TextCommand {
                 .setTitle(command.data.name)
                 .setDescription(`${!canExecuteCommand(command, message.member) ? ":warning: **Your permission level prevents you from running this command.**\n*See the bolded permission fields below for entries which apply to you.*\n\n" : ""}${command.data.description}`)
                 .setColor(16777215)
-            
+
             if (command.data.arguments.length != 0) {
                 embed.addFields(
                     { name: "Arguments", value: command.data.arguments.map(argument => `${argument.required ? `<${argument.name}>` : `[${argument.name}]`} - ${argument.description}`).join("\n") }
@@ -58,7 +58,7 @@ export default class PingCommand extends TextCommand {
                     { name: "User permissions", value: command.data.permissions.allowedUsers.map(user => `<@${user}>${message.author.id == user ? " (You)" : ""} ✅`).join("\n"), inline: true }
                 );
             }
-            
+
             embed.addFields(
                 { name: "Usage", value: `\`${process.env.PREFIX}${command.data.name}${command.data.arguments.length != 0? ` ${command.data.arguments.map(argument => argument.required ? `<${argument.name}>` : `[${argument.name}]`)}` : ""}\`` }
             )
@@ -81,7 +81,7 @@ export default class PingCommand extends TextCommand {
                 `\n\`\`\`\nWant more information on a command? Run \`${process.env.PREFIX}${this.data.name} <command name>\`.`
             );
 
-            paginatedMessage.send(message);
+            await paginatedMessage.send(message);
         }
     }
 }
