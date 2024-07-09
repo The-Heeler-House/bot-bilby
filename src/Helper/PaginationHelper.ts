@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, Message } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, Message, MessageCreateOptions, MessageEditOptions } from "discord.js";
 
 export class PageBuilder {
     type: "plain_text" | "embed"
@@ -6,12 +6,19 @@ export class PageBuilder {
     private baseEmbed: EmbedBuilder = new EmbedBuilder()
     private index = 0
     private controlDisabled = false
+    private topText = null;
+    private bottomText = null;
 
     private backButton = new ButtonBuilder()
         .setCustomId("back")
         .setEmoji("◀")
         .setStyle(ButtonStyle.Primary)
         .setDisabled(true) //? since index by default is zero
+    private pageButton = new ButtonBuilder()
+        .setCustomId("current-page")
+        .setLabel("Page ? of ?")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(true) // This button will never be pushed.
     private forwardButton = new ButtonBuilder()
         .setCustomId("forward")
         .setEmoji("▶")
@@ -20,35 +27,50 @@ export class PageBuilder {
     private control = new ActionRowBuilder<ButtonBuilder>()
         .setComponents(this.backButton, this.forwardButton)
 
-    constructor(type: "plain_text" | "embed", content: string[]) {
+    constructor(type: "plain_text" | "embed", content: string[], topText?: string, bottomText?: string) {
         this.content = content
         this.type = type
+        this.topText = topText;
+        this.bottomText = bottomText;
     }
 
-    private async updateControl(message: Message) {
+    private updateControl() {
         this.backButton = this.backButton
             .setDisabled(this.index <= 0 || this.controlDisabled)
+        this.pageButton = this.pageButton
+            .setLabel(`Page ${this.index+1} of ${this.content.length}`);
         this.forwardButton = this.forwardButton
             .setDisabled(this.index >= this.content.length - 1 || this.controlDisabled)
 
-        this.control.setComponents(this.backButton, this.forwardButton)
-        await message.edit({
-            components: [this.control]
-        })
+        this.control.setComponents(this.backButton, this.pageButton, this.forwardButton)
+    }
+
+    private async createMessage(content: MessageCreateOptions, message: Message): Promise<Message> {
+        this.updateControl();
+
+        content.components = [this.control];
+
+        return await message.channel.send(content);
+    }
+
+    private async update(content: MessageEditOptions, message: Message) {
+        this.updateControl();
+
+        content.components = [this.control];
+
+        await message.edit(content);
     }
 
     private async getContent(index: number) {
         switch (this.type) {
             case "embed":
-                this.baseEmbed.setDescription(this.content[index])
+                this.baseEmbed.setDescription(`${this.topText || ""}${this.content[index]}${this.bottomText || ""}`);
                 return {
                     embeds: [this.baseEmbed],
-                    components: [this.control]
                 }
             case "plain_text":
                 return {
-                    content: this.content[this.index],
-                    components: [this.control]
+                    content: `${this.topText || ""}${this.content[index]}${this.bottomText || ""}`,
                 }
         }
     }
@@ -68,9 +90,7 @@ export class PageBuilder {
      * @param inputTimeout Timeout in milliseconds before the button stop working
      */
     async send(message: Message, inputTimeout = 600_000) {
-        let sentMessage = await message.channel.send(
-            await this.getContent(this.index)
-        )
+        let sentMessage = await this.createMessage(await this.getContent(this.index), message);
 
         const collector = sentMessage.createMessageComponentCollector({
             componentType: ComponentType.Button,
@@ -88,15 +108,14 @@ export class PageBuilder {
                     break
             }
 
-            await this.updateControl(sentMessage)
-            await sentMessage.edit(await this.getContent(this.index))
+            await this.update(await this.getContent(this.index), sentMessage)
 
             button.update({})
         })
 
         collector.on("end", async () => {
             this.controlDisabled = true
-            await this.updateControl(sentMessage)
+            await this.update(await this.getContent(this.index), sentMessage);
         })
     }
 }
