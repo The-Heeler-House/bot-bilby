@@ -43,7 +43,7 @@ export default class PagerService {
     protected loggingChannel: TextChannel;
 
     private ignoredErrorHashes: string[] = [
-        "crash-429222199c95a130", // AbortError crash from Discord.js internals that we cannot catch.
+        "crash-73a90449a5e619d8", // AbortError crash from Discord.js internals that we cannot catch.
     ];
 
     constructor(client: Client) {
