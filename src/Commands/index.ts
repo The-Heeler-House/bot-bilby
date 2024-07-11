@@ -5,6 +5,7 @@ import { readdir } from "fs/promises";
 import * as logger from "../logger";
 import { Services } from "../Services";
 import { isTHHorDevServer } from "../Helper/EventsHelper";
+import { canExecuteCommand } from "../Helper/PermissionHelper";
 
 /**
  * The Command Preprocessor is in charge of registering commands and executing them if they meet the right conditions.
@@ -140,26 +141,7 @@ export default class CommandPreprocessor {
             // Environment checks
             if (!command.data.allowedInDMs && [ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return;
 
-            // Permission checks.
-            // User allows override role allows/denies.
-            let allowed = false;
-
-            // Gets list of current user's roles allowed to use the command
-            let allowedUserRoles = message.member.roles.cache.filter((_, snowflake) => command.data.permissions.allowedRoles.includes(snowflake));
-
-            // Gets list of current user's roles which deny use of the command
-            let deniedUserRoles = message.member.roles.cache.filter((_, snowflake) => command.data.permissions.deniedRoles.includes(snowflake));
-
-            if (allowedUserRoles.size != 0 || command.data.permissions.allowedRoles.length == 0)
-                allowed = true; // Either the user has a role that allows them to use the command, or there are no allowed roles, which implicitly allows all roles.
-
-            if (deniedUserRoles.size != 0)
-                allowed = false; // The user has a role that denies them from using the command.
-
-            if (command.data.permissions.allowedUsers.includes(message.author.id))
-                allowed = true; // The user's id is in the allowed users list.
-
-            if (allowed) command.execute(message, args, services);
+            if (canExecuteCommand(command, message.member)) command.execute(message, args, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", commandName, "text command.\n", error, "\n", error.stack);
             await services.pager.sendError(error, "Trying to execute the " + commandName + " text command. See message " + message.url, services.state.state.pagedUsers);

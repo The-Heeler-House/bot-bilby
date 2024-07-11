@@ -97,10 +97,11 @@ export class TextCommandBuilder {
      * @param description The description of the argument
      * @returns This TextCommandBuilder
      */
-    addArgument(name: string, description: string): TextCommandBuilder {
+    addArgument(name: string, description: string, required: boolean = true): TextCommandBuilder {
         this.arguments.push({
             name,
-            description
+            description,
+            required
         });
         return this;
     }
@@ -124,5 +125,6 @@ interface TextCommandPermissions {
 
 interface TextCommandArgument {
     name: string,
-    description: string
+    description: string,
+    required: boolean
 }
