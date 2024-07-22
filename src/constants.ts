@@ -10,7 +10,7 @@ export const roleIds = {
 
 export const channelIds = {
     offTopic: devConstants.channelIds.offTopic || "962936076404686859",
-    staff: devConstants.channelIds.staff || "1079596899335680000",
+    staff: devConstants.channelIds.staff || "1263106351878508657",
     bilby: devConstants.channelIds.bilby || "966921162804301824",
     chatLog: devConstants.channelIds.chatLog || "961201095038873630",
     mediaLog: devConstants.channelIds.mediaLog || "1098673855809204294",
