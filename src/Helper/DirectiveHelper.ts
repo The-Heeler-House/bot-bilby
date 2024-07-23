@@ -45,7 +45,7 @@ async function processDirectives(
         variables,
         terminate: false
     };
-    
+
     let path = command.split(".");
     let root = path[0], extra = path.slice(1);
     if (variables[root] != undefined) {
@@ -99,22 +99,35 @@ export async function processResponse(
             name: message.author.username,
             toString: () => `<@${message.author.id}>`
         },
-        group: trigger.regexp.slice(1),
 
         // Functions.
-        // Outputs the current time. Used as {cur_time:[timezone]:[format]}. Default timezone is host server timezone, default format is LTS (Hour:Minute:Second AM/PM).
-        cur_time: function(argv) {
+        // Select capture group. Used as {group:[index]} (index start as 0 for the first capture group, and so on).
+        // If no index is provided, the content of all capture group will be displayed.
+        group: function(argv: string[]) {
+            const captureGroups = trigger.regexp.slice(1)
+            if ((argv[0] ?? "") == "")
+                return `[${captureGroups.join(", ")}]`
+            else
+                return captureGroups[parseInt(argv[0])] ?? "undefined"
+        },
+        //group: trigger.regexp.slice(1),
+
+        // Outputs the current time. Used as {cur_time:[timezone]:[format]}.
+        // Default timezone is host server timezone, default format is LTS (Hour:Minute:Second AM/PM).
+        cur_time: function(argv: string[]) {
             let defaultTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
             let defaultFormat = "LTS";
             return moment().tz(argv[0] ?? defaultTz).format(argv[1] ?? defaultFormat); // 2:00:00 PM
         },
         // Assigns a variable. Used as {var:<variable_name>:<value>}. Does not output anything.
-        var: function(argv) {
+        var: function(argv: any[]) {
             variables[argv[0]] = argv.slice(1).join(":")
             return "";
         },
-        // Checks if the operation is true and outputs respectively. Used as {if:<operation>:<true_output>:[false_output]}. If no false_output is provided, this directive outputs nothing.
-        if: function(argv) {
+        // Checks if the operation is true and outputs respectively.
+        // Used as {if:<operation>:<true_output>:[false_output]}.
+        // If no false_output is provided, this directive outputs nothing.
+        if: function(argv: string[]) {
             let operation = argv[0];
             let trueOutput = argv[1];
             let falseOutput = argv[2];
@@ -125,10 +138,13 @@ export async function processResponse(
                 return falseOutput || "";
             }
         },
-        // Checks if the operation is true and if it is, the output is the only content and no further directives are ran aside from the ones in the output. If not then this directive outputs nothing.
+        // Checks if the operation is true and if it is, the output is the only content
+        // and no further directives are ran aside from the ones in the output.
+        // If not then this directive outputs nothing.
+        //
         // If no output is provided and the operation is true, no response is sent.
         // Usage: {break:<operation>:[output]}
-        break: function(argv) {
+        break: function(argv: string[]) {
             let operation = argv[0];
             let output = argv.slice(1).join(":");
 
@@ -141,30 +157,27 @@ export async function processResponse(
             return "";
         },
 
-        // Comparitor functions. Used as {<comparer>:<value>:<value>}, returns "true" or "false".
-        "==": function(argv) {
+        // Comparator functions. Used as {<comparer>:<value>:<value>}, returns "true" or "false".
+        "==": function(argv: any[]) {
             return (argv[0] == argv[1]).toString();
         },
-        ">": function(argv) {
+        ">": function(argv: string[]) {
             return (parseInt(argv[0]) > parseInt(argv[1])).toString();
         },
-        ">=": function(argv) {
+        ">=": function(argv: string[]) {
             return (parseInt(argv[0]) >= parseInt(argv[1])).toString();
         },
-        "<": function(argv) {
+        "<": function(argv: string[]) {
             return (parseInt(argv[0]) < parseInt(argv[1])).toString();
         },
-        "<=": function(argv) {
+        "<=": function(argv: string[]) {
             return (parseInt(argv[0]) <= parseInt(argv[1])).toString();
         },
         // Special comparer function for ranges. Used as {range:<min_value>:<value>:<max_value>}. Returns "true" if within range, "false" if outside range
-        "range": function(argv) {
+        "range": function(argv: string[]) {
             return (parseInt(argv[0]) < parseInt(argv[1]) && parseInt(argv[2]) > parseInt(argv[1])).toString();
         }
     }
-
-    // custom toStrings
-    variables.group.toString = () => `[${variables.group.join(", ")}]`;
 
     let response = trigger.response;
 
@@ -185,7 +198,7 @@ export async function processResponse(
         }
 
         response = response.replace(`{${directive}}`, result.text);
-        
+
         let currentIndex = directives.indexOf(directive);
         for (var i = currentIndex+1; i < directives.length; i++) {
             // Replace all instances of this directive in future directives.
