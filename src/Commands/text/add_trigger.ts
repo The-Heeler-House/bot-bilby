@@ -57,7 +57,7 @@ export default class AddTriggerCommand extends TextCommand {
                 message.channel.send(`<@${message.author.id}> This command has timed out. Please try again!`);
             } else {
                 logger.error("Encountered error while trying to create trigger\n", error, "\n", error.stack);
-                await services.pager.sendError(error, "Trying to create trigger", services.state.state.pagedUsers, { message, args, services });
+                await services.pager.sendError(error, "Trying to create trigger", services.state.state.pagedUsers, { message, args });
                 await message.reply(`That's awkward. I encountered an error while creating the trigger. Please try again.`);
             }
         }

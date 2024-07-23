@@ -53,7 +53,7 @@ export default class EditTriggerCooldownCommand extends TextCommand {
             await message.reply(`Editing trigger \`${trigger}\` cooldown. Please send the amount of seconds you want the bot to wait before responding to a trigger again.`);
         } catch (error) {
             logger.error("Encountered error while trying to edit trigger cooldown", trigger, "\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to edit trigger cooldown " + trigger, services.state.state.pagedUsers, { message, args, dbTrigger, services });
+            await services.pager.sendError(error, "Trying to edit trigger cooldown " + trigger, services.state.state.pagedUsers, { message, args, dbTrigger });
             await message.reply(`That's awkward. I encountered an error while editing the \`${trigger}\` trigger cooldown. Please try again.`);
         }
     }
