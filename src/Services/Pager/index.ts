@@ -95,7 +95,7 @@ export default class PagerService {
             timestamp: new Date().toISOString(),
             error,
             data,
-            origin,
+            whileDoing,
             errorHash
         }
 
@@ -104,7 +104,7 @@ export default class PagerService {
                          `**Bot Bilby has encountered an error. More information is available below.**\n\n` +
                          `**Message:**\n\`\`\`${error.message}\`\`\`\n\n` +
                          `**Stack Trace:**\n\`\`\`${error.stack}\`\`\`\n` +
-                         `**While:**\n\`${whileDoing}\`` +
+                         `**While:**\n\`${whileDoing}\`\n` +
                          `**Hash:** \`${errorHash}\``,
                 files: [
                     new AttachmentBuilder(Buffer.from(JSON.stringify(log)))
