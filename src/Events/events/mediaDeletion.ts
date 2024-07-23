@@ -31,7 +31,7 @@ export default class ModerationPingEvent extends BotEvent {
             });
         } catch (error) {
             logger.error("Encountered an error while trying to log deleted attachments.\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to log deleted attachments.", services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to log deleted attachments.", services.state.state.pagedUsers, { services, message });
             // TODO: This used to ping Jalen if there was a problem, maybe a proper paging system could be worked on as a service?
         }
     }

@@ -17,7 +17,7 @@ export default class EditTriggerCooldownCommand extends TextCommand {
     async execute(message: Message, args: string[], services: Services) {
         let trigger = args.join(" ");
 
-        const dbTrigger = await services.database.collections.botCharacters.findOne({ trigger }) as unknown as BotCharacter;
+        const dbTrigger = await services.database.collections.triggers.findOne({ trigger }) as unknown as BotCharacter;
         if (!dbTrigger) {
             await message.reply(`I don't seem to know about that trigger.`);
             return;
@@ -53,7 +53,7 @@ export default class EditTriggerCooldownCommand extends TextCommand {
             await message.reply(`Editing trigger \`${trigger}\` cooldown. Please send the amount of seconds you want the bot to wait before responding to a trigger again.`);
         } catch (error) {
             logger.error("Encountered error while trying to edit trigger cooldown", trigger, "\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to edit trigger cooldown " + trigger, services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to edit trigger cooldown " + trigger, services.state.state.pagedUsers, { message, args, dbTrigger, services });
             await message.reply(`That's awkward. I encountered an error while editing the \`${trigger}\` trigger cooldown. Please try again.`);
         }
     }

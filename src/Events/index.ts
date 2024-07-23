@@ -1,6 +1,6 @@
 import { readdir } from "fs/promises";
 import * as logger from "../logger";
-import { Client, Events } from "discord.js";
+import { Client, ClientEvents, Events } from "discord.js";
 import BotEvent from "./BotEvent";
 import { Services } from "../Services";
 
@@ -15,12 +15,12 @@ export default class EventManager {
                     const event: BotEvent = new (await import(`${__dirname}/events/${eventFile}`)).default();
 
                     if ("eventName" in event && "execute" in event) {
-                        client.addListener(event.eventName, async (...data) => {
+                        client.on(event.eventName as string, async (...data) => {
                             try {
                                 await event.execute(services, ...(data as []))
                             } catch(error) {
                                 logger.error("Encountered an error while trying to execute event", event.eventName, ". See error below.\n", error.message, "\n", error.stack);
-                                await services.pager.sendError(error, "Executing event " + event.eventName, services.state.state.pagedUsers);
+                                await services.pager.sendError(error, "Executing event " + event.eventName, services.state.state.pagedUsers, ...(data as []));
                             }
                         });
                     } else {
