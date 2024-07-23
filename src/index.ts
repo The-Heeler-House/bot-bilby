@@ -31,9 +31,9 @@ process.on("uncaughtException", async (error, origin) => {
     await services.pager.sendCrash(error, origin, services.state.state.pagedUsers);
 
     // Bilby is in an undefined state, it is EXTREMELY discouraged from continuing in this state.
-    // If the exit call wasn't here, Bilby would continue running, but doing so may cause undefined and unexpected behaviour
+    // If the exit call wasn't here, Bilby would continue running, but doing so may cause undefined and unexpected behavior
     // so we must exit here.
-    logger.error("Bot Bilby is in an undefined state! Terminating immediatly.");
+    logger.error("Bot Bilby is in an undefined state! Terminating immediately.");
     process.exit(1);
 });
 
