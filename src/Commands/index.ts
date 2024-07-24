@@ -155,6 +155,13 @@ export default class CommandPreprocessor {
      */
     async onSlashCommandPreprocess(interaction: BaseInteraction, services: Services) {
         if (!interaction.isChatInputCommand()) return;
+        if (!isTHHorDevServer(interaction.guild.id)) {
+            await interaction.reply({
+                content: "no:)",
+                ephemeral: true
+            })
+            return;
+        }
 
         const command = this.slashCommands.get(interaction.commandName)
 
