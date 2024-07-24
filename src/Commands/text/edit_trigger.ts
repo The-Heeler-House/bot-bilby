@@ -2,8 +2,10 @@ import { Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { devIds, roleIds } from "../../constants";
-import BotCharacter from "../../Services/Database/models/botCharacter";
 import * as logger from "../../logger";
+import { ObjectId, WithId } from "mongodb";
+import Trigger from "../../Services/Database/models/trigger";
+import { addAttachmentToDb, removeAttachmentFromDb } from "../../Helper/TriggerHelper";
 
 export default class EditTriggerCommand extends TextCommand {
     public data = new TextCommandBuilder()
@@ -17,7 +19,7 @@ export default class EditTriggerCommand extends TextCommand {
     async execute(message: Message, args: string[], services: Services) {
         let trigger = args.join(" ");
 
-        const dbTrigger = await services.database.collections.triggers.findOne({ trigger }) as unknown as BotCharacter;
+        const dbTrigger = await services.database.collections.triggers.findOne({ trigger }) as WithId<Trigger>;
         if (!dbTrigger) {
             await message.reply(`I don't seem to know about that trigger. Maybe you meant to add it?`);
             return;
@@ -31,9 +33,19 @@ export default class EditTriggerCommand extends TextCommand {
             });
 
             collector.on("collect", async msg => {
+                for (const attachment of dbTrigger.attachmentIds) {
+                    await removeAttachmentFromDb(services.database.bilbyDb, attachment)
+                }
+
+                const newAttachments: ObjectId[] = []
+                for (const [_, attachment] of msg.attachments) {
+                    newAttachments.push(await addAttachmentToDb(services.database.bilbyDb, attachment))
+                }
+
                 await services.database.collections.triggers.updateOne({ trigger }, {
                     $set: {
-                        response: msg.content
+                        response: msg.content,
+                        attachmentIds: newAttachments
                     }
                 });
 

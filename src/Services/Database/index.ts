@@ -9,7 +9,8 @@ dotenv.config();
 
 export default class DatabaseService {
     public collections: DatabaseCollections = {};
-    
+    public bilbyDb: mongoDB.Db
+
     constructor() {
         this.connect();
     }
@@ -25,6 +26,7 @@ export default class DatabaseService {
             bilby: client.db("bilby")
         }
 
+        this.bilbyDb = databases.bilby
         this.collections.botCharacters = databases.bilby.collection("botCharacters");
         this.collections.muteroulette = databases.bilby.collection("muteroulette");
         this.collections.guess = databases.bilby.collection("guess");
@@ -33,6 +35,7 @@ export default class DatabaseService {
 }
 
 export interface DatabaseCollections {
+
     botCharacters?: mongoDB.Collection,
     muteroulette?: mongoDB.Collection,
     guess?: mongoDB.Collection,

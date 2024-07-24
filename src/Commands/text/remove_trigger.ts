@@ -4,28 +4,33 @@ import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { devIds, roleIds } from "../../constants";
 import * as logger from "../../logger";
 import Triggers from "../../Services/Database/models/trigger";
+import { WithId } from "mongodb";
+import { removeAttachmentFromDb } from "../../Helper/TriggerHelper";
 
 export default class RemoveTriggerCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("remove trigger")
-        .setDescription("Removes a triggery.")
+        .setDescription("Removes a trigger.")
         .addArgument("trigger", "The trigger to remove.")
         .addAllowedRoles(roleIds.staff)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
     async execute(message: Message, args: string[], services: Services) {
-        const trigger = await services.database.collections.triggers.findOne({ trigger: args.join(" ") }) as unknown as Triggers;
+        const trigger = await services.database.collections.triggers.findOne({ trigger: args.join(" ") }) as WithId<Triggers>;
         if (!trigger) {
             await message.reply(`I don't seem to know of this trigger. Please say \`${process.env.PREFIX}list triggers\` to see the trigger list.`);
             return;
         }
 
         try {
-
             await services.database.collections.triggers.deleteOne({
-                trigger: args.join(" ")
+                trigger: trigger.trigger
             });
+
+            for (const attachment of trigger.attachmentIds) {
+                await removeAttachmentFromDb(services.database.bilbyDb, attachment)
+            }
 
             await message.reply(`Successfully removed trigger \`${args.join(" ")}\`.`);
         } catch (error) {

@@ -1,8 +1,9 @@
-import { Message } from "discord.js";
-import { ObjectId, WithId } from "mongodb";
+import { AttachmentBuilder, Message } from "discord.js";
+import { GridFSBucket, ObjectId, WithId } from "mongodb";
 import { Services } from "../Services";
 import moment from "moment-timezone";
 import Trigger from "../Services/Database/models/trigger";
+import { createDiscordAttachmentFromDb } from "./TriggerHelper";
 
 /**
  * Gets all the directive tags in a string.
@@ -87,7 +88,8 @@ export async function processResponse(
     trigger: {
         regexp: RegExpExecArray,
         id: ObjectId,
-        response: string
+        response: string,
+        attachments: ObjectId[]
     }, services: Services
 ) {
     // All variables for the currently running trigger are stored here. This includes trigger-defined variables via the var function.
@@ -194,7 +196,16 @@ export async function processResponse(
             // Terminate execution while still processing the output.
             terminated = true;
             response = "";
-            return processResponse(message, { regexp: trigger.regexp, id: trigger.id, response: result.text }, services);
+            return processResponse(
+                message,
+                {
+                    regexp: trigger.regexp,
+                    id: trigger.id,
+                    response: result.text,
+                    attachments: trigger.attachments
+                },
+                services
+            );
         }
 
         response = response.replace(`{${directive}}`, result.text);
@@ -209,6 +220,15 @@ export async function processResponse(
         }
     }
 
-    if (response.trim() != "")
-        message.channel.send(response.trim());
+    let attachments: AttachmentBuilder[] = []
+    for (const attachment of trigger.attachments) {
+        attachments.push(await createDiscordAttachmentFromDb(services.database.bilbyDb, attachment))
+    }
+
+    message.channel.send({
+        content: response.trim(),
+        files: attachments
+    })
+    // if (response.trim() != "")
+    //     message.channel.send(response.trim());
 }

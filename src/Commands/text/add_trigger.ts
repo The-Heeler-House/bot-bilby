@@ -5,6 +5,8 @@ import { devIds, roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
 import * as logger from "../../logger";
 import { CollectionTimeoutError, getUpcomingMessage } from "../../Helper/FlowHelper";
+import { GridFSBucket, ObjectId } from "mongodb";
+import { addAttachmentToDb } from "../../Helper/TriggerHelper";
 
 export default class AddTriggerCommand extends TextCommand {
     public data = new TextCommandBuilder()
@@ -41,10 +43,17 @@ export default class AddTriggerCommand extends TextCommand {
             await triggerTrigger.reply(`Gotcha! We're making a ${type}-based trigger triggered by \`${triggerTrigger.content}\`. What do you want the response to be?`);
             let triggerResponse = await getUpcomingMessage(message.channel as TextChannel, (msg) => msg.author.id == message.author.id, 120_000);
             let response: string = triggerResponse.content;
+            let attachments = triggerResponse.attachments
+            let attachmentIds: ObjectId[] = []
+
+            for (const [_, attachment] of attachments) {
+                attachmentIds.push(await addAttachmentToDb(services.database.bilbyDb, attachment))
+            }
 
             await services.database.collections.triggers.insertOne({
                 trigger,
                 response,
+                attachmentIds,
                 cooldown: 10,
                 meta: {
                     uses: 0

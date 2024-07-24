@@ -17,12 +17,22 @@ export default class TriggerResponseEvent extends BotEvent {
 
         let triggers = await services.database.collections.triggers.find().toArray() as WithId<Trigger>[];
 
-        let triggerCanidates = triggers.filter(trigger => this.lastTriggered.has(trigger._id.toHexString()) ? Date.now() - this.lastTriggered.get(trigger._id.toHexString()) > (trigger.cooldown * 1000) : true)
-            .map(trigger => { return { regexp: new RegExp(trigger.trigger, "").exec(message.content), id: trigger._id, response: trigger.response } })
+        let triggerCandidates = triggers
+            .filter(trigger =>
+                this.lastTriggered.has(trigger._id.toHexString())
+                    ? Date.now() - this.lastTriggered.get(trigger._id.toHexString()) > (trigger.cooldown * 1000)
+                    : true
+            )
+            .map(trigger => ({
+                regexp: new RegExp(trigger.trigger, "").exec(message.content),
+                id: trigger._id,
+                response: trigger.response,
+                attachments: trigger.attachmentIds
+            }))
             .filter(trigger => trigger.regexp != null);
 
-        if (triggerCanidates.length > 0) {
-            let trigger = triggerCanidates[0];
+        if (triggerCandidates.length > 0) {
+            let trigger = triggerCandidates[0];
 
             await processResponse(message, trigger, services);
 
