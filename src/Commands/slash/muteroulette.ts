@@ -33,12 +33,12 @@ export default class MuterouletteCommand extends SlashCommand {
                 .setDescription("View the muteroulette leaderboard!")
         ) as SlashCommandBuilder;
     
-    public muteRouletteWarning = `\n\n⚠️ By playing Mute Roulette, you agree that you are gambling your ability to chat in the server for a range of time, up to 2 weeks. Staff members will not unmute you if you get muted by Mute Roulette.`;
-    
     async execute(
         interaction: ChatInputCommandInteraction,
         services: Services
     ) {
+        const muteRouletteWarning = `\n\n⚠️ By playing Mute Roulette, you agree that you are gambling your ability to chat in the server for a range of time, up to 2 weeks. Staff members will not unmute you if you get muted by Mute Roulette.`;
+
         const users = services.database.collections.muteroulette;
 
         if (interaction.options.getSubcommand() === "play") {
@@ -190,7 +190,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         shieldMessage[
                             Math.floor(Math.random() * shieldMessage.length)
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await avoidedMute();
                 await removePowerUp("Shield");
@@ -211,7 +211,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         doubleMessage[
                             Math.floor(Math.random() * doubleMessage.length)
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await muted(time * 2);
                 await removePowerUp("Double Trouble");
@@ -236,7 +236,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                     Math.random() * muteRaiseMessage.length
                                 )
                             ]
-                        }${this.muteRouletteWarning}`,
+                        }${muteRouletteWarning}`,
                     });
                     await muted(time * 2);
                     await removePowerUp("Raise the Stakes");
@@ -251,7 +251,7 @@ export default class MuterouletteCommand extends SlashCommand {
                             noMuteMessage[
                                 Math.floor(Math.random() * noMuteMessage.length)
                             ]
-                        }${this.muteRouletteWarning}`,
+                        }${muteRouletteWarning}`,
                     });
                     await avoidedMute();
                     await removePowerUp("Raise the Stakes");
@@ -263,7 +263,7 @@ export default class MuterouletteCommand extends SlashCommand {
                 await interaction.reply({
                     content: `You must wait ${Math.round(
                         (10000 - (Number(currentTime) - lastTime)) / 1000
-                    )} seconds before using this command again!${this.muteRouletteWarning}`,
+                    )} seconds before using this command again!${muteRouletteWarning}`,
                     ephemeral: true,
                 });
                 return;
@@ -272,7 +272,7 @@ export default class MuterouletteCommand extends SlashCommand {
             // if disabled time under 10 minutes
             if (Number(currentTime) - Number(this.disabledTime) < 600000) {
                 await interaction.reply({
-                    content: `This command is disabled for 10 minutes!${this.muteRouletteWarning}`,
+                    content: `This command is disabled for 10 minutes!${muteRouletteWarning}`,
                 });
                 return;
             }
@@ -293,7 +293,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                     Math.random() * fiftyFiftyMessage.length
                                 )
                             ]
-                        }${this.muteRouletteWarning}`,
+                        }${muteRouletteWarning}`,
                     });
                     await muted(60);
                     await removePowerUp("Fifty-Fifty");
@@ -309,7 +309,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                     Math.random() * fiftyFiftyMessage.length
                                 )
                             ]
-                        }${this.muteRouletteWarning}`,
+                        }${muteRouletteWarning}`,
                     });
                     await avoidedMute();
                     await removePowerUp("Fifty-Fifty");
@@ -355,7 +355,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                 Math.random() * tenMinuteMuteMessage.length
                             )
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await muted(10);
                 return;
@@ -394,7 +394,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                 Math.random() * thirtyMinuteMuteMessage.length
                             )
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await muted(30);
                 return;
@@ -433,7 +433,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                 Math.random() * oneHourMuteMessage.length
                             )
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await muted(60);
                 return;
@@ -471,7 +471,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                 Math.random() * threeHourMuteMessage.length
                             )
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await muted(180);
                 return;
@@ -511,7 +511,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                     Math.random() * oneDayMuteMessage.length
                                 )
                             ]
-                        }${this.muteRouletteWarning}`,
+                        }${muteRouletteWarning}`,
                     });
                     await muted(1440);
                     return;
@@ -544,7 +544,7 @@ export default class MuterouletteCommand extends SlashCommand {
                                     Math.random() * oneWeekMuteMessage.length
                                 )
                             ]
-                        }${this.muteRouletteWarning}`,
+                        }${muteRouletteWarning}`,
                     });
                     await muted(10080);
                     return;
@@ -566,7 +566,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         shieldMessage[
                             Math.floor(Math.random() * shieldMessage.length)
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await avoidedMute();
                 await addPowerUp("Shield");
@@ -583,7 +583,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         doubleMessage[
                             Math.floor(Math.random() * doubleMessage.length)
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await avoidedMute();
                 await addPowerUp("Double Trouble");
@@ -600,7 +600,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         raiseMessage[
                             Math.floor(Math.random() * raiseMessage.length)
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await avoidedMute();
                 await addPowerUp("Raise the Stakes");
@@ -617,7 +617,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         fiftyMessage[
                             Math.floor(Math.random() * fiftyMessage.length)
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await avoidedMute();
                 await addPowerUp("Fifty-Fifty");
@@ -634,7 +634,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         tripleMessage[
                             Math.floor(Math.random() * tripleMessage.length)
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 this.disabledTime = new Date();
                 return;
@@ -651,7 +651,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         giftMessage[
                             Math.floor(Math.random() * giftMessage.length)
                         ]
-                    }${this.muteRouletteWarning}`,
+                    }${muteRouletteWarning}`,
                 });
                 await avoidedMute();
                 const filter = (m: { author: { id: string; }; }) => m.author.id === interaction.user.id;
@@ -762,7 +762,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     normalMessage[
                         Math.floor(Math.random() * normalMessage.length)
                     ]
-                }${this.muteRouletteWarning}`,
+                }${muteRouletteWarning}`,
             });
             await avoidedMute();
         } else if (interaction.options.getSubcommand() === "stats") {
