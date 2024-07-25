@@ -37,7 +37,7 @@ export default class MuterouletteCommand extends SlashCommand {
         interaction: ChatInputCommandInteraction,
         services: Services
     ) {
-        const muteRouletteWarning = `\n\n⚠️ By playing Mute Roulette, you agree that you are gambling your ability to chat in the server for a range of time, up to 2 weeks. Staff members will not unmute you if you get muted by Mute Roulette.`;
+        const muteRouletteWarning = ``;
 
         const users = services.database.collections.muteroulette;
 
