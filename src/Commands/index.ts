@@ -144,7 +144,7 @@ export default class CommandPreprocessor {
             if (canExecuteCommand(command, message.member)) command.execute(message, args, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", commandName, "text command.\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to execute the " + commandName + " text command. See message " + message.url, services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to execute the " + commandName + " text command. See message " + message.url, services.state.state.pagedUsers, { message, args });
             await message.reply("Whoops! Seems like something went wrong while processing your request. Please try again.");
         }
     }
@@ -171,7 +171,7 @@ export default class CommandPreprocessor {
             await command.execute(interaction, services);
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", interaction.commandName, "slash command.\n", error.stack);
-            await services.pager.sendError(error, "Trying to execute the " + interaction.commandName + " slash command.", services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to execute the " + interaction.commandName + " slash command.", services.state.state.pagedUsers, { interaction });
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
             } else {

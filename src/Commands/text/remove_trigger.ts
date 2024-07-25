@@ -30,7 +30,7 @@ export default class RemoveTriggerCommand extends TextCommand {
             await message.reply(`Successfully removed trigger \`${args.join(" ")}\`.`);
         } catch (error) {
             logger.error("Encountered error while trying to remove trigger", args.join(" "), "\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to remove trigger " + args.join(" "), services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to remove trigger " + args.join(" "), services.state.state.pagedUsers, { message, args, trigger });
             await message.reply(`That's awkward. I encountered an error while removing the trigger \`${args.join(" ")}\`. Please try again.`);
         }
     }

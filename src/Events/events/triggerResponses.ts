@@ -1,4 +1,4 @@
-import { Events, Message, TextChannel } from "discord.js";
+import { ClientEvents, Events, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";

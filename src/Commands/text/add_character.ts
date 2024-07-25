@@ -35,7 +35,7 @@ export default class AddCharacterCommand extends TextCommand {
             await message.reply(`Successfully created character \`${name}\`.`);
         } catch (error) {
             logger.error("Encountered error while trying to create character", name, "\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to create character " + name, services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to create character " + name, services.state.state.pagedUsers, { message, args, character });
             await message.reply(`That's awkward. I encountered an error while creating the character \`${name}\`. Please try again.`);
         }
     }
