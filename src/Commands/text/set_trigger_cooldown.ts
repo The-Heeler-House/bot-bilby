@@ -1,4 +1,4 @@
-import { Message, TextChannel } from "discord.js";
+import { Message } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { devIds, roleIds } from "../../constants";
@@ -7,8 +7,8 @@ import * as logger from "../../logger";
 
 export default class EditTriggerCooldownCommand extends TextCommand {
     public data = new TextCommandBuilder()
-        .setName("edit trigger cooldown")
-        .setDescription("Edits a trigger's cooldown length.")
+        .setName("set trigger cooldown")
+        .setDescription("Set a trigger's cooldown length.")
         .addArgument("trigger", "The trigger to edit the cooldown length of.")
         .addAllowedRoles(roleIds.staff)
         .addAllowedUsers(...devIds)

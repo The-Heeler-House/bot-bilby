@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, Message, SlashCommandBuilder, Snowflake } from "discord.js";
+import { Message, Snowflake } from "discord.js";
 import { Services } from "../Services";
 
 export default class TextCommand {
