@@ -1,9 +1,9 @@
-import { ClientEvents, Events, Message, TextChannel } from "discord.js";
+import { Events, Message } from "discord.js";
 import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
 import Trigger from "../../Services/Database/models/trigger";
-import { ObjectId, WithId } from "mongodb";
+import { WithId } from "mongodb";
 import { processResponse } from "../../Helper/DirectiveHelper";
 
 export default class TriggerResponseEvent extends BotEvent {

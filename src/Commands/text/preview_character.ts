@@ -1,9 +1,8 @@
-import { EmbedBuilder, Message, TextChannel } from "discord.js";
+import { EmbedBuilder, Message } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
-import * as logger from "../../logger";
 import { WithId } from "mongodb";
 
 export default class PreviewCharacterCommand extends TextCommand {
