@@ -1,6 +1,6 @@
 import { readdir } from "fs/promises";
 import * as logger from "../logger";
-import { Client, ClientEvents, Events } from "discord.js";
+import { Client, ClientEvents } from "discord.js";
 import BotEvent from "./BotEvent";
 import { Services } from "../Services";
 
@@ -15,7 +15,7 @@ export default class EventManager {
                     const event: BotEvent = new (await import(`${__dirname}/events/${eventFile}`)).default();
 
                     if ("eventName" in event && "execute" in event) {
-                        client.on(event.eventName as string, async (...data) => {
+                        client.on(event.eventName as keyof ClientEvents, async (...data) => {
                             try {
                                 await event.execute(services, ...(data as []))
                             } catch(error) {
