@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { AttachmentBuilder, Message } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { devIds, roleIds } from "../../constants";
@@ -28,6 +28,16 @@ export default class DebugCommand extends TextCommand {
                     return true;
                 case "page_log":
                     await services.pager.sendPage("Debug-initiated log");
+                    return true;
+                case "dump_mr_data":
+                    let data = await services.database.collections.muteroulette.findOne({ user: args[1] });
+                    await message.reply({
+                        files: [
+                            new AttachmentBuilder(Buffer.from(JSON.stringify(data)))
+                                .setName(`mr_${args[1]}.json`)
+                                .setDescription("Mute Roulette user data.")
+                        ]
+                    });
                     return true;
                 default:
                     return false;
