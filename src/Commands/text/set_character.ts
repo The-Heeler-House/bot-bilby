@@ -1,4 +1,4 @@
-import { Message, TextChannel } from "discord.js";
+import { Message } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { roleIds } from "../../constants";
@@ -27,7 +27,7 @@ export default class SetCharacterCommand extends TextCommand {
             await message.reply(`Successfully changed character to \`${args.join(" ")}\`.`);
         } catch (error) {
             logger.error("Encountered error while trying to change avatar and username to character", args.join(" "), "\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to change avatar and username to character " + args.join(" "), services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to change avatar and username to character " + args.join(" "), services.state.state.pagedUsers, { message, args, character });
             await message.reply(`That's awkward. I encountered an error while changing character to \`${args.join(" ")}\`. Please try again.`);
         }
     }

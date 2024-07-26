@@ -1,4 +1,4 @@
-import { Client, Snowflake, TextChannel } from "discord.js";
+import { AttachmentBuilder, Client, Message, Snowflake, TextChannel } from "discord.js";
 import { channelIds } from "../../constants";
 
 /**
@@ -54,7 +54,7 @@ export default class PagerService {
         });
     }
 
-    public async sendCrash(error: Error, origin: string, pingList: Snowflake[]) {
+    public async sendCrash(error: Error, origin: string, pingList: Snowflake[], data?: any) {
         // This method is designed for paging a complete and total failure of Bot Bilby.
         // If this is called, Bilby has already crashed and there's nothing we can do to prevent it.
         // But before we exit, we send a "crash" page to the bilby channel to allow for debugging.
@@ -63,25 +63,55 @@ export default class PagerService {
 
         if (this.ignoredErrorHashes.includes("crash-" + errorHash)) return; // We ignore this error.
 
-        await this.loggingChannel.send(`${pingList.map(userId => `<@${userId}>`).join(" ")} Crash thrown!\n\n` +
-            `**Bot Bilby has crashed. Further information is available below.**\n\n` +
-            `**Message:**\n\`\`\`${error.message}\`\`\`\n\n` +
-            `**Stack Trace:**\n\`\`\`${error.stack}\`\`\`\n` +
-            `**Origin:**\n\`${origin}\`\n` +
-            `**Hash:** \`${errorHash}\``);
+        let log = {
+            timestamp: new Date().toISOString(),
+            error,
+            data,
+            origin,
+            errorHash
+        }
+
+        await this.loggingChannel.send({ 
+                content: `${pingList.map(userId => `<@${userId}>`).join(" ")} Crash thrown!\n\n` +
+                         `**Bot Bilby has crashed. Further information is available below.**\n\n` +
+                         `**Message:**\n\`\`\`${error.message}\`\`\`\n\n` +
+                         `**Stack Trace:**\n\`\`\`${error.stack}\`\`\`\n` +
+                         `**Origin:**\n\`${origin}\`\n` +
+                         `**Hash:** \`${errorHash}\``,
+                files: [
+                    new AttachmentBuilder(Buffer.from(JSON.stringify(log)))
+                        .setName(`crash_${log.timestamp}.json`)
+                        .setDescription("A log of the crash that occured.")
+                ]
+        });
     }
 
-    public async sendError(error: Error, whileDoing: string, pingList: Snowflake[]) {
+    public async sendError(error: Error, whileDoing: string, pingList: Snowflake[], data?: any) {
         let errorHash = hashError(error.stack);
 
         if (this.ignoredErrorHashes.includes("error-" + errorHash)) return; // We ignore this error.
 
-        await this.loggingChannel.send(`${pingList.map(userId => `<@${userId}>`).join(" ")} Error thrown!\n\n` +
-            `**Bot Bilby has encountered an error. More information is available below.**\n\n` +
-            `**Message:**\n\`\`\`${error.message}\`\`\`\n\n` +
-            `**Stack Trace:**\n\`\`\`${error.stack}\`\`\`\n` +
-            `**While:**\n\`${whileDoing}\`` +
-            `**Hash:** \`${errorHash}\``);
+        let log = {
+            timestamp: new Date().toISOString(),
+            error,
+            data,
+            whileDoing,
+            errorHash
+        }
+
+        await this.loggingChannel.send({ 
+                content: `${pingList.map(userId => `<@${userId}>`).join(" ")} Error thrown!\n\n` +
+                         `**Bot Bilby has encountered an error. More information is available below.**\n\n` +
+                         `**Message:**\n\`\`\`${error.message}\`\`\`\n\n` +
+                         `**Stack Trace:**\n\`\`\`${error.stack}\`\`\`\n` +
+                         `**While:**\n\`${whileDoing}\`\n` +
+                         `**Hash:** \`${errorHash}\``,
+                files: [
+                    new AttachmentBuilder(Buffer.from(JSON.stringify(log)))
+                        .setName(`error_${log.timestamp}.json`)
+                        .setDescription("A log of the error that occured.")
+                ]
+        });
     }
 
     public async sendPage(...message: string[]) {

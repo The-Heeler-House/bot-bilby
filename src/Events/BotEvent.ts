@@ -1,4 +1,4 @@
-import { Events, GuildMember, Message, MessageReaction, User } from "discord.js";
+import { ClientEvents, Events, GuildMember, Message, MessageReaction, User } from "discord.js";
 import { Services } from "../Services";
 
 export default class BotEvent {

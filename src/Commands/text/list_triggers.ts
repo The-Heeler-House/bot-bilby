@@ -1,9 +1,7 @@
-import { EmbedBuilder, Message, TextChannel } from "discord.js";
+import { Message } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { devIds, roleIds } from "../../constants";
-import BotCharacter from "../../Services/Database/models/botCharacter";
-import * as logger from "../../logger";
 import Triggers from "../../Services/Database/models/trigger";
 
 export default class ListTriggersCommand extends TextCommand {

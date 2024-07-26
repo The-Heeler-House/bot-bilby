@@ -1,4 +1,4 @@
-import { Message, TextChannel } from "discord.js";
+import { Message } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { roleIds } from "../../constants";
@@ -29,7 +29,7 @@ export default class RemoveCharacterCommand extends TextCommand {
             await message.reply(`Successfully removed character \`${args.join(" ")}\`.`);
         } catch (error) {
             logger.error("Encountered error while trying to remove character", args.join(" "), "\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to remove character " + args.join(" "), services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to remove character " + args.join(" "), services.state.state.pagedUsers, { message, args, character });
             await message.reply(`That's awkward. I encountered an error while removing the character \`${args.join(" ")}\`. Please try again.`);
         }
     }

@@ -1,4 +1,4 @@
-import { Message, TextChannel } from "discord.js";
+import { Message } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { devIds, roleIds } from "../../constants";
@@ -60,7 +60,7 @@ export default class EditTriggerCommand extends TextCommand {
             await message.reply(`Editing trigger \`${trigger}\`. Please send the response you want the bot to send when the trigger is sent.`);
         } catch (error) {
             logger.error("Encountered error while trying to edit trigger", trigger, "\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to edit trigger " + trigger, services.state.state.pagedUsers);
+            await services.pager.sendError(error, "Trying to edit trigger " + trigger, services.state.state.pagedUsers, { message, args, dbTrigger });
             await message.reply(`That's awkward. I encountered an error while editing the \`${trigger}\` trigger. Please try again.`);
         }
     }
