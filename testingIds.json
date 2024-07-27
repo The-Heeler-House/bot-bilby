@@ -13,6 +13,7 @@
         "chatLog": "",
         "mediaLog": "",
         "reactionLog": "",
+        "threadLog": "",
         "announcements": ""
     },
     "devIds": null

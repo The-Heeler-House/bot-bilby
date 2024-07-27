@@ -7,6 +7,7 @@ const STATE_PATH = path.join(__dirname, "../../../state.json");
 const defaultState: State = {
     joinGate: true,
     trackedMessages: new Map<string, TrackedMessage>(),
+    threadLogging: { blacklistedThreads: [], blacklistedChannels: [] },
     pagedUsers: []
 }
 
@@ -33,7 +34,13 @@ export default class StateService {
 
     private setDefaultState(defaultStateObject: State, target: State) {
         for (let key in defaultStateObject) {
+            if (defaultStateObject[key] instanceof Array) {
+                if (target[key] == undefined) target[key] = [];
+                this.setDefaultState(defaultStateObject[key], target[key]);
+                continue;
+            } else
             if (defaultStateObject[key] instanceof Object) {
+                if (target[key] == undefined) target[key] = {};
                 this.setDefaultState(defaultStateObject[key], target[key]);
                 continue;
             }
@@ -69,7 +76,8 @@ export default class StateService {
 export interface State {
     joinGate: boolean,
     trackedMessages: Map<string, TrackedMessage>,
-    pagedUsers: Snowflake[];
+    threadLogging: ThreadLoggingState,
+    pagedUsers: Snowflake[]
 }
 
 export interface TrackedMessage {
@@ -82,3 +90,8 @@ export interface TrackedMessage {
     author: string,
     timestamp: number, // Add timestamp to track when the message was linked
 };
+
+export interface ThreadLoggingState {
+    blacklistedThreads: Snowflake[],
+    blacklistedChannels: Snowflake[]
+}
