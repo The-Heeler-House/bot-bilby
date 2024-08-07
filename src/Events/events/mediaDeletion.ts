@@ -23,7 +23,7 @@ export default class ModerationPingEvent extends BotEvent {
                 const extension = attachmentSplitByDot[attachmentSplitByDot.length-1];
 
                 // First lets see if we can find it.
-                /*try {
+                try {
                     let imageFromS3 = await services.s3.get("media", `${attachment.id}.${extension}`);
 
                     
@@ -32,7 +32,7 @@ export default class ModerationPingEvent extends BotEvent {
                         content: `File sent by <@${message.author.id}> deleted in <#${message.channel.id}>.`
                     });
                 } catch (err: any) {
-                    if (err instanceof S3Error && err.code == "NoSuchKey") {*/
+                    if (err instanceof S3Error && err.code == "NoSuchKey") {
                         await logChannel.send({
                             files: [
                                 {
@@ -42,11 +42,11 @@ export default class ModerationPingEvent extends BotEvent {
                             ],
                             content: `File sent by <@${message.author.id}> deleted in <#${message.channel.id}>. Image was not saved externally, attempting to get from Discord CDN as fallback.`
                         });
-                    /*} else {
+                    } else {
                         logger.error("Encountered an error while trying to log deleted attachments.\n", err, "\n", err.stack);
                         await services.pager.sendError(err, "Trying to log deleted attachments.", services.state.state.pagedUsers, { message });
                     }
-                }*/
+                }
             });
         } catch (error) {
             logger.error("Encountered an error while trying to log deleted attachments.\n", error, "\n", error.stack);

@@ -22,7 +22,7 @@ export default function getServices(client: Client, commands: CommandPreprocesso
     return {
         commands,
         database: new DatabaseService(),
-        //s3: new S3Service(),
+        s3: new S3Service(),
         state: new StateService(),
         pager: new PagerService(client)
     }
@@ -31,7 +31,7 @@ export default function getServices(client: Client, commands: CommandPreprocesso
 export interface Services {
     commands: CommandPreprocessor,
     database: DatabaseService,
-    //s3: S3Service,
+    s3: S3Service,
     state: StateService,
     pager: PagerService
 }
