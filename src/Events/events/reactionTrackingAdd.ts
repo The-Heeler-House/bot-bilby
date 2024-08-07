@@ -42,6 +42,12 @@ export default class ReactionTrackingAddEvent extends BotEvent {
 
         const member = await reaction.message.guild.members.fetch(user.id);
 
+        services.state.volatileState.trackedReactions.set(`${reaction.message.id}_${reaction.emoji.id || reaction.emoji.toString()}`, {
+            authorId: member.id,
+            emote: reaction.emoji,
+            timestamp: Date.now()
+        });
+
         await staffChatChannel.send(`${emote} **added** by \`${member.displayName}\`: ${messageLink}`);
     }
 }

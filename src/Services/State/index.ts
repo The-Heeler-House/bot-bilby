@@ -1,4 +1,4 @@
-import { Emoji, GuildEmoji, Message, Snowflake } from "discord.js";
+import { GuildEmoji, Message, ReactionEmoji, Snowflake } from "discord.js";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
@@ -96,12 +96,11 @@ export interface TrackedMessage {
 };
 
 export interface VolatileState {
-    trackedReactions: Map<Snowflake, TrackedReaction>
+    trackedReactions: Map<string, TrackedReaction>
 }
 
 export interface TrackedReaction {
-    messageId: Snowflake,
     authorId: Snowflake,
-    emote: Emoji | GuildEmoji,
+    emote: ReactionEmoji | GuildEmoji,
     timestamp: number
 }
