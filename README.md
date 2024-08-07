@@ -28,6 +28,9 @@ DEVELOPMENT_GUILD="..." # guild to register guild commands in. if this is omitte
 PREFIX="..." # text command prefix, can be any length.
 MONGO_URL="" # connection URL for MongoDB database (should be in the form of: "mongodb://...")
 API_PORT=8080 # port that the BilbyAPI service will listen on. used for non-bilby related projects where data from bilby is needed.
+
+S3_ACCESS_KEY="..." # Access key for S3
+S3_SECRET_KEY="..." # Secret key for S3
 ```
 5. Fill out `testingIds.json` with your appropriate channel and role ids.
 

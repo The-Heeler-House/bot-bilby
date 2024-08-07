@@ -11,6 +11,8 @@ export default class ReactionTrackingAddEvent extends BotEvent {
     async execute(services: Services, reaction: MessageReaction, user: User) {
         if (!isTHHorDevServer(reaction.message.guildId)) return;
 
+        if (reaction.me) return; // Don't log our own reactions as they're spammy.
+
         if (reaction.message.partial) {
             // The message is only partial, try to fetch the full message.
             try {
@@ -40,6 +42,6 @@ export default class ReactionTrackingAddEvent extends BotEvent {
 
         const member = await reaction.message.guild.members.fetch(user.id);
 
-        await staffChatChannel.send(`${emote} **removed** by \`${member.displayName}\`: ${messageLink}`);
+        await staffChatChannel.send(`${emote} **removed** by \`${member.displayName}\`: ${messageLink}${services.state.volatileState.trackedReactions.has(`${reaction.message.id}_${reaction.emoji.id || reaction.emoji.toString()}`) && (Date.now() - services.state.volatileState.trackedReactions.get(`${reaction.message.id}_${reaction.emoji.id || reaction.emoji.toString()}`).timestamp) < 3000 ? "\n:warning: **This was likely a ghost react. It was added and removed within 3 seconds.**" : ""}`);
     }
 }

@@ -11,6 +11,8 @@ export default class ReactionTrackingAddEvent extends BotEvent {
     async execute(services: Services, reaction: MessageReaction, user: User) {
         if (!isTHHorDevServer(reaction.message.guildId)) return;
 
+        if (reaction.me) return; // Don't log our own reactions as they're spammy.
+
         if (reaction.message.partial) {
             // The message is only partial, try to fetch the full message.
             try {
@@ -39,6 +41,12 @@ export default class ReactionTrackingAddEvent extends BotEvent {
             : reaction.emoji.toString();
 
         const member = await reaction.message.guild.members.fetch(user.id);
+
+        services.state.volatileState.trackedReactions.set(`${reaction.message.id}_${reaction.emoji.id || reaction.emoji.toString()}`, {
+            authorId: member.id,
+            emote: reaction.emoji,
+            timestamp: Date.now()
+        });
 
         await staffChatChannel.send(`${emote} **added** by \`${member.displayName}\`: ${messageLink}`);
     }
