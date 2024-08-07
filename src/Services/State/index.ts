@@ -1,4 +1,4 @@
-import { Message, Snowflake } from "discord.js";
+import { Emoji, GuildEmoji, Message, Snowflake } from "discord.js";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
@@ -11,7 +11,19 @@ const defaultState: State = {
 }
 
 export default class StateService {
+    /**
+     * Persistent state that is retained between restarts.
+     * Useful for long-term general information storage (think long-term memory).
+     */
     public state: State;
+
+    /**
+     * Volatile state which does not get retained between restarts.
+     * Useful for short-term general information storage (think short-term memory).
+     */
+    public volatileState: VolatileState = {
+        trackedReactions: new Map()
+    };
 
     constructor() {
         if (existsSync(STATE_PATH)) {
@@ -82,3 +94,14 @@ export interface TrackedMessage {
     author: string,
     timestamp: number, // Add timestamp to track when the message was linked
 };
+
+export interface VolatileState {
+    trackedReactions: Map<Snowflake, TrackedReaction>
+}
+
+export interface TrackedReaction {
+    messageId: Snowflake,
+    authorId: Snowflake,
+    emote: Emoji | GuildEmoji,
+    timestamp: number
+}
