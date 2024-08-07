@@ -39,7 +39,7 @@ export default class S3Service {
         return await this.client.putObject(bucket, name, stream, size, metaData)
     }
 
-    public async putBuffer(bucket: string, name: string, buffer: Buffer, metaData?: ItemBucketMetadata): Promise<{ etag: string, versionId: string }> {
+    public async putBuffer(bucket: string, name: string, buffer: Buffer | string, metaData?: ItemBucketMetadata): Promise<{ etag: string, versionId: string }> {
         return await this.client.putObject(bucket, name, buffer, buffer.length, metaData);
     }
 

@@ -11,6 +11,8 @@ export default class ReactionTrackingAddEvent extends BotEvent {
     async execute(services: Services, reaction: MessageReaction, user: User) {
         if (!isTHHorDevServer(reaction.message.guildId)) return;
 
+        if (reaction.me) return; // Don't log our own reactions as they're spammy.
+
         if (reaction.message.partial) {
             // The message is only partial, try to fetch the full message.
             try {
