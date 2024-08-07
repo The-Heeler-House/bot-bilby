@@ -13,7 +13,7 @@ export default class S3Service {
     
     constructor() {
         this.client = new MinioClient({
-            endPoint: "s3.heeler.house",
+            endPoint: process.env.S3_ENDPOINT,
             port: 443,
             useSSL: true,
             accessKey: process.env.S3_ACCESS_KEY,
