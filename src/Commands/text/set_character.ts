@@ -21,7 +21,7 @@ export default class SetCharacterCommand extends TextCommand {
         }
 
         try {
-            await message.client.user.setUsername(character.name);
+            await (await message.guild.members.fetchMe()).setNickname(character.name);
             await message.client.user.setAvatar(character.avatar);
 
             await message.reply(`Successfully changed character to \`${args.join(" ")}\`.`);
