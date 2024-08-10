@@ -8,7 +8,7 @@ export default class DebugCommand extends TextCommand {
         .setName("debug")
         .setDescription("Various debug commands for Bilby development")
         .addAllowedUsers(...devIds)
-        .addAllowedRoles(roleIds.staff) // Allowed in the very rare circumstance that staff need to fix bilby themselves.
+        .addAllowedRoles(roleIds.leadership) // Allowed in the very rare circumstance that staff need to fix bilby themselves.
         .allowInDMs(true);
 
     async execute(message: Message, args: string[], services: Services) {
