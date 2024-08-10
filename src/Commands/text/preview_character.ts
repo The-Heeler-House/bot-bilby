@@ -1,4 +1,4 @@
-import { EmbedBuilder, Message } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Message } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { roleIds } from "../../constants";
@@ -20,10 +20,11 @@ export default class PreviewCharacterCommand extends TextCommand {
             return;
         }
 
+        const icon = new AttachmentBuilder(Buffer.from(character.avatar.buffer), { name: "data.png" })
         const embed = new EmbedBuilder()
             .setAuthor({
                 name: character.name,
-                iconURL: character.avatar
+                iconURL: "attachment://data.png"
             })
             .setFooter({
                 text: `ID: ${character._id}`
@@ -31,7 +32,7 @@ export default class PreviewCharacterCommand extends TextCommand {
 
         await message.reply({
             content: `This is what the character \`${character.name}\` looks like. To set, say \`${process.env.PREFIX}set character ${character.name}\`. To remove, say \`${process.env.PREFIX}remove character ${character.name}\``,
-            embeds: [ embed ]
+            files: [ icon ], embeds: [ embed ]
         });
     }
 }
