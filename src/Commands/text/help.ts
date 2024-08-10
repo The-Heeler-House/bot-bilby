@@ -60,7 +60,7 @@ export default class PingCommand extends TextCommand {
             }
 
             embed.addFields(
-                { name: "Usage", value: `\`${process.env.PREFIX}${command.data.name}${command.data.arguments.length != 0? ` ${command.data.arguments.map(argument => argument.required ? `<${argument.name}>` : `[${argument.name}]`)}` : ""}\`` }
+                { name: "Usage", value: `\`${process.env.PREFIX}${command.data.name}${command.data.arguments.length != 0? ` ${command.data.arguments.map(argument => argument.required ? `<${argument.name}>` : `[${argument.name}]`).join(" ")}` : ""}\`` }
             )
 
             await message.reply({

@@ -20,7 +20,7 @@ export default class S3Service {
             secretKey: process.env.S3_SECRET_KEY
         });
 
-        logger.command("Connected to S3 server: s3.heeler.house")
+        logger.command(`Connected to S3 server: ${process.env.S3_ENDPOINT}`)
     }
 
     public async list(bucket: string, prefix?: string, recursive?: boolean, startAfter?: string): Promise<BucketStream<BucketItemWithMetadata>> {
