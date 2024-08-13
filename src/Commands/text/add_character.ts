@@ -17,7 +17,8 @@ export default class AddCharacterCommand extends TextCommand {
     async execute(message: Message, args: string[], services: Services) {
         args = args.join(" ").split(" https://");
         let name = args[0];
-        let avatar = `https://${args[1]}`;
+        let avatar = await fetch(`https://${args[1]}`)
+        let avatarData = Buffer.from(await avatar.arrayBuffer())
 
         const character = await services.database.collections.botCharacters.findOne({ name: name }) as unknown as BotCharacter;
         if (character) {
@@ -29,7 +30,7 @@ export default class AddCharacterCommand extends TextCommand {
 
             await services.database.collections.botCharacters.insertOne({
                 name,
-                avatar
+                avatarImage: avatarData
             });
 
             await message.reply(`Successfully created character \`${name}\`.`);
