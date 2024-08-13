@@ -30,7 +30,7 @@ export default class AddCharacterCommand extends TextCommand {
 
             await services.database.collections.botCharacters.insertOne({
                 name,
-                avatar: avatarData
+                avatarImage: avatarData
             });
 
             await message.reply(`Successfully created character \`${name}\`.`);

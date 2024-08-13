@@ -23,7 +23,7 @@ export default class SetCharacterCommand extends TextCommand {
 
         try {
             await (await message.guild.members.fetchMe()).setNickname(character.name);
-            await message.client.user.setAvatar(Buffer.from(character.avatar.buffer));
+            await message.client.user.setAvatar(Buffer.from(character.avatarImage.buffer));
 
             await message.reply(`Successfully changed character to \`${args.join(" ")}\`.`);
         } catch (error) {

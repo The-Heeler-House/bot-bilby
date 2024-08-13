@@ -20,7 +20,7 @@ export default class PreviewCharacterCommand extends TextCommand {
             return;
         }
 
-        const icon = new AttachmentBuilder(Buffer.from(character.avatar.buffer), { name: "data.png" })
+        const icon = new AttachmentBuilder(Buffer.from(character.avatarImage.buffer), { name: "data.png" })
         const embed = new EmbedBuilder()
             .setAuthor({
                 name: character.name,
