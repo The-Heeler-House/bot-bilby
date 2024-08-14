@@ -12,4 +12,4 @@
 - ![Privileged Gateway Intents section](src-makeabot/5.png)
 6. Finally, let's make sure the bot have the appropriate permission. In the `OAuth2` tab, scroll down and you should see a `OAuth2 URL Generator`. Ensure that all of the following box are checked.
 - ![OAuth2 URL Generator section](src-makeabot/6.png)
-7. Once done, a URL should appear below. Copy that, and now you have the URL to invite the bot to the server! (Incase you are wondering what is the Permission Integer, it's `28031845788738`)
+7. Once done, a URL should appear below. Copy that, and now you have the URL to invite the bot to the server! (Incase you are wondering what is the Permission Integer, it's `19236021202002`)

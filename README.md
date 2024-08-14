@@ -33,7 +33,7 @@ S3_ENDPOINT="..." # Endpoint to access S3
 S3_ACCESS_KEY="..." # Access key for S3
 S3_SECRET_KEY="..." # Secret key for S3
 ```
-5. Fill out `testingIds.json` with your appropriate channel and role ids.
+5. Fill out `testingIds.json` with the appropriate channel and role ids in your testing server.
 
 ### **Run the bot**
 Once everything have seen set up, compile and run the bot using:
