@@ -17,7 +17,7 @@ export default class EventManager {
                     if ("eventName" in event && "execute" in event) {
                         client.on(event.eventName as keyof ClientEvents, async (...data) => {
                             try {
-                                await event.execute(services, ...(data as []))
+                                await event.execute(client, services, ...(data as []))
                             } catch(error) {
                                 logger.error("Encountered an error while trying to execute event", event.eventName, ". See error below.\n", error.message, "\n", error.stack);
                                 await services.pager.sendError(error, "Executing event " + event.eventName, services.state.state.pagedUsers, ...(data as []));

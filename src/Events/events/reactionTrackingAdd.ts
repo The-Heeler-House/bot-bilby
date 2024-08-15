@@ -1,4 +1,4 @@
-import { Events, GuildEmoji, MessageReaction, TextChannel, User } from "discord.js";
+import { Client, Events, GuildEmoji, MessageReaction, TextChannel, User } from "discord.js";
 import BotEvent from "../BotEvent";
 import { channelIds } from "../../constants";
 import { Services } from "../../Services";
@@ -8,7 +8,7 @@ import { isTHHorDevServer } from "../../Helper/EventsHelper";
 export default class ReactionTrackingAddEvent extends BotEvent {
     public eventName = Events.MessageReactionAdd;
 
-    async execute(services: Services, reaction: MessageReaction, user: User) {
+    async execute(client: Client, services: Services, reaction: MessageReaction, user: User) {
         if (!isTHHorDevServer(reaction.message.guildId)) return;
 
         if (reaction.me) return; // Don't log our own reactions as they're spammy.

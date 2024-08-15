@@ -1,4 +1,4 @@
-import { Events, Message } from "discord.js";
+import { Client, Events, Message } from "discord.js";
 import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
@@ -10,7 +10,7 @@ export default class TriggerResponseEvent extends BotEvent {
     public eventName = Events.MessageCreate;
     private lastTriggered: Map<string, number> = new Map();
 
-    async execute(services: Services, message: Message) {
+    async execute(client: Client, services: Services, message: Message) {
         if (!isTHHorDevServer(message.guild.id)) return;
         if (message.content.startsWith(process.env.PREFIX)) return;
         if (message.author.bot) return;
