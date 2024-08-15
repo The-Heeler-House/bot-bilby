@@ -1,4 +1,4 @@
-import { ChannelType, Events, Message, TextChannel } from "discord.js";
+import { ChannelType, Client, Events, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { channelIds } from "../../constants";
 import { Services } from "../../Services";
@@ -8,7 +8,7 @@ import { isTHHorDevServer } from "../../Helper/EventsHelper";
 export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageUpdate;
 
-    async execute(services: Services, oldMessage: Message, newMessage: Message) {
+    async execute(client: Client, services: Services, oldMessage: Message, newMessage: Message) {
         if (!isTHHorDevServer(oldMessage.guild.id)) return;
 
         if ([ChannelType.DM, ChannelType.GroupDM].includes(oldMessage.channel.type)) return; // Don't log DMs.

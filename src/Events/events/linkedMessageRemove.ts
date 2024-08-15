@@ -1,4 +1,4 @@
-import { Events, Message, TextChannel } from "discord.js";
+import { Client, Events, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { channelIds } from "../../constants";
 import { Services } from "../../Services";
@@ -8,7 +8,7 @@ import { isTHHorDevServer } from "../../Helper/EventsHelper";
 export default class LinkedMessageRemoveEvent extends BotEvent {
     public eventName = Events.MessageDelete;
 
-    async execute(services: Services, message: Message) {
+    async execute(client: Client, services: Services, message: Message) {
         if (!isTHHorDevServer(message.guild.id)) return;
 
         services.state.state.trackedMessages.forEach(async (trackedMessage, messageId) => {

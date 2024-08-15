@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ChannelType, Events, Message, TextChannel } from "discord.js";
+import { AttachmentBuilder, ChannelType, Client, Events, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { channelIds } from "../../constants";
 import { Services } from "../../Services";
@@ -9,10 +9,11 @@ import { S3Error } from "minio";
 export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageDelete;
 
-    async execute(services: Services, message: Message) {
+    async execute(client: Client, services: Services, message: Message) {
         if (!isTHHorDevServer(message.guild.id)) return;
 
         if ([ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return; // Don't log DMs.
+        if (message.author.id == client.user.id) return; // Avoid media from self
 
         try {
             message.attachments.forEach(async attachment => {

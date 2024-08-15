@@ -1,4 +1,4 @@
-import { ClientEvents, Events, GuildMember, Message, MessageReaction, User } from "discord.js";
+import { Client, ClientEvents, Events, GuildMember, Message, MessageReaction, User } from "discord.js";
 import { Services } from "../Services";
 
 export default class BotEvent {
@@ -11,7 +11,7 @@ export default class BotEvent {
      * The code to execute on receiving the event.
      * @returns
      */
-    async execute(services: Services, ...params: any) {
+    async execute(client: Client, services: Services, ...params: any) {
         return;
     }
 }
