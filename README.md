@@ -9,6 +9,7 @@ This project was designed with The Heeler House as it's main target, so many of 
 To install and run the bot, make sure that you have the following things set up/installed:
 - MongoDB (https://www.mongodb.com/docs/manual/administration/install-community/)
 - NodeJS (https://nodejs.org/en)
+- A MinIO instance (https://min.io/download?license=agpl)
 - A Discord Bot (instruction for how to setup one can be found at [MAKE_A_BOT_BILBY.md](MAKE_A_BOT_BILBY.md))
 - The server, with the following required channels
 ### **Install**
@@ -29,11 +30,11 @@ PREFIX="..." # text command prefix, can be any length.
 MONGO_URL="" # connection URL for MongoDB database (should be in the form of: "mongodb://...")
 API_PORT=8080 # port that the BilbyAPI service will listen on. used for non-bilby related projects where data from bilby is needed.
 
-S3_ENDPOINT="..." # Endpoint to access S3
-S3_ACCESS_KEY="..." # Access key for S3
-S3_SECRET_KEY="..." # Secret key for S3
+S3_ENDPOINT="..." # Endpoint to access S3/MinIO instance
+S3_ACCESS_KEY="..." # Access key for S3/MinIO instance
+S3_SECRET_KEY="..." # Secret key for S3/MinIO instance
 ```
-5. Fill out `testingIds.json` with your appropriate channel and role ids.
+5. Fill out `testingIds.json` with the channel and role ids from your server.
 
 ### **Run the bot**
 Once everything have seen set up, compile and run the bot using:
