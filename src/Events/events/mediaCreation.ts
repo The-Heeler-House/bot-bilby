@@ -19,8 +19,6 @@ export default class MediaCreationEvent extends BotEvent {
         try {
             console.log(message.attachments)
             for (const [_, attachment] of message.attachments) {
-                //? ignore checking of non-media file
-                if (!["image/", "audio/", "video/"].map(v => attachment.contentType.startsWith(v)).reduce((a, b) => a || b)) continue
 
                 const imageReq = await fetch(attachment.url || attachment.proxyURL);
                 const image = await imageReq.arrayBuffer();
