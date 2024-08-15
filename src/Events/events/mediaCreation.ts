@@ -16,7 +16,11 @@ export default class MediaCreationEvent extends BotEvent {
         if (message.channelId == channelIds.mediaLog) return; // Avoid logging media in the media log channel.
 
         try {
-            message.attachments.forEach(async attachment => {
+            console.log(message.attachments)
+            for (const [_, attachment] of message.attachments) {
+                //? ignore checking of non-media file
+                if (!["image/", "audio/", "video/"].map(v => attachment.contentType.startsWith(v)).reduce((a, b) => a || b)) continue
+
                 const imageReq = await fetch(attachment.url || attachment.proxyURL);
                 const image = await imageReq.arrayBuffer();
 
@@ -24,7 +28,7 @@ export default class MediaCreationEvent extends BotEvent {
                 const extension = attachmentSplitByDot[attachmentSplitByDot.length-1];
 
                 await services.s3.putBuffer("media", `${attachment.id}.${extension}`, Buffer.from(image));
-            });
+            }
         } catch (error) {
             logger.error("Encountered an error while trying to store attachments.\n", error, "\n", error.stack);
             await services.pager.sendError(error, "Trying to store attachments.", services.state.state.pagedUsers, { message });

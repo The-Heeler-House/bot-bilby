@@ -26,7 +26,6 @@ export default class ModerationPingEvent extends BotEvent {
                 try {
                     let imageFromS3 = await services.s3.get("media", `${attachment.id}.${extension}`);
 
-                    
                     await logChannel.send({
                         files: [ new AttachmentBuilder(imageFromS3, { name: attachment.name }) ],
                         content: `File sent by <@${message.author.id}> deleted in <#${message.channel.id}>.`
