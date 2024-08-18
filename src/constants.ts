@@ -5,7 +5,9 @@ export const roleIds = {
     staff: devConstants.roleIds.staff || "1073391142881722400",
     helper: devConstants.roleIds.helper || "1079592438819205130",
     mod: devConstants.roleIds.mod || "960044331572547654",
-    leadership: devConstants.roleIds.leadership || "1073388656183742514"
+    leadership: devConstants.roleIds.leadership || "1073388656183742514",
+    verifying: devConstants.roleIds.verifying || "1273082107282849803",
+    newbie: devConstants.roleIds.newbie || "1272596845540933713"
 }
 
 export const channelIds = {

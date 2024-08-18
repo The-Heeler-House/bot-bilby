@@ -1,21 +1,21 @@
 {
     "roleIds": {
-        "helperInTraining": "1140171658771054604",
-        "staff": "1140171658771054604",
-        "mod": "1140171658771054604",
-        "helper": "1140171658771054604",
-        "leadership": "1140171658771054604",
-        "verifying": "1273138356204601417",
-        "newbie": "1140171658771054604"
+        "helperInTraining": "",
+        "staff": "",
+        "mod": "",
+        "helper": "",
+        "leadership": "",
+        "verifying": "",
+        "newbie": ""
     },
     "channelIds": {
-        "offTopic": "1066720804487827508",
-        "staff": "1066720804487827508",
-        "bilby": "1066720804487827508",
-        "chatLog": "1066720804487827508",
-        "mediaLog": "1066720804487827508",
-        "reactionLog": "1066720804487827508",
-        "announcements": "1066720804487827508"
+        "offTopic": "",
+        "staff": "",
+        "bilby": "",
+        "chatLog": "",
+        "mediaLog": "",
+        "reactionLog": "",
+        "announcements": ""
     },
     "devIds": null
 }
