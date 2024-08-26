@@ -32,6 +32,9 @@ export default class BoredCommand extends SlashCommand {
             "join a band!",
             "train for a triathlon!",
             "run a triathlon!",
+            "run a kilometer!",
+            "learn to code!",
+            "dance in the rain! (corny ik)"
         ]
         const SELECTED = BORED_THINGS_TO_DO[randomInt(0, BORED_THINGS_TO_DO.length)]
 
