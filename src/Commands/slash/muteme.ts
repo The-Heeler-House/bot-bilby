@@ -10,10 +10,13 @@ export default class MuteMeCommand extends SlashCommand {
             option.setName("length")
                 .setDescription('Amount you want to be muted for. Type in the duration followed by the suffix "h", "m" or "s".')
                 .setMinLength(2)
-                .setMaxLength(16)
+                .setMaxLength(8)
                 .setRequired(true))
 
     async execute(interaction: ChatInputCommandInteraction, services: Services) {
+        // https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object-action-metadata
+        const MAX_MUTE_TIME = 2419200_000
+
         const INPUT = interaction.options.getString("length")
         const regexResult = /^(\d+)([hms])$/g.exec(INPUT)
         if (!regexResult) {
@@ -40,15 +43,20 @@ export default class MuteMeCommand extends SlashCommand {
         }
 
         if (interaction.member instanceof GuildMember) {
+            if (muteTime >= MAX_MUTE_TIME) {
+                await interaction.reply({
+                    content: `Too much timeout! The timeout duration Discord allow must be less than ${MAX_MUTE_TIME / 1_000} seconds, or ${MAX_MUTE_TIME / 86400_000} days (which is a shame honestly).`,
+                    ephemeral: true,
+                })
+                return
+            }
+
             const EMBED = new EmbedBuilder()
                 .setColor(0xe27a37)
                 .setTitle("Muted!")
                 .setDescription(`You have been muted for ${duration}${suffix}! Thank you for using the Heeler House's detox service.`)
                 .setImage("https://c.tenor.com/Y1rAFV25rVEAAAAC/tenor.gif")
                 .setTimestamp()
-            await interaction.reply({
-                embeds: [EMBED]
-            })
 
             await interaction.member
                 .timeout(
@@ -61,6 +69,10 @@ export default class MuteMeCommand extends SlashCommand {
                         ephemeral: true,
                     });
                 });
+
+            await interaction.reply({
+                embeds: [EMBED]
+            })
         }
     }
 }
