@@ -43,7 +43,7 @@ export default class MuteMeCommand extends SlashCommand {
         }
 
         if (interaction.member instanceof GuildMember) {
-            if (muteTime >= MAX_MUTE_TIME) {
+            if (muteTime >= MAX_MUTE_TIME || muteTime <= 0) {
                 await interaction.reply({
                     content: `Too much timeout! The timeout duration Discord allow must be less than ${MAX_MUTE_TIME / 1_000} seconds, or ${MAX_MUTE_TIME / 86400_000} days (which is a shame honestly).`,
                     ephemeral: true,
