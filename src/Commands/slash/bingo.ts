@@ -9,11 +9,37 @@ import { Services } from "../../Services"
 import SlashCommand from "../SlashCommand"
 import path from "path"
 import { readdir } from "fs/promises"
-import { createCanvas, loadImage } from "canvas"
+import { CanvasRenderingContext2D, createCanvas, loadImage, registerFont } from "canvas"
+import { readFileSync } from "fs"
 
-const BINGO_IMAGE_DIR = path.join(__dirname, "../../Assets/bingo-data")
-const FREE_SPACE_ITEM = "freespace.png"
+const bingoDataDir = path.join(__dirname, "../../Assets/bingo-data")
+const epsDataFile = "eps.txt"
+const bgFile = "bg.png"
+const fontFile = "font.ttf"
 const BINGO_FILENAME = "bingo.png"
+
+const epsData = readFileSync(path.join(bingoDataDir, epsDataFile), "utf-8")
+
+function getLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
+    var words = text.split(" ");
+    var lines: string[] = [];
+    var currentLine = words[0];
+
+    for (var i = 1; i < words.length; i++) {
+        var word = words[i];
+        var width = ctx.measureText(currentLine + " " + word).width;
+        if (width < maxWidth) {
+            currentLine += " " + word;
+        } else {
+            lines.push(currentLine);
+            currentLine = word;
+        }
+    }
+    lines.push(currentLine);
+    return lines;
+}
+
+registerFont(path.join(bingoDataDir, fontFile), { family: "Hello Headline" })
 
 export default class BingoCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -25,38 +51,47 @@ export default class BingoCommand extends SlashCommand {
         services: Services): Promise<void>
     {
 
-        var ITEM_LIST = await readdir(BINGO_IMAGE_DIR)
-        ITEM_LIST = ITEM_LIST.filter(v => v.startsWith("Prompt - "))
-        ITEM_LIST = ITEM_LIST.sort(_ => 0.5 - Math.random()) //? shuffle
-        ITEM_LIST = ITEM_LIST.slice(0, 25)
+        // var ITEM_LIST = await readdir(BINGO_IMAGE_DIR)
+        // ITEM_LIST = ITEM_LIST.filter(v => v.startsWith("Prompt - "))
+        // ITEM_LIST = ITEM_LIST.sort(_ => 0.5 - Math.random()) //? shuffle
+        // ITEM_LIST = ITEM_LIST.slice(0, 25)
+        const boardSize = 5
+        const imageSize = 128
+        const fontSize = 16
+        const textGap = 16
+        const padding = 16
+        const textColor = "rgb(90, 90, 135)"
+        const canvasSize = boardSize * imageSize
 
-        const BINGO_ITEMS = 5
-        const CANVAS_WIDTH = 500, CANVAS_HEIGHT = 500
-        const CANVAS_ITEM_WIDTH = CANVAS_WIDTH / BINGO_ITEMS
-        const CANVAS_ITEM_HEIGHT = CANVAS_WIDTH / BINGO_ITEMS
+        let eps = epsData.split("\n")
+        eps = eps.sort(_ => 0.5 - Math.random())
+        eps = eps.slice(0, boardSize ** 2)
 
-        const BINGO_CARD = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
-        const ctx = BINGO_CARD.getContext("2d")
+        const bingoCard = createCanvas(canvasSize, canvasSize)
+        const ctx = bingoCard.getContext("2d")
+        const IMG = await loadImage(
+            path.join(bingoDataDir, bgFile))
 
-        for (var i = 0; i < BINGO_ITEMS; i++) {
-            for (var j = 0; j < BINGO_ITEMS; j++) {
-                var selectedItem = ITEM_LIST[i * 5 + j]
-                if (i == Math.floor(BINGO_ITEMS / 2) &&
-                    j == Math.floor(BINGO_ITEMS / 2)) {
-                        selectedItem = FREE_SPACE_ITEM
+        ctx.font = `${fontSize}px "Hello Headline"`
+        ctx.fillStyle = textColor
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+
+        for (var i = 0; i < boardSize; i++) {
+            for (var j = 0; j < boardSize; j++) {
+                ctx.drawImage(IMG, i * imageSize, j * imageSize, imageSize, imageSize)
+
+                //? manually calculating where to put text. don't ask, it's black magic!
+                const texts = getLines(ctx, eps[i * boardSize + j], imageSize - padding * 2)
+                const offset = -textGap / 2 * (texts.length - 1)
+                for (let k = 0; k < texts.length; k++) {
+                    ctx.fillText(texts[k], i * imageSize + imageSize / 2, j * imageSize + imageSize / 2 + offset + k * textGap)
                 }
-                const IMG = await loadImage(
-                    path.join(BINGO_IMAGE_DIR, selectedItem))
-                ctx.drawImage(IMG,
-                    i * CANVAS_ITEM_WIDTH,
-                    j * CANVAS_ITEM_HEIGHT,
-                    CANVAS_ITEM_WIDTH,
-                    CANVAS_ITEM_HEIGHT)
             }
         }
 
         const FILE = new AttachmentBuilder(
-            BINGO_CARD.toBuffer(), {name: BINGO_FILENAME})
+            bingoCard.toBuffer(), {name: BINGO_FILENAME})
 
         const BINGO_EMBED = new EmbedBuilder()
             .setColor(0xe27a37)
