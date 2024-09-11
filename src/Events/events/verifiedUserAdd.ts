@@ -7,8 +7,9 @@ import { roleIds } from "../../constants";
 export default class VerifiedUserAdd extends BotEvent {
     public eventName = Events.GuildMemberUpdate;
 
-    async execute(client: Client, services: Services, _: GuildMember, newMember: GuildMember): Promise<void> {
+    async execute(client: Client, services: Services, member: GuildMember, newMember: GuildMember): Promise<void> {
         if (!isTHHorDevServer(newMember.guild.id)) return
+        if (!(await newMember.guild.members.fetch(newMember.id))) return
         const userRoles = newMember.roles.cache
 
         if (userRoles.has(roleIds.newbie)) {
