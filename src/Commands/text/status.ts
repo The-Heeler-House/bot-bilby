@@ -16,14 +16,6 @@ function displayTime(date: number) {
         `${s % 60} seconds`,
     ]
 
-    result_arr = result_arr.filter(x => {
-        return x.replace(/(\d+) (\w)*?$/gm, (_0, p1, _p2) => {
-            const num = Number(p1)
-            if (num == 0) return ""
-            return x
-        }) != ""
-    })
-
     result = result_arr.slice(0, result_arr.length - 1).join(", ")
         + ((result_arr.length > 1) ? " and " : "")
         + result_arr[result_arr.length - 1]
@@ -69,12 +61,13 @@ export default class StatusCommand extends TextCommand {
 
         const OUTPUT = [
             "- **Bot Status:**",
-            ` - Bot uptime: ${displayTime(process.uptime() * 1000)}`,
-            ` - Memory usage: ${processUsedMem}MB`,
+            `  - Currently running: \`NodeJS v${process.versions.node} (module version ${process.versions.modules})\``,
+            `  - Bot uptime: \`${displayTime(process.uptime() * 1000)}\``,
+            `  - Memory usage: \`${processUsedMem}MB\``,
             "- **Server Status:**",
-            ` - Server uptime: ${displayTime(os.uptime() * 1000)}`,
-            ` - CPU usage: ${((1 - cpu.idle / cpu.total) * 100).toFixed(2)}%`,
-            ` - Memory usage: ${serverUsedMem}MB / ${serverTotalMem}MB`
+            `  - Server uptime: \`${displayTime(os.uptime() * 1000)}\``,
+            `  - CPU usage: \`${((1 - cpu.idle / cpu.total) * 100).toFixed(2)}%\``,
+            `  - Memory usage: \`${serverUsedMem}MB / ${serverTotalMem}MB\``
         ]
 
         const UPTIME_EMBED = new EmbedBuilder()
