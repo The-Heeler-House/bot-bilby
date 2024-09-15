@@ -3,6 +3,7 @@ import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
 import { roleIds } from "../../constants";
+import * as logger from "../../logger"
 
 export default class VerifiedUserAdd extends BotEvent {
     public eventName = Events.GuildMemberUpdate;
@@ -13,7 +14,13 @@ export default class VerifiedUserAdd extends BotEvent {
         const userRoles = newMember.roles.cache
 
         if (userRoles.has(roleIds.newbie)) {
-            await newMember.roles.remove(roleIds.verifying)
+            try {
+                await newMember.roles.remove(roleIds.verifying)
+            } catch (e) {
+                const errorMsg = `Unable to remove new member role from user "${newMember.user.username}" (id: ${newMember.id})! `
+                logger.warning(errorMsg)
+                await services.pager.sendPage(errorMsg)
+            }
         }
     }
 }
