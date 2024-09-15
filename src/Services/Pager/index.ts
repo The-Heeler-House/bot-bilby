@@ -38,6 +38,11 @@ function hashError(stack: string): string {
     return h1 + hashFnv32a(h1 + stack);
 }
 
+function serializeBigInt(k: string, v: any) {
+    if (typeof v == "bigint") return v.toString()
+    else return v
+}
+
 export default class PagerService {
     protected client: Client;
     protected loggingChannel: TextChannel;
@@ -79,7 +84,7 @@ export default class PagerService {
                          `**Origin:**\n\`${origin}\`\n` +
                          `**Hash:** \`${errorHash}\``,
                 files: [
-                    new AttachmentBuilder(Buffer.from(JSON.stringify(log)))
+                    new AttachmentBuilder(Buffer.from(JSON.stringify(log, serializeBigInt)))
                         .setName(`crash_${log.timestamp}.json`)
                         .setDescription("A log of the crash that occured.")
                 ]
@@ -107,7 +112,7 @@ export default class PagerService {
                          `**While:**\n\`${whileDoing}\`\n` +
                          `**Hash:** \`${errorHash}\``,
                 files: [
-                    new AttachmentBuilder(Buffer.from(JSON.stringify(log)))
+                    new AttachmentBuilder(Buffer.from(JSON.stringify(log, serializeBigInt)))
                         .setName(`error_${log.timestamp}.json`)
                         .setDescription("A log of the error that occured.")
                 ]
