@@ -225,8 +225,6 @@ export default class HangmanCommand extends SlashCommand {
 
         for (const i of LETTER_COLLECTOR_LIST) {
             i.on("collect", async (reaction, user) => {
-                if (user.id != interaction.user.id) return
-
                 const EMOJI = reaction.emoji.name
                 const CHAR = REACTION_MAPPING[EMOJI]
 
