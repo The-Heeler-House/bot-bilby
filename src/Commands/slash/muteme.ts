@@ -2,6 +2,15 @@ import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBui
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 
+const GIFs = [
+    "https://c.tenor.com/N5M7hKtNFTgAAAAC/tenor.gif",
+    "https://c.tenor.com/Y1rAFV25rVEAAAAC/tenor.gif",
+    "https://c.tenor.com/3L-Uw7PpIYoAAAAd/tenor.gif",
+    "https://c.tenor.com/uzzXmScT7B8AAAAC/tenor.gif",
+    "https://c.tenor.com/jIiAo7AJalMAAAAC/tenor.gif",
+    "https://c.tenor.com/LCRhiClezakAAAAC/tenor.gif"
+]
+
 export default class MuteMeCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("muteme")
@@ -55,7 +64,7 @@ export default class MuteMeCommand extends SlashCommand {
                 .setColor(0xe27a37)
                 .setTitle("Muted!")
                 .setDescription(`You have been muted for ${duration}${suffix}! Thank you for using the Heeler House's detox service.`)
-                .setImage("https://c.tenor.com/Y1rAFV25rVEAAAAC/tenor.gif")
+                .setImage(GIFs[Math.floor(Math.random() * GIFs.length)])
                 .setTimestamp()
 
             await interaction.member
