@@ -28,13 +28,15 @@ process.on("uncaughtException", async (error, origin) => {
     logger.error("Detected an uncaught exception with origin", origin, ".\n",error.message,"\n",error.stack);
     console.error(error); // Log the full error to STDERR.
 
-    await services.pager.sendCrash(error, origin, services.state.state.pagedUsers);
+    const result = await services.pager.sendCrash(error, origin, services.state.state.pagedUsers);
 
     // Bilby is in an undefined state, it is EXTREMELY discouraged from continuing in this state.
     // If the exit call wasn't here, Bilby would continue running, but doing so may cause undefined and unexpected behavior
     // so we must exit here.
-    logger.error("Bot Bilby is in an undefined state! Terminating immediately.");
-    process.exit(1);
+    if (result == true) {
+        logger.error("Bot Bilby is in an undefined state! Terminating immediately.");
+        process.exit(1)
+    };
 });
 
 client.on(Events.ClientReady, async () => {

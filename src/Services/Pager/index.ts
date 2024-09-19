@@ -66,7 +66,7 @@ export default class PagerService {
 
         let errorHash = hashError(error.stack);
 
-        if (this.ignoredErrorHashes.includes("crash-" + errorHash)) return; // We ignore this error.
+        if (this.ignoredErrorHashes.includes("crash-" + errorHash)) return false; // We ignore this error.
 
         let log = {
             timestamp: new Date().toISOString(),
@@ -89,6 +89,8 @@ export default class PagerService {
                         .setDescription("A log of the crash that occured.")
                 ]
         });
+
+        return true
     }
 
     public async sendError(error: Error, whileDoing: string, pingList: Snowflake[], data?: any) {
