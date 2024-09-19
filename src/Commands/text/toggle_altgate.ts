@@ -5,7 +5,7 @@ import { roleIds } from "../../constants";
 
 export default class ToggleGateCommand extends TextCommand {
     public data = new TextCommandBuilder()
-        .setName("toggle alt-gate")
+        .setName("toggle altgate")
         .setDescription("Toggles whether the alt gate is enabled or not.")
         .addAllowedRoles(roleIds.staff)
         .allowInDMs(false);
@@ -16,6 +16,6 @@ export default class ToggleGateCommand extends TextCommand {
         services.state.state.altGate = altGate;
         services.state.save();
 
-        await message.reply(`Successfully **${altGate ? "enabled" : "disabled"}** the alt-gate.`);
+        await message.reply(`Successfully **${altGate ? "enabled" : "disabled"}** the altgate.`);
     }
 }
