@@ -8,6 +8,7 @@ const defaultState: State = {
     joinGate: true,
     altGate: false,
     trackedMessages: new Map<string, TrackedMessage>(),
+    ignoredChannels: [],
     pagedUsers: []
 }
 
@@ -83,6 +84,7 @@ export interface State {
     joinGate: boolean,
     altGate: boolean,
     trackedMessages: Map<string, TrackedMessage>,
+    ignoredChannels: Snowflake[];
     pagedUsers: Snowflake[];
 }
 

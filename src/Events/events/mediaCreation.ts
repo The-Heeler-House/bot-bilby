@@ -1,4 +1,4 @@
-import { ChannelType, Client, Events, Message, TextChannel } from "discord.js";
+import { ChannelType, Client, Events, Guild, GuildChannel, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { channelIds } from "../../constants";
 import { Services } from "../../Services";
@@ -15,6 +15,10 @@ export default class MediaCreationEvent extends BotEvent {
 
         if (message.channelId == channelIds.mediaLog) return; // Avoid logging media in the media log channel.
         if (message.author.id == client.user.id) return; // Avoid media from self
+
+        if (services.state.state.ignoredChannels.includes(message.channelId)) return; // Don't log ignored channels.
+        if (services.state.state.ignoredChannels.includes((message.channel as GuildChannel).parentId)) return; // Don't log children of ignored channels.
+        if ((message.channel as GuildChannel).parent != null && services.state.state.ignoredChannels.includes((message.channel as GuildChannel).parent.parentId)) return; // Don't log children of children of ignored channels... This is getting absurd.
 
         try {
             console.log(message.attachments)
