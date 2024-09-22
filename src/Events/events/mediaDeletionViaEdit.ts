@@ -1,4 +1,4 @@
-import { ChannelType, Client, Events, Message, TextChannel } from "discord.js";
+import { ChannelType, Client, Events, GuildChannel, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { channelIds } from "../../constants";
 import { Services } from "../../Services";
@@ -12,6 +12,10 @@ export default class ModerationPingEvent extends BotEvent {
         if (!isTHHorDevServer(oldMessage.guild.id)) return;
 
         if ([ChannelType.DM, ChannelType.GroupDM].includes(oldMessage.channel.type)) return; // Don't log DMs.
+
+        if (services.state.state.ignoredChannels.includes(newMessage.channelId)) return; // Don't log ignored channels.
+        if (services.state.state.ignoredChannels.includes((newMessage.channel as GuildChannel).parentId)) return; // Don't log children of ignored channels.
+        if ((newMessage.channel as GuildChannel).parent != null && services.state.state.ignoredChannels.includes((newMessage.channel as GuildChannel).parent.parentId)) return; // Don't log children of children of ignored channels... This is getting absurd.
 
         try {
             oldMessage.attachments.forEach(async (attachment, id) => {

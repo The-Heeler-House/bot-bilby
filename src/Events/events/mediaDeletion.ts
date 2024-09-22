@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ChannelType, Client, Events, Message, TextChannel } from "discord.js";
+import { AttachmentBuilder, ChannelType, Client, Events, GuildChannel, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { channelIds } from "../../constants";
 import { Services } from "../../Services";
@@ -14,6 +14,10 @@ export default class ModerationPingEvent extends BotEvent {
 
         if ([ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return; // Don't log DMs.
         if (message.author.id == client.user.id) return; // Avoid media from self
+
+        if (services.state.state.ignoredChannels.includes(message.channelId)) return; // Don't log ignored channels.
+        if (services.state.state.ignoredChannels.includes((message.channel as GuildChannel).parentId)) return; // Don't log children of ignored channels.
+        if ((message.channel as GuildChannel).parent != null && services.state.state.ignoredChannels.includes((message.channel as GuildChannel).parent.parentId)) return; // Don't log children of children of ignored channels... This is getting absurd.
 
         try {
             message.attachments.forEach(async attachment => {
