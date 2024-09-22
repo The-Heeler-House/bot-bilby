@@ -54,7 +54,7 @@ export default class AddTriggerCommand extends TextCommand {
             await triggerResponse.reply(`Created the ${type}-based trigger \`${triggerTrigger.content}\` with a cooldown of 10 seconds. You can modify this cooldown with the \`edit trigger cooldown\` text command.`);
         } catch (error) {
             if (error instanceof CollectionTimeoutError) {
-                message.channel.send(`<@${message.author.id}> This command has timed out. Please try again!`);
+                (message.channel as TextChannel).send(`<@${message.author.id}> This command has timed out. Please try again!`);
             } else {
                 logger.error("Encountered error while trying to create trigger\n", error, "\n", error.stack);
                 await services.pager.sendError(error, "Trying to create trigger", services.state.state.pagedUsers, { message, args });

@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { Message, TextChannel } from "discord.js";
 import { ObjectId, WithId } from "mongodb";
 import { Services } from "../Services";
 import moment from "moment-timezone";
@@ -210,5 +210,5 @@ export async function processResponse(
     }
 
     if (response.trim() != "")
-        message.channel.send(response.trim());
+        (message.channel as TextChannel).send(response.trim());
 }

@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { devIds, roleIds } from "../../constants";
@@ -24,7 +24,7 @@ export default class EditTriggerCooldownCommand extends TextCommand {
         }
 
         try {
-            let collector = message.channel.createMessageCollector({
+            let collector = (message.channel as TextChannel).createMessageCollector({
                 filter: (msg) => msg.author.id == message.author.id,
                 time: 30_000,
                 max: 1

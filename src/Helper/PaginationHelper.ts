@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, Message, MessageCreateOptions, MessageEditOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, Message, MessageCreateOptions, MessageEditOptions, TextChannel } from "discord.js";
 
 export class PageBuilder {
     type: "plain_text" | "embed"
@@ -50,7 +50,7 @@ export class PageBuilder {
 
         content.components = [this.control];
 
-        return await message.channel.send(content);
+        return await (message.channel as TextChannel).send(content);
     }
 
     private async update(content: MessageEditOptions, message: Message) {
