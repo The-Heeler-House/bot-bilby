@@ -29,6 +29,7 @@ export default class UnignoreChannelComamnd extends TextCommand {
         }
 
         services.state.state.ignoredChannels.push(args[0]);
+        services.state.save();
 
         message.reply("Got it, I'll listen to the <#" + args[0] + "> channel from now on");
     }
