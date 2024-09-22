@@ -25,61 +25,6 @@ const initOCR = async () => {
     setInterval(initOCR, 3 * 60 * 60 * 1000) //? reset the OCR every 3 hours
 })()
 
-const badWords = [
-    "Arse", "Fatass", "Fatasses", "Fetish", "Niggr",
-    "Nigr", "anal", "arsehole", "arseholes", "arsenigga",
-    "arseniggas", "arsenigger", "arseniggers", "ass", "assnigga",
-    "assniggas", "assnigger", "assniggers", "bastard", "bastards",
-    "beaner", "beaners", "bellend", "bitch", "bitchass",
-    "bitchblower", "bitched", "bitches", "bitching", "bitchs",
-    "bitchtits", "bitchy", "childfucker", "childfuckers", "chink",
-    "chinkies", "chinks", "chinky", "clitfucker", "clitfuckers",
-    "cock", "cocks", "cocksucker", "cocksuckers", "cum",
-    "cumdumpster", "cumdumpsters", "cumduzzler", "cumduzzlers",
-    "cumming", "cums", "cunt", "cunter", "cunters",
-    "cuntgrabber", "cuntgrabbers", "cuntlicker", "cuntlickers", "cunts",
-    "dick", "dickhead", "dicks", "dicksucker", "dicksuckers",
-    "dickweasel", "dickweasels", "dickweed", "dickweeds", "dumbarse",
-    "dumbarses", "dumbass", "dune coon", "dune coons", "dunecoon",
-    "dunecoons", "dyke", "dykes", "fag", "faggot",
-    "faggoting", "faggots", "faggy", "fags", "fat fuck",
-    "fatarse", "fatarses", "fatfuck", "fuck", "fucka",
-    "fuckaz", "fucked", "fucker", "fuckers", "fuckhead",
-    "fuckheads", "fuckin'", "fucking", "fucks", "fucktard",
-    "fucktardis", "fucktards", "gaydo", "gaydoes", "gaydos",
-    "gook", "gooks", "gringo", "gringoes", "gringos",
-    "jizz", "joto", "kaffir", "kaffirs", "kike",
-    "lezzie", "lezzies", "lezzo", "lezzos", "mcfaggot",
-    "motherfucker", "motherfuckers", "motherfucking", "motherfuckin’", "niga",
-    "nigaz", "niger", "nigerz", "nigga", "niggas",
-    "niggaz", "nigger", "niggers", "nigguh", "niggur",
-    "niggurz", "nigr", "nigrs", "nigrz", "niguh",
-    "paki", "pakis", "poonani", "porn", "porno",
-    "pornos", "prick", "queers", "r 34", "r34",
-    "rape", "retard", "retarded", "sand nigga", "sand niggas",
-    "sand nigger", "sand niggers", "sandnigga", "sandniggas", "sandnigger",
-    "sandniggers", "School shooter", "School shooting", "shat", "sheep shagger",
-    "sheep shaggers", "sheepshagger", "sheepshaggers", "shit", "shitaz",
-    "shithead", "shitheads", "shithouse", "shithouses", "shitpost",
-    "shitposter", "shitposters", "shitposting", "shitpostin’", "shitposts",
-    "shits", "shitted", "shitter", "shitters", "shittier",
-    "shittiest", "shitting", "shittin’", "shitty", "slut",
-    "sluts", "snow nigga", "snow niggas", "snow niggaz", "snow nigger",
-    "snow niggers", "snowniggas", "snowniggaz", "snownigger", "snowniggers",
-    "tacohead", "tacoheads", "thot", "thotbot", "thotbots",
-    "thots", "uncle fucka", "uncle fuckaz", "uncle fucker", "uncle fuckers",
-    "unclefucka", "unclefuckaz", "unclefucker", "unclefuckers", "wank",
-    "wanked", "wanking", "wanks", "wetback", "wetbacks",
-    "white cracka", "white crackas", "white crackaz", "white cracker", "white crackers",
-    "whitecracka", "whitecrackaz", "whitecracker", "whitecrackers", "whore",
-    "whores", "whoresons", "whorseson", "zipperhead", "zipperheads"
-]
-
-type SwearResult = {
-    word: string,
-    confidence: number
-}
-
 export default class FilterImageSentEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
@@ -100,7 +45,7 @@ export default class FilterImageSentEvent extends BotEvent {
         for (const data of ocrResult) {
             const t = data.data.text
 
-            swearResult = badWords.map(v => {
+            swearResult = services.state.state.swearWords.map(v => {
                 if (t.trim().toLowerCase().includes(v.toLowerCase())) {
                     return v
                 } else {
