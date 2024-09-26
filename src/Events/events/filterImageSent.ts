@@ -1,23 +1,22 @@
-import { createWorker, createScheduler, RecognizeResult, OEM, PSM } from "tesseract.js"
+import { createWorker, createScheduler, RecognizeResult } from "tesseract.js"
 import BotEvent from "../BotEvent"
-import { Client, Events, Message } from "discord.js"
+import { Client, Events, Message, TextChannel } from "discord.js"
 import { Services } from "../../Services"
 import { isTHHorDevServer } from "../../Helper/EventsHelper"
 import { Jimp, ResizeStrategy } from "jimp"
+import { channelIds } from "../../constants"
 
-const scheduler = createScheduler()
-const workerGen = async () => {
-    const worker = await createWorker("eng")
-    // worker.setParameters({
-    //     tessedit_char_whitelist: "abcdefghijklmnopqrstuvwxyz0123456789",
-    //     tessedit_pageseg_mode: PSM.SPARSE_TEXT_OSD
-    // })
-    scheduler.addWorker(worker)
-}
+let scheduler = createScheduler()
+
+const CONFIDENCE_THRESHOLD = 50
+const NUM_WORKERS = 5
 
 const initOCR = async () => {
     await scheduler.terminate()
-    for (let i = 0; i < 5; i++) await workerGen()
+    for (let i = 0; i < NUM_WORKERS; i++) {
+        const worker = await createWorker("eng")
+        scheduler.addWorker(worker)
+    }
 }
 
 (async() => {
@@ -30,32 +29,42 @@ export default class FilterImageSentEvent extends BotEvent {
 
     async execute(client: Client, services: Services, message: Message): Promise<void> {
         if (!isTHHorDevServer(message.guild.id)) return;
+        if (message.author.bot) return
 
         const imageURLs = message.attachments.filter(v => v.contentType.startsWith("image/")).map(v => v.url)
         let ocrResult: RecognizeResult[] = []
         for (const url of imageURLs) {
             const img = await Jimp.read(url)
             img.scaleToFit({ w: 1000, h: 1000, mode: ResizeStrategy.BICUBIC })
-            img.greyscale()
-            img.contrast(0.75)
-            ocrResult.push(await scheduler.addJob("recognize", await img.getBuffer("image/tiff")))
+            img.color([{ apply: "desaturate", params: [90] }])
+            img.gaussian(1)
+            img.invert()
+            img.threshold({ max: 145 })
+            ocrResult.push(await scheduler.addJob("recognize", await img.getBuffer("image/tiff"), {}, {}, url))
         }
 
-        let swearResult: string[] = []
+        let swearResult: {url: string, word: string, confidence: number}[] = []
         for (const data of ocrResult) {
-            const t = data.data.text
+            let words = data.data.words.map(v => ({url: data.jobId, word: v.text, confidence: v.confidence}))
+            let swears = services.state.state.swearWords.map(v => v.toLowerCase())
 
-            swearResult = services.state.state.swearWords.map(v => {
-                if (t.trim().toLowerCase().includes(v.toLowerCase())) {
-                    return v
-                } else {
-                    return ""
-                }
-            }).filter(v => v != "")
+            swearResult = words.filter(v => {
+                if (v.confidence < CONFIDENCE_THRESHOLD) return false
+                let word = v.word.toLowerCase().trim()
+                return swears.map(v => word.includes(v)).reduce((a, b) => a || b)
+            })
         }
+
+        const logChannel = await message.client.channels.fetch(channelIds.mediaLog) as TextChannel;
 
         if (swearResult.length > 0) {
-            await message.reply(`Swear detected! "${swearResult.join(", ")}"`)
+            await logChannel.send({
+                content: `Swear detected in one of the image: \`${swearResult.map(v => `${v.word} (${v.confidence})`).join(", ")}\` sent by <@${message.author.id}> in <#${message.channelId}>.`,
+                files: swearResult.map(v => ({
+                    attachment: v.url
+                }))
+            })
+            await message.reply(`<@${message.author.id}>, Watch your language.`)
         }
     }
 }
