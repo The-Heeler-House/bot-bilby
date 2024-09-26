@@ -59,7 +59,7 @@ export default class FilterImageSentEvent extends BotEvent {
 
         if (swearResult.length > 0) {
             await logChannel.send({
-                content: `Swear detected in one of the image: \`${swearResult.map(v => `${v.word} (${v.confidence})`).join(", ")}\` sent by <@${message.author.id}> in <#${message.channelId}>.`,
+                content: `Swear detected in one of the image: \`${swearResult.map(v => `${v.word} (${v.confidence.toFixed(2)}%)`).join(", ")}\` sent by <@${message.author.id}> in <#${message.channelId}>.`,
                 files: swearResult.map(v => ({
                     attachment: v.url
                 }))
