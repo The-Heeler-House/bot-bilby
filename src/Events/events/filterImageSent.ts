@@ -9,7 +9,7 @@ import { channelIds } from "../../constants"
 let scheduler = createScheduler()
 
 const CONFIDENCE_THRESHOLD = 50
-const NUM_WORKERS = 5
+const NUM_WORKERS = 10
 
 const initOCR = async () => {
     await scheduler.terminate()
@@ -24,6 +24,24 @@ const initOCR = async () => {
     setInterval(initOCR, 3 * 60 * 60 * 1000) //? reset the OCR every 3 hours
 })()
 
+async function processImage(url: string) {
+    const img = await Jimp.read(url)
+    img.scaleToFit({ w: 1000, h: 1000, mode: ResizeStrategy.BICUBIC })
+    img.color([{ apply: "desaturate", params: [90] }])
+    img.gaussian(1)
+    img.invert()
+    img.threshold({ max: 145 })
+    return await img.getBuffer("image/tiff")
+}
+
+type SwearResult = {
+    url: string,
+    swears: {
+        word: string,
+        confidence: number
+    }[]
+}
+
 export default class FilterImageSentEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
@@ -32,39 +50,39 @@ export default class FilterImageSentEvent extends BotEvent {
         if (message.author.bot) return
 
         const imageURLs = message.attachments.filter(v => v.contentType.startsWith("image/")).map(v => v.url)
-        let ocrResult: RecognizeResult[] = []
+        let ocrResult: { image_url: string, data: RecognizeResult }[] = []
         for (const url of imageURLs) {
-            const img = await Jimp.read(url)
-            img.scaleToFit({ w: 1000, h: 1000, mode: ResizeStrategy.BICUBIC })
-            img.color([{ apply: "desaturate", params: [90] }])
-            img.gaussian(1)
-            img.invert()
-            img.threshold({ max: 145 })
-            ocrResult.push(await scheduler.addJob("recognize", await img.getBuffer("image/tiff"), {}, {}, url))
+            ocrResult.push({
+                image_url: url,
+                data: await scheduler.addJob("recognize", await processImage(url))
+            })
         }
 
-        let swearResult: {url: string, word: string, confidence: number}[] = []
-        for (const data of ocrResult) {
-            let words = data.data.words.map(v => ({url: data.jobId, word: v.text, confidence: v.confidence}))
-            let swears = services.state.state.swearWords.map(v => v.toLowerCase())
+        let swearResult: SwearResult[] = []
+        for (const result of ocrResult) {
+            let wordList = result.data.data.words.map(v => ({word: v.text.toLowerCase(), confidence: v.confidence}))
+            let swearList = services.state.state.swearWords.map(v => v.toLowerCase())
 
-            swearResult = words.filter(v => {
-                if (v.confidence < CONFIDENCE_THRESHOLD) return false
-                let word = v.word.toLowerCase().trim()
-                return swears.map(v => word.includes(v)).reduce((a, b) => a || b)
+            wordList = wordList.filter(v => v.confidence >= CONFIDENCE_THRESHOLD)
+
+            swearResult.push({
+                url: result.image_url,
+                swears: wordList.filter(v => swearList.map(swears => v.word.includes(swears)).reduce((a, b) => a || b))
             })
         }
 
         const logChannel = await message.client.channels.fetch(channelIds.mediaLog) as TextChannel;
 
         if (swearResult.length > 0) {
-            await logChannel.send({
-                content: `Swear detected in one of the image: \`${swearResult.map(v => `${v.word} (${v.confidence.toFixed(2)}%)`).join(", ")}\` sent by <@${message.author.id}> in <#${message.channelId}>.`,
-                files: swearResult.map(v => ({
-                    attachment: v.url
-                }))
-            })
             await message.reply(`<@${message.author.id}>, Watch your language.`)
+            for (const result of swearResult) {
+                await logChannel.send({
+                    content: `Swear detected in this image: \`${result.swears.map(v => `${v.word} (${v.confidence.toFixed(2)}%)`).join(", ")}\` sent by <@${message.author.id}> in <#${message.channelId}>.`,
+                    files: [{
+                        attachment: result.url
+                    }]
+                })
+            }
         }
     }
 }
