@@ -36,7 +36,6 @@ async function processImage(url: string) {
         })
         .threshold(128)
         .toFormat("png")
-    await sharp_img.toFile("a.png")
     return sharp_img.toBuffer()
 }
 
