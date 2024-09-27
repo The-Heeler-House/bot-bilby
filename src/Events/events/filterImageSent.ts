@@ -3,7 +3,7 @@ import BotEvent from "../BotEvent"
 import { Client, Events, Message, TextChannel } from "discord.js"
 import { Services } from "../../Services"
 import { isTHHorDevServer } from "../../Helper/EventsHelper"
-import { Jimp, ResizeStrategy } from "jimp"
+import sharp from "sharp"
 import { channelIds } from "../../constants"
 
 let scheduler = createScheduler()
@@ -25,13 +25,13 @@ const initOCR = async () => {
 })()
 
 async function processImage(url: string) {
-    const img = await Jimp.read(url)
-    img.scaleToFit({ w: 1000, h: 1000, mode: ResizeStrategy.BICUBIC })
-    img.color([{ apply: "desaturate", params: [90] }])
-    img.gaussian(1)
-    img.invert()
-    img.threshold({ max: 145 })
-    return await img.getBuffer("image/tiff")
+    return sharp(await (await fetch(url)).arrayBuffer())
+        .resize({ fit: "contain", width: 1000, height: 1000 })
+        .grayscale()
+        .blur({ sigma: 1 })
+        .threshold(110)
+        .toFormat("png")
+        .toBuffer()
 }
 
 type SwearResult = {
@@ -49,13 +49,27 @@ export default class FilterImageSentEvent extends BotEvent {
         if (!isTHHorDevServer(message.guild.id)) return;
         if (message.author.bot) return
 
+        const timestamp: number[] = []
+
         const imageURLs = message.attachments.filter(v => v.contentType.startsWith("image/")).map(v => v.url)
         let ocrResult: { image_url: string, data: RecognizeResult }[] = []
         for (const url of imageURLs) {
+            timestamp.push(performance.now())
+            const img = await processImage(url)
+            timestamp.push(performance.now())
+
+            timestamp.push(performance.now())
             ocrResult.push({
                 image_url: url,
-                data: await scheduler.addJob("recognize", await processImage(url))
+                data: await scheduler.addJob("recognize", img)
             })
+            timestamp.push(performance.now())
+        }
+
+        const timing: string[] = []
+
+        for (let i = 0; i < timestamp.length; i += 4) {
+            timing.push(`[${((timestamp[i + 1] - timestamp[i]) / 1000).toFixed(3)}s, ${((timestamp[i + 3] - timestamp[i + 2]) / 1000).toFixed(3)}s]`)
         }
 
         let swearResult: SwearResult[] = []
@@ -65,9 +79,12 @@ export default class FilterImageSentEvent extends BotEvent {
 
             wordList = wordList.filter(v => v.confidence >= CONFIDENCE_THRESHOLD)
 
+            let detectedSwears = wordList.filter(v => swearList.map(swears => v.word.includes(swears)).reduce((a, b) => a || b))
+            if (detectedSwears.length <= 0) continue
+
             swearResult.push({
                 url: result.image_url,
-                swears: wordList.filter(v => swearList.map(swears => v.word.includes(swears)).reduce((a, b) => a || b))
+                swears: detectedSwears
             })
         }
 
@@ -83,6 +100,9 @@ export default class FilterImageSentEvent extends BotEvent {
                     }]
                 })
             }
+            await logChannel.send({
+                content: `OCR timing (process image, ocr): \`${timing.join(" | ")}\``
+            })
         }
     }
 }
