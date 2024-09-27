@@ -25,13 +25,19 @@ const initOCR = async () => {
 })()
 
 async function processImage(url: string) {
-    return sharp(await (await fetch(url)).arrayBuffer())
+    const sharp_img = sharp(await (await fetch(url)).arrayBuffer())
         .resize({ fit: "contain", width: 1000, height: 1000 })
         .grayscale()
         .blur({ sigma: 1 })
-        .threshold(110)
+        .sharpen({
+            sigma: 7,
+            m1: 2.5,
+            m2: 2.5
+        })
+        .threshold(128)
         .toFormat("png")
-        .toBuffer()
+    await sharp_img.toFile("a.png")
+    return sharp_img.toBuffer()
 }
 
 type SwearResult = {
@@ -50,8 +56,14 @@ export default class FilterImageSentEvent extends BotEvent {
         if (message.author.bot) return
 
         const timestamp: number[] = []
-
         const imageURLs = message.attachments.filter(v => v.contentType.startsWith("image/")).map(v => v.url)
+
+        if (message.embeds.length > 0) {
+            for (let embed of message.embeds) {
+                imageURLs.push(embed.thumbnail.proxyURL)
+            }
+        }
+
         let ocrResult: { image_url: string, data: RecognizeResult }[] = []
         for (const url of imageURLs) {
             timestamp.push(performance.now())
@@ -59,6 +71,7 @@ export default class FilterImageSentEvent extends BotEvent {
             timestamp.push(performance.now())
 
             timestamp.push(performance.now())
+            //? processed image
             ocrResult.push({
                 image_url: url,
                 data: await scheduler.addJob("recognize", img)
@@ -87,6 +100,16 @@ export default class FilterImageSentEvent extends BotEvent {
                 swears: detectedSwears
             })
         }
+
+        //? filter duplicate URL
+        const seen = new Set()
+        swearResult = swearResult.filter(v => {
+            if (!seen.has(v.url)) {
+                seen.add(v.url)
+                return true
+            }
+            return false
+        })
 
         const logChannel = await message.client.channels.fetch(channelIds.mediaLog) as TextChannel;
 
