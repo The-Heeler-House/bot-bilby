@@ -10,6 +10,7 @@ const defaultState: State = {
     trackedMessages: new Map<string, TrackedMessage>(),
     ignoredChannels: [],
     pagedUsers: [],
+    detectSwearInMedia: true,
     swearWords: [
         "Arse", "Fatass", "Fatasses", "Fetish", "Niggr",
         "Nigr", "anal", "arsehole", "arseholes", "arsenigga",
@@ -135,6 +136,7 @@ export interface State {
     trackedMessages: Map<string, TrackedMessage>,
     ignoredChannels: Snowflake[];
     pagedUsers: Snowflake[];
+    detectSwearInMedia: boolean
     swearWords: string[]
 }
 
