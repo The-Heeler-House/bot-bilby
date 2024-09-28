@@ -5,6 +5,7 @@ import { Services } from "../../Services"
 import { isTHHorDevServer } from "../../Helper/EventsHelper"
 import sharp from "sharp"
 import { channelIds } from "../../constants"
+import { writeFile } from "fs/promises"
 
 let scheduler = createScheduler()
 
@@ -28,14 +29,16 @@ async function processImage(url: string) {
     const sharp_img = sharp(await (await fetch(url)).arrayBuffer())
         .resize({ fit: "contain", width: 1000, height: 1000 })
         .grayscale()
+        // .median(3)
         .blur({ sigma: 1 })
         .sharpen({
             sigma: 7,
             m1: 2.5,
             m2: 2.5
         })
-        .threshold(128)
+        .threshold(135)
         .toFormat("png")
+    sharp_img.toFile("a.png")
     return sharp_img.toBuffer()
 }
 
@@ -57,23 +60,39 @@ export default class FilterImageSentEvent extends BotEvent {
         const timestamp: number[] = []
         const imageURLs = message.attachments.filter(v => v.contentType.startsWith("image/")).map(v => v.url)
 
-        if (message.embeds.length > 0) {
-            for (let embed of message.embeds) {
-                imageURLs.push(embed.thumbnail.proxyURL)
-            }
-        }
+        imageURLs.push(...message.attachments.filter(v => v.contentType.startsWith("video/")).map(v => v.proxyURL + "format=webp"))
+        imageURLs.push(...message.embeds.map(v => v.thumbnail.proxyURL))
 
-        let ocrResult: { image_url: string, data: RecognizeResult }[] = []
+        let ocrResult: { image_url: string, data: RecognizeResult[] }[] = []
         for (const url of imageURLs) {
             timestamp.push(performance.now())
-            const img = await processImage(url)
+            const sharp_img = sharp(await (await fetch(url)).arrayBuffer())
+                .toFormat("png")
+                .resize({ fit: "contain", width: 900, height: 900 })
+                .grayscale()
+                // .median(3)
+                .blur({ sigma: 1 })
+                .sharpen({
+                    sigma: 7,
+                    m1: 2.5,
+                    m2: 2.5
+                })
+
+            const imgs = [
+                sharp_img.threshold(110).toBuffer(),
+                sharp_img.threshold(160).toBuffer()
+            ]
             timestamp.push(performance.now())
 
             timestamp.push(performance.now())
-            //? processed image
+            const ocrData: RecognizeResult[] = []
+            for (const i of imgs) {
+                ocrData.push(await scheduler.addJob("recognize", await i))
+            }
+
             ocrResult.push({
                 image_url: url,
-                data: await scheduler.addJob("recognize", img)
+                data: ocrData
             })
             timestamp.push(performance.now())
         }
@@ -86,10 +105,23 @@ export default class FilterImageSentEvent extends BotEvent {
 
         let swearResult: SwearResult[] = []
         for (const result of ocrResult) {
-            let wordList = result.data.data.words.map(v => ({word: v.text.toLowerCase(), confidence: v.confidence}))
+            let wordList: SwearResult["swears"] = []
             let swearList = services.state.state.swearWords.map(v => v.toLowerCase())
 
+            for (const d of result.data) {
+                wordList.push(...d.data.words.map(v => ({word: v.text.toLowerCase(), confidence: v.confidence})))
+            }
+
             wordList = wordList.filter(v => v.confidence >= CONFIDENCE_THRESHOLD)
+
+            const seenWords = new Set<string>()
+            wordList = wordList.filter(v => {
+                if (!seenWords.has(v.word)) {
+                    seenWords.add(v.word)
+                    return true
+                }
+                return false
+            })
 
             let detectedSwears = wordList.filter(v => swearList.map(swears => v.word.includes(swears)).reduce((a, b) => a || b))
             if (detectedSwears.length <= 0) continue
@@ -100,23 +132,13 @@ export default class FilterImageSentEvent extends BotEvent {
             })
         }
 
-        //? filter duplicate URL
-        const seen = new Set()
-        swearResult = swearResult.filter(v => {
-            if (!seen.has(v.url)) {
-                seen.add(v.url)
-                return true
-            }
-            return false
-        })
-
         const logChannel = await message.client.channels.fetch(channelIds.mediaLog) as TextChannel;
 
         if (swearResult.length > 0) {
             await message.reply(`<@${message.author.id}>, Watch your language.`)
             for (const result of swearResult) {
                 await logChannel.send({
-                    content: `Swear detected in this image: \`${result.swears.map(v => `${v.word} (${v.confidence.toFixed(2)}%)`).join(", ")}\` sent by <@${message.author.id}> in <#${message.channelId}>.`,
+                    content: `Swear detected in this image/video/embed: \`${result.swears.map(v => `${v.word} (${v.confidence.toFixed(2)}%)`).join(", ")}\` sent by <@${message.author.id}> in <#${message.channelId}>.`,
                     files: [{
                         attachment: result.url
                     }]
