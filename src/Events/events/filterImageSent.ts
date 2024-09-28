@@ -25,23 +25,6 @@ const initOCR = async () => {
     setInterval(initOCR, 3 * 60 * 60 * 1000) //? reset the OCR every 3 hours
 })()
 
-async function processImage(url: string) {
-    const sharp_img = sharp(await (await fetch(url)).arrayBuffer())
-        .resize({ fit: "contain", width: 1000, height: 1000 })
-        .grayscale()
-        // .median(3)
-        .blur({ sigma: 1 })
-        .sharpen({
-            sigma: 7,
-            m1: 2.5,
-            m2: 2.5
-        })
-        .threshold(135)
-        .toFormat("png")
-    sharp_img.toFile("a.png")
-    return sharp_img.toBuffer()
-}
-
 type SwearResult = {
     url: string,
     swears: {
