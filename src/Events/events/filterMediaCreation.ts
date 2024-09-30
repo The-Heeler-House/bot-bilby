@@ -56,6 +56,7 @@ export default class FilterImageSentEvent extends BotEvent {
                     }]
                 })
             }
+            await message.delete()
             await logChannel.send({
                 content: `OCR timing (process image, ocr): \`${timing.join(" | ")}\``
             })
