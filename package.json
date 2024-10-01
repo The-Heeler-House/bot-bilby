@@ -30,6 +30,8 @@
     "minio": "^8.0.1",
     "moment-timezone": "^0.5.45",
     "mongodb": "^6.6.2",
+    "sharp": "^0.33.5",
+    "tesseract.js": "^5.1.1",
     "typescript": "^5.4.5"
   }
 }
