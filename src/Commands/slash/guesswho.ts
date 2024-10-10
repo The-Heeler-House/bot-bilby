@@ -15,12 +15,12 @@ import { Services } from "../../Services";
 import path from "path";
 import { readFileSync } from "fs";
 import { readFile } from "fs/promises";
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 
 const guessWhoData = path.join(__dirname, "../../Assets/guesswho-data")
 const mappingData: { [file: string]: string[] } = JSON.parse(readFileSync(`${guessWhoData}/mapping.json`, { encoding: "utf-8" }))
 const fileList = Object.keys(mappingData)
-const randomHex = (length: number) => [...Array(length)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')
+const randomHex = (length: number) => randomBytes(length).toString('hex')
 
 let sessionInProgress = new Set<string>()
 
