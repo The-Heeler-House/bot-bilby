@@ -122,7 +122,7 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
     })
 
     const confirmMsg = await thread.send({
-        content: "The rules of the game are simple: You will be given 10 seconds for each questions, and you will have to guess the characters from their silhouette.\nWould you like to start the game? (will be defaulting to no in 30 seconds)",
+        content: "The rules of the game are simple: You will be given 10 seconds for each questions, and you will have to guess the characters from their silhouette.\n> **Important Note:** The name of the character should be type correctly, so for instance: `chilli's mum` is correct, but `chillis mum` isn't.\nWould you like to start the game? (will be defaulting to no in 30 seconds)",
         components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
                 .setCustomId("yes")
