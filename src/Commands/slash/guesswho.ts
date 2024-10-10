@@ -43,7 +43,7 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
 
     let score = 0
     let player = interaction.user.id
-    let sessionId = `guesswho-${interaction.user.username}-${randomHex(6)}`
+    let sessionId = `guesswho-${interaction.user.username}-${randomHex(3)}`
     const thread = await interaction.channel.threads.create({
         name: sessionId,
         autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
