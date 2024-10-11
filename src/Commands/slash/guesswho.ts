@@ -115,7 +115,7 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
     await thread.members.add(interaction.user.id)
     sessionInProgress.add(interaction.user.id)
 
-    await interaction.reply({
+    const initMsg = await interaction.reply({
         embeds: [
             new EmbedBuilder()
                 .setTitle("Guess Who?!")
@@ -157,11 +157,11 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
             )
         }
 
-        await interaction.editReply({
+        await initMsg.edit({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle("Guess Who?!")
-                    .setDescription(`Game Over! Your score is: **${score}**`)
+                    .setTitle(`Guess Who?! (session \`${sessionId})\``)
+                    .setDescription(`Game Over! Your final score is: **${score}**`)
                     .setColor("Red")
             ],
             files: []
