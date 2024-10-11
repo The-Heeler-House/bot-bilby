@@ -172,10 +172,15 @@ export default class CommandPreprocessor {
         } catch (error) {
             logger.error("Encountered an error while trying to execute the", interaction.commandName, "slash command.\n", error.stack);
             await services.pager.sendError(error, "Trying to execute the " + interaction.commandName + " slash command.", services.state.state.pagedUsers, { interaction });
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
-            } else {
-                await interaction.reply({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
+
+            try {
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
+                } else {
+                    await interaction.reply({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
+                }
+            } catch (innerError) {
+                logger.error("Failure in sending \"something gone wrong\" message.", innerError)
             }
         }
     }
