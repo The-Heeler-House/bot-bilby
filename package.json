@@ -23,13 +23,14 @@
     "@types/node": "^20.12.12",
     "canvas": "^2.11.2",
     "cheerio": "^1.0.0-rc.12",
-    "discord.js": "^14.15.2",
+    "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "fast-average-color-node": "^3.0.0",
     "minio": "^8.0.1",
     "moment-timezone": "^0.5.45",
     "mongodb": "^6.6.2",
+    "sharp": "^0.33.5",
     "typescript": "^5.4.5"
   }
 }
