@@ -25,7 +25,7 @@ const randomHex = (length: number) => randomBytes(length).toString('hex')
 let sessionInProgress = new Set<string>()
 
 const playSubcommand = async (interaction: ChatInputCommandInteraction, services: Services) => {
-    if (interaction.channel.type != ChannelType.GuildText) {
+    if (interaction.channel?.type != ChannelType.GuildText) {
         await interaction.reply({
             content: `Game cannot be play outside of a Guild text channel!`,
             ephemeral: true
@@ -91,7 +91,11 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
             return gameContinue
         }
 
-        const out = message.content.trim().toLowerCase().normalize()
+        const out = message.content
+            .trim()
+            .toLowerCase()
+            .normalize()
+            .replace(/[^a-zA-Z0-9 ]/g, '')
         const hashedAnswer = createHash("sha256").update(out).digest("hex")
         const correctAnswer = mappingData[characterImg]
 
