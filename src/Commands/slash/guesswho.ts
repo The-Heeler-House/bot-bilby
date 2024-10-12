@@ -137,40 +137,6 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
         return
     }
 
-    const start = async () => {
-        let gameRun = true
-        while (gameRun) {
-            gameRun = await playMain(userId)
-        }
-        await end()
-    }
-
-    const end = async () => {
-        const session = sessionInProgress.get(userId)
-        const prevScore = await leaderboard.findOne({ user: userId })
-
-        if (!prevScore || prevScore["score"] < session.score) {
-            await leaderboard.updateOne(
-                { user: userId },
-                { $set: { score: session.score } },
-                { upsert: true }
-            )
-        }
-
-        await initMsg.edit({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle(`Guess Who?! Session (${threadIdToLink(interaction.guildId, thread.id)})`)
-                    .setDescription(`Game Over! Your final score is: **${session.score}**`)
-                    .setColor("Red")
-            ],
-            files: []
-        })
-        sessionInProgress.delete(userId)
-        await thread.setLocked()
-        await thread.setArchived()
-    }
-
     let sessionId = `guesswho-${interaction.user.username}-${randomHex(3)}`
     let userId = interaction.user.id
     const thread = await interaction.channel.threads.create({
@@ -187,11 +153,11 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
     })
     await thread.members.add(userId)
 
-    const initMsg = await interaction.reply({
+    await interaction.reply({
         embeds: [
             new EmbedBuilder()
                 .setTitle("Guess Who?!")
-                .setDescription(`Game session (${threadIdToLink(interaction.guildId, thread.id)}) created! There should be a thread waiting for you with the session ID in the title.`)
+                .setDescription(`Game session created!\n${threadIdToLink(interaction.guildId, thread.id)}`)
                 .setColor("Green")
         ],
         files: []
@@ -218,6 +184,41 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
         .catch(async () => await end())
 
     if (!resultConfirm) return
+
+    const start = async () => {
+        let gameRun = true
+        while (gameRun) {
+            gameRun = await playMain(userId)
+        }
+        await end()
+    }
+
+    const end = async () => {
+        const session = sessionInProgress.get(userId)
+        const prevScore = await leaderboard.findOne({ user: userId })
+
+        if (!prevScore || prevScore["score"] < session.score) {
+            await leaderboard.updateOne(
+                { user: userId },
+                { $set: { score: session.score } },
+                { upsert: true }
+            )
+        }
+
+        await session.thread.send({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle(`Game Over!`)
+                    .setDescription(`Your final score is: **${session.score}**!`)
+                    .setColor("Red")
+            ],
+            files: []
+        })
+        sessionInProgress.delete(userId)
+        await thread.setLocked()
+        await thread.setArchived()
+    }
+
     switch (resultConfirm.customId) {
         case "yes":
             await resultConfirm.reply("Okay! Let's start!")
