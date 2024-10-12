@@ -7,6 +7,8 @@ import {
     ChatInputCommandInteraction,
     ComponentType,
     EmbedBuilder,
+    PrivateThreadChannel,
+    PublicThreadChannel,
     SlashCommandBuilder,
     ThreadAutoArchiveDuration
 } from "discord.js";
@@ -14,7 +16,6 @@ import SlashCommand from "../SlashCommand";
 import { Services } from "../../Services";
 import path from "path";
 import { readdirSync, readFileSync, statSync } from "fs";
-import { readFile } from "fs/promises";
 import { createHash, randomBytes, randomInt } from "crypto";
 import sharp from "sharp";
 
@@ -26,8 +27,97 @@ const bgList = readdirSync(`${guessWhoData}/bg`)
     .filter(v => !statSync(v).isDirectory())
 
 const randomHex = (length: number) => randomBytes(length).toString('hex')
+const threadIdToLink = (server: string, thread: string) => `https://discord.com/channels/${server}/${thread}`
+let sessionInProgress = new Map<string, { thread: PrivateThreadChannel | PublicThreadChannel, channel: string, score: number }>()
 
-let sessionInProgress = new Set<string>()
+const playMain = async (userId: string) => {
+    let session = sessionInProgress.get(userId)
+
+    let gameContinue = false
+    const characterImg = fileList[Math.floor(Math.random() * fileList.length)]
+
+    const timeBegin = performance.now()
+
+    const charPath = `${guessWhoData}/${characterImg}.png`
+    const bgPath = bgList[Math.floor(Math.random() * bgList.length)]
+
+    const outImgSize = { w: 1000, h: 1000 }
+    const charImgSize = { w: 800, h: 800 }
+
+    let outImg = sharp(bgPath)
+    const bgMetadata = await outImg.metadata()
+    outImg = outImg.extract({
+        left: randomInt(bgMetadata.width - outImgSize.w),
+        top: randomInt(bgMetadata.height - outImgSize.h),
+        width: outImgSize.w,
+        height: outImgSize.h
+    })
+
+    let charImg = await sharp(charPath)
+        .resize({ fit: "contain", width: charImgSize.w, height: charImgSize.h })
+        .toBuffer({ resolveWithObject: false })
+
+    outImg = outImg.composite([{
+        input: charImg,
+        gravity: "south"
+    }])
+
+    const timeEnd = performance.now()
+    const charAttachment = new AttachmentBuilder(await outImg.toBuffer(), { name: "character.png" })
+
+    const embed = new EmbedBuilder()
+        .setTitle("Guess who is this?!")
+        .setFields([
+            {
+                name: "Player",
+                value: `<@${userId}>`,
+                inline: true
+            },
+            {
+                name: "Guessed Characters",
+                value: `${session.score}`,
+                inline: true
+            }
+        ])
+        .setImage("attachment://character.png")
+        .setFooter({ text: `Time: ${(timeEnd - timeBegin) / 1000}s` })
+        .setColor("Yellow")
+
+    await session.thread.send({
+        embeds: [embed],
+        files: [charAttachment]
+    })
+
+    const collected = await session.thread.awaitMessages({
+        filter: (message) => message.author.id == userId,
+        time: 10000,
+        max: 1
+    })
+
+    const message = collected.first()
+    if (!message) {
+        await session.thread.send(":hourglass: Times up!")
+        return gameContinue
+    }
+
+    const out = message.content
+        .trim()
+        .toLowerCase()
+        .normalize()
+        .replace(/[^a-zA-Z0-9 ]/g, '')
+    const hashedAnswer = createHash("sha256").update(out).digest("hex")
+    const correctAnswer = mappingData[characterImg]
+
+    const correct = correctAnswer.includes(hashedAnswer)
+    await session.thread.send(correct ? ":white_check_mark: Correct!" : ":x: Incorrect!")
+    await message.delete()
+    if (correct) {
+        session.score++
+        gameContinue = true
+    }
+
+    return gameContinue
+}
 
 const playSubcommand = async (interaction: ChatInputCommandInteraction, services: Services) => {
     if (interaction.channel?.type != ChannelType.GuildText) {
@@ -39,16 +129,50 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
     }
 
     if (sessionInProgress.has(interaction.user.id)) {
+        const session = sessionInProgress.get(interaction.user.id)
         await interaction.reply({
-            content: `You already have a game session in progress! Check in the private threads to see your active game session.`,
+            content: `You already have a game session (${threadIdToLink(interaction.guildId, session.thread.id)}) in progress! Check in the threads section to see the active game sessions.`,
             ephemeral: true
         })
         return
     }
 
-    let score = 0
-    let player = interaction.user.id
+    const start = async () => {
+        let gameRun = true
+        while (gameRun) {
+            gameRun = await playMain(userId)
+        }
+        await end()
+    }
+
+    const end = async () => {
+        const session = sessionInProgress.get(userId)
+        const prevScore = await leaderboard.findOne({ user: userId })
+
+        if (!prevScore || prevScore["score"] < session.score) {
+            await leaderboard.updateOne(
+                { user: userId },
+                { $set: { score: session.score } },
+                { upsert: true }
+            )
+        }
+
+        await initMsg.edit({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle(`Guess Who?! Session (${threadIdToLink(interaction.guildId, thread.id)})`)
+                    .setDescription(`Game Over! Your final score is: **${session.score}**`)
+                    .setColor("Red")
+            ],
+            files: []
+        })
+        sessionInProgress.delete(userId)
+        await thread.setLocked()
+        await thread.setArchived()
+    }
+
     let sessionId = `guesswho-${interaction.user.username}-${randomHex(3)}`
+    let userId = interaction.user.id
     const thread = await interaction.channel.threads.create({
         name: sessionId,
         autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
@@ -56,103 +180,18 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
     })
     const leaderboard = services.database.collections.guessWho
 
-    const main = async () => {
-        let gameContinue = false
-        const characterImg = fileList[Math.floor(Math.random() * fileList.length)]
-
-        const timeBegin = performance.now()
-
-        const charPath = `${guessWhoData}/${characterImg}.png`
-        const bgPath = bgList[Math.floor(Math.random() * bgList.length)]
-
-        const outImgSize = { w: 1000, h: 1000 }
-        const charImgSize = { w: 800, h: 800 }
-
-        let outImg = sharp(bgPath)
-        const bgMetadata = await outImg.metadata()
-        outImg = outImg.extract({
-            left: randomInt(bgMetadata.width - outImgSize.w),
-            top: randomInt(bgMetadata.height - outImgSize.h),
-            width: outImgSize.w,
-            height: outImgSize.h
-        })
-
-        let charImg = await sharp(charPath)
-            .resize({ fit: "contain", width: charImgSize.w, height: charImgSize.h })
-            .toBuffer({ resolveWithObject: false })
-
-        outImg = outImg.composite([{
-            input: charImg,
-            gravity: "south"
-        }])
-
-        const timeEnd = performance.now()
-        const charAttachment = new AttachmentBuilder(await outImg.toBuffer(), { name: "character.png" })
-
-        const embed = new EmbedBuilder()
-            .setTitle("Guess who is this?!")
-            .setFields([
-                {
-                    name: "Player",
-                    value: `<@${player}>`,
-                    inline: true
-                },
-                {
-                    name: "Guessed Characters",
-                    value: `${score}`,
-                    inline: true
-                }
-            ])
-            .setImage("attachment://character.png")
-            .setFooter({ text: `Time: ${(timeEnd - timeBegin) / 1000}s` })
-            .setColor("Yellow")
-
-        await thread.send({
-            embeds: [embed],
-            files: [charAttachment]
-        })
-
-        const collected = await thread.awaitMessages({
-            filter: (message) => message.author.id == interaction.user.id,
-            time: 10000,
-            max: 1
-        })
-
-        const message = collected.first()
-        if (!message) {
-            await thread.send(":hourglass: Times up!")
-            return gameContinue
-        }
-
-        const out = message.content
-            .trim()
-            .toLowerCase()
-            .normalize()
-            .replace(/[^a-zA-Z0-9 ]/g, '')
-        const hashedAnswer = createHash("sha256").update(out).digest("hex")
-        const correctAnswer = mappingData[characterImg]
-
-        const correct = correctAnswer.includes(hashedAnswer)
-        await thread.send(correct ? ":white_check_mark: Correct!" : ":x: Incorrect!")
-        await message.delete()
-        if (correct) {
-            score++
-            gameContinue = true
-        }
-
-        return gameContinue
-    }
-
-    //? -- game start
-
-    await thread.members.add(interaction.user.id)
-    sessionInProgress.add(interaction.user.id)
+    sessionInProgress.set(userId, {
+        score: 0,
+        channel: interaction.channelId,
+        thread: thread
+    })
+    await thread.members.add(userId)
 
     const initMsg = await interaction.reply({
         embeds: [
             new EmbedBuilder()
                 .setTitle("Guess Who?!")
-                .setDescription(`Game session \`${sessionId}\` created! There should be a thread waiting for you with the session ID in the title.`)
+                .setDescription(`Game session (${threadIdToLink(interaction.guildId, thread.id)}) created! There should be a thread waiting for you with the session ID in the title.`)
                 .setColor("Green")
         ],
         files: []
@@ -175,39 +214,7 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
         components: [row]
     })
 
-    const start = async () => {
-        let gameRun = true
-        while (gameRun) {
-            gameRun = await main()
-        }
-        await end()
-    }
-
-    const end = async () => {
-        const prevScore = await leaderboard.findOne({ user: interaction.user.id })
-        if (!prevScore || prevScore["score"] < score) {
-            await leaderboard.updateOne(
-                { user: interaction.user.id },
-                { $set: { score } },
-                { upsert: true }
-            )
-        }
-
-        await initMsg.edit({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle(`Guess Who?! (session \`${sessionId})\``)
-                    .setDescription(`Game Over! Your final score is: **${score}**`)
-                    .setColor("Red")
-            ],
-            files: []
-        })
-        sessionInProgress.delete(interaction.user.id)
-        await thread.setLocked()
-        await thread.setArchived()
-    }
-
-    const resultConfirm = await confirmMsg.awaitMessageComponent({ filter: i => i.user.id == interaction.user.id, componentType: ComponentType.Button, time: 30_000 })
+    const resultConfirm = await confirmMsg.awaitMessageComponent({ filter: i => i.user.id == userId, componentType: ComponentType.Button, time: 30_000 })
         .catch(async () => await end())
 
     if (!resultConfirm) return
@@ -256,6 +263,8 @@ const leaderboardSubcommand = async (interaction: ChatInputCommandInteraction, s
     leaderboardEmbed.setDescription(desc)
     await interaction.reply({ embeds: [leaderboardEmbed] })
 }
+
+//! ----------------------------------------------------------------------------
 
 export default class GuessWhoCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
