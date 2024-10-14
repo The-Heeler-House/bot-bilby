@@ -1,4 +1,4 @@
-import { GuildEmoji, Message, ReactionEmoji, Snowflake } from "discord.js";
+import { GuildEmoji, Message, PrivateThreadChannel, PublicThreadChannel, ReactionEmoji, Snowflake } from "discord.js";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
@@ -24,7 +24,10 @@ export default class StateService {
      * Useful for short-term general information storage (think short-term memory).
      */
     public volatileState: VolatileState = {
-        trackedReactions: new Map()
+        trackedReactions: new Map(),
+        slashCommandData: {
+            guessWhoSessions: new Map()
+        }
     };
 
     constructor() {
@@ -99,8 +102,17 @@ export interface TrackedMessage {
     timestamp: number, // Add timestamp to track when the message was linked
 };
 
+export interface GuessWhoSession {
+    thread: PrivateThreadChannel | PublicThreadChannel,
+    channel: string,
+    score: number
+}
+
 export interface VolatileState {
-    trackedReactions: Map<string, TrackedReaction>
+    trackedReactions: Map<string, TrackedReaction>,
+    slashCommandData: {
+        guessWhoSessions: Map<string, GuessWhoSession>
+    }
 }
 
 export interface TrackedReaction {

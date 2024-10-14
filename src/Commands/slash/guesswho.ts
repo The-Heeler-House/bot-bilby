@@ -28,9 +28,9 @@ const bgList = readdirSync(`${guessWhoData}/bg`)
 
 const randomHex = (length: number) => randomBytes(length).toString('hex')
 const threadIdToLink = (server: string, thread: string) => `https://discord.com/channels/${server}/${thread}`
-let sessionInProgress = new Map<string, { thread: PrivateThreadChannel | PublicThreadChannel, channel: string, score: number }>()
 
-const playMain = async (userId: string) => {
+const playMain = async (userId: string, services: Services) => {
+    let sessionInProgress = services.state.volatileState.slashCommandData.guessWhoSessions
     let session = sessionInProgress.get(userId)
 
     let gameContinue = false
@@ -120,6 +120,8 @@ const playMain = async (userId: string) => {
 }
 
 const playSubcommand = async (interaction: ChatInputCommandInteraction, services: Services) => {
+    let sessionInProgress = services.state.volatileState.slashCommandData.guessWhoSessions
+
     if (interaction.channel?.type != ChannelType.GuildText) {
         await interaction.reply({
             content: `Game cannot be play outside of a Guild text channel!`,
@@ -188,7 +190,7 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
     const start = async () => {
         let gameRun = true
         while (gameRun) {
-            gameRun = await playMain(userId)
+            gameRun = await playMain(userId, services)
         }
         await end()
     }
