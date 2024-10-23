@@ -35,8 +35,8 @@ export default class MediaCreationEvent extends BotEvent {
         } catch (error) {
             if (error.code == "EHOSTUNREACH") {
                 // Can't reach the host, just warn.
-                logger.warning("Failed to talk to S3 host. Is the server up?);
-                await services.pager.sendPage("Warning: Failed to talk to S3 host. Is the server up? IP:");
+                logger.warning("Failed to talk to S3 host. Is the server up?");
+                await services.pager.sendPage("Warning: Failed to talk to S3 host. Is the server up?");
             } else {
                 logger.error("Encountered an error while trying to store attachments.\n", error, "\n", error.stack);
                 await services.pager.sendError(error, "Trying to store attachments.", services.state.state.pagedUsers, { message });
