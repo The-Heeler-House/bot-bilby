@@ -46,6 +46,20 @@ export default class ModerationPingEvent extends BotEvent {
                             ],
                             content: `File sent by <@${message.author.id}> deleted in <#${message.channel.id}>. Image was not saved externally, attempting to get from Discord CDN as fallback.`
                         });
+                    } else if (error.code == "EHOSTUNREACH") {
+                        // Can't reach the host, just warn.
+                        logger.warning("Failed to talk to S3 host. Is the server up?");
+                        await services.pager.sendPage("Warning: Failed to talk to S3 host. Is the server up?");
+
+                        await logChannel.send({
+                            files: [
+                                {
+                                    attachment: imageUrl,
+                                    name: attachment.name
+                                }
+                            ],
+                            content: `File sent by <@${message.author.id}> deleted in <#${message.channel.id}>. Image was not saved externally, attempting to get from Discord CDN as fallback.`
+                        });
                     } else {
                         logger.error("Encountered an error while trying to log deleted attachments.\n", err, "\n", err.stack);
                         await services.pager.sendError(err, "Trying to log deleted attachments.", services.state.state.pagedUsers, { message });
