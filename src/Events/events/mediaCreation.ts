@@ -33,8 +33,14 @@ export default class MediaCreationEvent extends BotEvent {
                 await services.s3.putBuffer("media", `${attachment.id}.${extension}`, Buffer.from(image));
             }
         } catch (error) {
-            logger.error("Encountered an error while trying to store attachments.\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to store attachments.", services.state.state.pagedUsers, { message });
+            if (error.code == "EHOSTUNREACH") {
+                // Can't reach the host, just warn.
+                logger.warning("Failed to talk to S3 host. Is the server up? IP:", error.address + ":" address.port);
+                await services.pager.sendPage("Warning: Failed to talk to S3 host. Is the server up? IP:", error.address + ":" address.port);
+            } else {
+                logger.error("Encountered an error while trying to store attachments.\n", error, "\n", error.stack);
+                await services.pager.sendError(error, "Trying to store attachments.", services.state.state.pagedUsers, { message });
+            }
         }
     }
 }
