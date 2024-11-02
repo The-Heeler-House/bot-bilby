@@ -7,8 +7,6 @@ import {
     ChatInputCommandInteraction,
     ComponentType,
     EmbedBuilder,
-    PrivateThreadChannel,
-    PublicThreadChannel,
     SlashCommandBuilder,
     ThreadAutoArchiveDuration
 } from "discord.js";
@@ -18,6 +16,8 @@ import path from "path";
 import { readdirSync, readFileSync, statSync } from "fs";
 import { createHash, randomBytes, randomInt } from "crypto";
 import sharp from "sharp";
+import { Collection } from "mongodb";
+import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
 const guessWhoData = path.join(__dirname, "../../Assets/guesswho-data")
 const mappingData: { [file: string]: string[] } = JSON.parse(readFileSync(`${guessWhoData}/mapping.json`, { encoding: "utf-8" }))
@@ -36,6 +36,8 @@ const playMain = async (userId: string, services: Services) => {
     let gameContinue = false
     const characterImg = fileList[Math.floor(Math.random() * fileList.length)]
 
+    //? this was an utter nightmare to deal with!!!
+
     const timeBegin = performance.now()
 
     const charPath = `${guessWhoData}/${characterImg}.png`
@@ -44,8 +46,55 @@ const playMain = async (userId: string, services: Services) => {
     const outImgSize = { w: 1000, h: 1000 }
     const charImgSize = { w: 800, h: 800 }
 
+    const imageTransform: {
+        "function": string,
+        "argument": () => any
+    }[] = [
+        {
+            "function": "rotate",
+            "argument": () => Math.round(randomInt(0, 360) / 90) * 90
+        },
+        {
+            "function": "flop",
+            "argument": () => randomInt(0, 2) == 1
+        },
+        {
+            "function": "blur",
+            "argument": () => ({ sigma: randomInt(30, 200) / 100 })
+        },
+        {
+            "function": "gamma",
+            "argument": () => randomInt(100, 250) / 100
+        },
+        {
+            "function": "modulate",
+            "argument": () => ({
+                "brightness": randomInt(50, 150) / 100,
+                "saturation": randomInt(50, 200) / 100,
+            })
+        }
+    ]
+
+    let charImg = sharp(charPath)
+        .resize({ fit: "contain", width: charImgSize.w, height: charImgSize.h })
+        .composite([{
+            input: {
+                create: {
+                    width: charImgSize.w,
+                    height: charImgSize.h,
+                    channels: 4,
+                    background: {
+                        r: randomInt(256),
+                        g: randomInt(256),
+                        b: randomInt(256)
+                    }
+                }
+            }, blend: 'in'
+        }])
+
     let outImg = sharp(bgPath)
     const bgMetadata = await outImg.metadata()
+
     outImg = outImg.extract({
         left: randomInt(bgMetadata.width - outImgSize.w),
         top: randomInt(bgMetadata.height - outImgSize.h),
@@ -53,13 +102,15 @@ const playMain = async (userId: string, services: Services) => {
         height: outImgSize.h
     })
 
-    let charImg = await sharp(charPath)
-        .resize({ fit: "contain", width: charImgSize.w, height: charImgSize.h })
-        .toBuffer({ resolveWithObject: false })
+    for (const transform of imageTransform) {
+        const arg = transform.argument()
+        charImg = charImg[transform.function](arg)
+        outImg = outImg[transform.function](arg)
+    }
 
     outImg = outImg.composite([{
-        input: charImg,
-        gravity: "south"
+        input: await charImg.toBuffer({ resolveWithObject: false }),
+        gravity: "center",
     }])
 
     const timeEnd = performance.now()
@@ -88,9 +139,14 @@ const playMain = async (userId: string, services: Services) => {
         files: [charAttachment]
     })
 
+    const MAX_TIME = 10000
+    const MIN_TIME = 3000
+    const DECREASE_EVERY = 40 //? decrease the time by 1000 ms every 40 correct answers (because i feel like so)
+    const TIME = Math.max(MAX_TIME - (session.score / DECREASE_EVERY * 1000), MIN_TIME)
+
     const collected = await session.thread.awaitMessages({
         filter: (message) => message.author.id == userId,
-        time: 10000,
+        time: TIME,
         max: 1
     })
 
@@ -212,7 +268,7 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
     }
 
     const confirmMsg = await thread.send({
-        content: "The rules of the game are simple: You will be given 10 seconds for each questions, and you will have to guess the characters from their silhouette.\n> **Important Note:** The name of the character should be type correctly, so for instance: `chilli's mum` is correct, but `chillis mum` isn't.\nWould you like to start the game? (will be defaulting to no in 30 seconds)",
+        content: "The rules of the game are simple: You will be given 10 seconds (with the time decreasing the more you answered) for each questions, and you will have to guess the characters from their silhouette.\n> **Important Note:** The name of the character should be type correctly, so for instance: `chilli's mum` is correct, but `chillis mum` isn't.\nWould you like to start the game? (will be defaulting to no in 30 seconds)",
         components: [row]
     })
 
@@ -233,15 +289,20 @@ const playSubcommand = async (interaction: ChatInputCommandInteraction, services
     }
 }
 
-const leaderboardSubcommand = async (interaction: ChatInputCommandInteraction, services: Services) => {
-    const leaderboard = services.database.collections.guessWho
+const leaderboardSubcommand = async (interaction: ChatInputCommandInteraction, services: Services, leaderboardType: "guessWho" | "oldGuessWho") => {
+    const toCapitalizedWords = (name: string) => {
+        var words = name.match(/[A-Za-z][a-z]*/g) || [];
+        return words.map((word: string) => word.charAt(0).toUpperCase() + word.substring(1)).join(" ");
+    }
+
+    const leaderboard = services.database.collections[leaderboardType]
     const entryGenerator = leaderboard.find().sort({ score: -1 })
     // get only the first 10 people, for some reason
     const MAX_ENTRY = 10
 
     const leaderboardEmbed = new EmbedBuilder()
         .setColor(0x72bfed)
-        .setTitle("Guesswho Leaderboard!")
+        .setTitle(`${toCapitalizedWords(leaderboardType)} Leaderboard!`)
         .setTimestamp()
     var desc = "", cnt = 1
     while (cnt <= MAX_ENTRY) {
@@ -250,7 +311,7 @@ const leaderboardSubcommand = async (interaction: ChatInputCommandInteraction, s
         const id = playerEntry["user"]
         try {
             const user = await interaction.guild.members.fetch(id)
-            desc += `${cnt}. \`${user.displayName}\`: **${playerEntry.score} Character(s)**\n`
+            desc += `${cnt}. \`${user.displayName}\`: **${playerEntry['score']} Character(s)**\n`
             cnt++
         } catch (err) {}
     }
@@ -259,7 +320,7 @@ const leaderboardSubcommand = async (interaction: ChatInputCommandInteraction, s
         .findOne({ user: interaction.user.id }, { sort: {score: -1} })
 
     if (thisUserScore) {
-        desc += `\nYour highscore: **${thisUserScore.score} Character(s)**`
+        desc += `\nYour highscore: **${thisUserScore['score']} Character(s)**`
     } else {
         desc += `\nYour highscore: **none yet**`
     }
@@ -284,7 +345,14 @@ export default class GuessWhoCommand extends SlashCommand {
             subcommand
                 .setName("leaderboard")
                 .setDescription(
-                    "View the leaderboard for the game!"
+                    "View the current leaderboard for the game!"
+                )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand
+                .setName("old_leaderboard")
+                .setDescription(
+                    "View the old leaderboard (during the Heelerween 2024 events in THH)!"
                 )
         ) as SlashCommandBuilder
 
@@ -294,7 +362,14 @@ export default class GuessWhoCommand extends SlashCommand {
                 await playSubcommand(interaction, services)
                 break
             case "leaderboard":
-                await leaderboardSubcommand(interaction, services)
+                await leaderboardSubcommand(interaction, services, "guessWho")
+                break
+            case "old_leaderboard":
+                if (!isTHHorDevServer(interaction.guildId)) {
+                    await interaction.reply("Not THH server! This subcommand is useless!")
+                } else {
+                    await leaderboardSubcommand(interaction, services, "oldGuessWho")
+                }
                 break
         }
     }
