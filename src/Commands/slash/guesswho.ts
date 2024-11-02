@@ -60,7 +60,7 @@ const playMain = async (userId: string, services: Services) => {
         },
         {
             "function": "blur",
-            "argument": () => ({ sigma: randomInt(30, 200) / 100 })
+            "argument": () => ({ sigma: randomInt(30, 150) / 100 })
         },
         {
             "function": "gamma",
