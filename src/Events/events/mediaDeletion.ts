@@ -46,7 +46,7 @@ export default class ModerationPingEvent extends BotEvent {
                             ],
                             content: `File sent by <@${message.author.id}> deleted in <#${message.channel.id}>. Image was not saved externally, attempting to get from Discord CDN as fallback.`
                         });
-                    } else if (error.code == "EHOSTUNREACH") {
+                    } else if (err.code == "EHOSTUNREACH") {
                         // Can't reach the host, just warn.
                         logger.warning("Failed to talk to S3 host. Is the server up?");
                         await services.pager.sendPage("Warning: Failed to talk to S3 host. Is the server up?");
