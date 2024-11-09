@@ -250,7 +250,6 @@ export default class HangmanCommand extends SlashCommand {
                 updateGuesses(FOUND_CHAR_IN, CHAR)
 
                 if (gameState.haveGuessed == gameState.needToGuess) {
-                    gameState.currentTries = 1
                     await interaction.editReply({
                         embeds: [
                             generateGameEmbed(`Congratulation! You won!`)
