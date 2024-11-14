@@ -1,4 +1,4 @@
-import { Message, TextChannel } from "discord.js";
+import { AttachmentBuilder, Message, TextChannel } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { roleIds, channelIds } from "../../constants";
@@ -18,6 +18,9 @@ export default class SayCommand extends TextCommand {
             await message.reply("You need to provide a message to send!");
             return;
         }
-        await channel.send(args.join(" "));
+        await channel.send({
+            content: args.join(" "),
+            files: message.attachments.map(v => v)
+        });
     }
 }
