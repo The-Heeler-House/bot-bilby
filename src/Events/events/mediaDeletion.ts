@@ -20,12 +20,25 @@ export default class ModerationPingEvent extends BotEvent {
         if ((message.channel as GuildChannel).parent != null && services.state.state.ignoredChannels.includes((message.channel as GuildChannel).parent.parentId)) return; // Don't log children of children of ignored channels... This is getting absurd.
 
         try {
+            const logChannel = await message.client.channels.fetch(channelIds.mediaLog) as TextChannel;
             message.attachments.forEach(async attachment => {
                 const imageUrl = attachment.url || attachment.proxyURL;
-                const logChannel = await message.client.channels.fetch(channelIds.mediaLog) as TextChannel;
 
                 const attachmentSplitByDot = attachment.name.split(".");
                 const extension = attachmentSplitByDot[attachmentSplitByDot.length-1];
+
+                if (!services.state.state.useS3) {
+                    await logChannel.send({
+                        files: [
+                            {
+                                attachment: imageUrl,
+                                name: attachment.name
+                            }
+                        ],
+                        content: `File sent by <@${message.author.id}> deleted in <#${message.channel.id}>.`
+                    });
+                    return
+                }
 
                 // First lets see if we can find it.
                 try {

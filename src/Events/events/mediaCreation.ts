@@ -11,6 +11,8 @@ export default class MediaCreationEvent extends BotEvent {
     async execute(client: Client, services: Services, message: Message) {
         if (!isTHHorDevServer(message.guild.id)) return;
 
+        if (!services.state.state.useS3) return
+
         if ([ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return; // Don't log DMs.
 
         if (message.channelId == channelIds.mediaLog) return; // Avoid logging media in the media log channel.

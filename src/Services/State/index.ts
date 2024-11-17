@@ -9,7 +9,8 @@ const defaultState: State = {
     altGate: false,
     trackedMessages: new Map<string, TrackedMessage>(),
     ignoredChannels: [],
-    pagedUsers: []
+    pagedUsers: [],
+    useS3: false
 }
 
 export default class StateService {
@@ -89,6 +90,7 @@ export interface State {
     trackedMessages: Map<string, TrackedMessage>,
     ignoredChannels: Snowflake[];
     pagedUsers: Snowflake[];
+    useS3: boolean
 }
 
 export interface TrackedMessage {
