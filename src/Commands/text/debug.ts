@@ -39,6 +39,44 @@ export default class DebugCommand extends TextCommand {
                         ]
                     });
                     return true;
+                case "perms_check":
+                    if (!args[0]) return false;
+
+                    let commands = await message.guild.commands.fetch()
+                    let bilbyCommands = commands.filter(command => command.applicationId == message.client.user.id);
+
+                    let output = [];
+                    for (let [name, bilbyCommand] of bilbyCommands) {
+                        let permissions = await bilbyCommand.permissions.fetch({ command: bilbyCommand.id });
+
+                        for (let permission of permissions) {
+                            let name = "";
+                            let type = "";
+                            switch (permission.type) {
+                                case 1: // Role
+                                    type = "R";
+                                    let role = await message.guild.roles.fetch(permission.id);
+                                    name = role.name;
+                                    break;
+                                case 2: // User
+                                    type = "U";
+                                    let user = await message.guild.members.fetch(permission.id);
+                                    name = user.displayName;
+                                    break;
+                                case 3: // Channel
+                                    type = "C";
+                                    let channel = await message.guild.channels.fetch(permission.id);
+                                    name = channel.name;
+                                    break;
+                                default:
+                                    name = "no clue lmao";
+                            }
+                            output.push(`[${type}] **${name}**: ${permission.permission ? ":white_check_mark:" : ":x:"}`);
+                        }
+                    }
+
+                    await message.reply(output.join("\n"));
+                    return;
                 default:
                     return false;
             }
@@ -46,8 +84,10 @@ export default class DebugCommand extends TextCommand {
 
         if (response === true) {
             await message.react("✅");
-        } else {
+        } else if (response === false) {
             await message.react("❌");
+        } else {
+            // Assume it's already done
         }
     }
 }
