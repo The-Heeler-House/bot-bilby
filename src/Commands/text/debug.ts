@@ -75,7 +75,7 @@ export default class DebugCommand extends TextCommand {
                         }
                     }
 
-                    await message.reply(output.join("\n"));
+                    await message.reply(output.length == 0 ? "no perms" : output.join("\n"));
                     return;
                 default:
                     return false;
