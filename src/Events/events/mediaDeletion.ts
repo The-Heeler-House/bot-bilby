@@ -10,7 +10,7 @@ export default class ModerationPingEvent extends BotEvent {
     public eventName = Events.MessageDelete;
 
     async execute(client: Client, services: Services, message: Message) {
-        if (!isTHHorDevServer(message.guild.id)) return;
+        if (!isTHHorDevServer(message.guildId)) return;
 
         if ([ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return; // Don't log DMs.
         if (message.author.id == client.user.id) return; // Avoid media from self

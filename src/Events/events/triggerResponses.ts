@@ -11,7 +11,7 @@ export default class TriggerResponseEvent extends BotEvent {
     private lastTriggered: Map<string, number> = new Map();
 
     async execute(client: Client, services: Services, message: Message) {
-        if (!isTHHorDevServer(message.guild.id)) return;
+        if (!isTHHorDevServer(message.guildId)) return;
         if (message.content.startsWith(process.env.PREFIX)) return;
         if (message.author.bot) return;
 

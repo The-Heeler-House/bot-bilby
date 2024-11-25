@@ -9,7 +9,7 @@ export default class MediaCreationEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(client: Client, services: Services, message: Message) {
-        if (!isTHHorDevServer(message.guild.id)) return;
+        if (!isTHHorDevServer(message.guildId)) return;
 
         if (!services.state.state.useS3) return
 

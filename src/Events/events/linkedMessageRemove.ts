@@ -9,7 +9,7 @@ export default class LinkedMessageRemoveEvent extends BotEvent {
     public eventName = Events.MessageDelete;
 
     async execute(client: Client, services: Services, message: Message) {
-        if (!isTHHorDevServer(message.guild.id)) return;
+        if (!isTHHorDevServer(message.guildId)) return;
 
         services.state.state.trackedMessages.forEach(async (trackedMessage, messageId) => {
             const currentTime = Date.now();

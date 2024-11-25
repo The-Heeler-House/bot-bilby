@@ -9,7 +9,7 @@ export default class LinkedMessageAddEvent extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(client: Client, services: Services, message: Message) {
-        if (!isTHHorDevServer(message.guild.id)) return;
+        if (!isTHHorDevServer(message.guildId)) return;
 
         const messageLinks = message.content.match(
             /https?:\/\/discord\.com\/channels\/\d+\/\d+\/\d+/g

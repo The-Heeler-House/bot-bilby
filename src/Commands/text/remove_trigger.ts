@@ -8,7 +8,7 @@ import Triggers from "../../Services/Database/models/trigger";
 export default class RemoveTriggerCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("remove trigger")
-        .setDescription("Removes a triggery.")
+        .setDescription("Removes a trigger.")
         .addArgument("trigger", "The trigger to remove.")
         .addAllowedRoles(roleIds.staff)
         .addAllowedUsers(...devIds)
