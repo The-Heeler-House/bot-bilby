@@ -10,57 +10,7 @@ const defaultState: State = {
     trackedMessages: new Map<string, TrackedMessage>(),
     ignoredChannels: [],
     pagedUsers: [],
-    useS3: false,
-    detectSwearInMedia: false,
-    swearWords: [
-        "Arse", "Fatass", "Fatasses", "Fetish", "Niggr",
-        "Nigr", "anal", "arsehole", "arseholes", "arsenigga",
-        "arseniggas", "arsenigger", "arseniggers", "ass", "assnigga",
-        "assniggas", "assnigger", "assniggers", "bastard", "bastards",
-        "beaner", "beaners", "bellend", "bitch", "bitchass",
-        "bitchblower", "bitched", "bitches", "bitching", "bitchs",
-        "bitchtits", "bitchy", "childfucker", "childfuckers", "chink",
-        "chinkies", "chinks", "chinky", "clitfucker", "clitfuckers",
-        "cock", "cocks", "cocksucker", "cocksuckers", "cum",
-        "cumdumpster", "cumdumpsters", "cumduzzler", "cumduzzlers",
-        "cumming", "cums", "cunt", "cunter", "cunters",
-        "cuntgrabber", "cuntgrabbers", "cuntlicker", "cuntlickers", "cunts",
-        "dick", "dickhead", "dicks", "dicksucker", "dicksuckers",
-        "dickweasel", "dickweasels", "dickweed", "dickweeds", "dumbarse",
-        "dumbarses", "dumbass", "dune coon", "dune coons", "dunecoon",
-        "dunecoons", "dyke", "dykes", "fag", "faggot",
-        "faggoting", "faggots", "faggy", "fags", "fat fuck",
-        "fatarse", "fatarses", "fatfuck", "fuck", "fucka",
-        "fuckaz", "fucked", "fucker", "fuckers", "fuckhead",
-        "fuckheads", "fuckin'", "fucking", "fucks", "fucktard",
-        "fucktardis", "fucktards", "gaydo", "gaydoes", "gaydos",
-        "gook", "gooks", "gringo", "gringoes", "gringos",
-        "jizz", "joto", "kaffir", "kaffirs", "kike",
-        "lezzie", "lezzies", "lezzo", "lezzos", "mcfaggot",
-        "motherfucker", "motherfuckers", "motherfucking", "motherfuckin’", "niga",
-        "nigaz", "niger", "nigerz", "nigga", "niggas",
-        "niggaz", "nigger", "niggers", "nigguh", "niggur",
-        "niggurz", "nigr", "nigrs", "nigrz", "niguh",
-        "paki", "pakis", "poonani", "porn", "porno",
-        "pornos", "prick", "queers", "r 34", "r34",
-        "rape", "retard", "retarded", "sand nigga", "sand niggas",
-        "sand nigger", "sand niggers", "sandnigga", "sandniggas", "sandnigger",
-        "sandniggers", "School shooter", "School shooting", "shat", "sheep shagger",
-        "sheep shaggers", "sheepshagger", "sheepshaggers", "shit", "shitaz",
-        "shithead", "shitheads", "shithouse", "shithouses", "shitpost",
-        "shitposter", "shitposters", "shitposting", "shitpostin’", "shitposts",
-        "shits", "shitted", "shitter", "shitters", "shittier",
-        "shittiest", "shitting", "shittin’", "shitty", "slut",
-        "sluts", "snow nigga", "snow niggas", "snow niggaz", "snow nigger",
-        "snow niggers", "snowniggas", "snowniggaz", "snownigger", "snowniggers",
-        "tacohead", "tacoheads", "thot", "thotbot", "thotbots",
-        "thots", "uncle fucka", "uncle fuckaz", "uncle fucker", "uncle fuckers",
-        "unclefucka", "unclefuckaz", "unclefucker", "unclefuckers", "wank",
-        "wanked", "wanking", "wanks", "wetback", "wetbacks",
-        "white cracka", "white crackas", "white crackaz", "white cracker", "white crackers",
-        "whitecracka", "whitecrackaz", "whitecracker", "whitecrackers", "whore",
-        "whores", "whoresons", "whorseson", "zipperhead", "zipperheads"
-    ],
+    useS3: false
 }
 
 export default class StateService {
@@ -140,9 +90,7 @@ export interface State {
     trackedMessages: Map<string, TrackedMessage>,
     ignoredChannels: Snowflake[];
     pagedUsers: Snowflake[];
-    useS3: boolean,
-    detectSwearInMedia: boolean,
-    swearWords: string[]
+    useS3: boolean
 }
 
 export interface TrackedMessage {
