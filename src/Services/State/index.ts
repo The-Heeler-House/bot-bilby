@@ -11,7 +11,7 @@ const defaultState: State = {
     ignoredChannels: [],
     pagedUsers: [],
     useS3: false,
-    detectSwearInMedia: true,
+    detectSwearInMedia: false,
     swearWords: [
         "Arse", "Fatass", "Fatasses", "Fetish", "Niggr",
         "Nigr", "anal", "arsehole", "arseholes", "arsenigga",
