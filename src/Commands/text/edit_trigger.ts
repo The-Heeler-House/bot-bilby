@@ -9,13 +9,13 @@ export default class EditTriggerCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("edit trigger")
         .setDescription("Edits a trigger.")
-        .addArgument("trigger", "The trigger to edit.")
+        .addImplicitStringArgument("trigger", "The trigger to edit.")
         .addAllowedRoles(roleIds.staff)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
-        let trigger = args.join(" ");
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+        let trigger = args["trigger"];
 
         const dbTrigger = await services.database.collections.triggers.findOne({ trigger }) as unknown as BotCharacter;
         if (!dbTrigger) {

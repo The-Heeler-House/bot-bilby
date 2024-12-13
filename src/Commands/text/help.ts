@@ -1,6 +1,6 @@
 import { EmbedBuilder, Message } from "discord.js";
 import { Services } from "../../Services";
-import TextCommand, { TextCommandBuilder } from "../TextCommand";
+import TextCommand, { TextCommandArgType, TextCommandBuilder } from "../TextCommand";
 import { PageBuilder } from "../../Helper/PaginationHelper";
 import { canExecuteCommand } from "../../Helper/PermissionHelper";
 
@@ -8,14 +8,14 @@ export default class PingCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("help")
         .setDescription("Shows a list of all text commands available to you, or about one specific command if provided.")
-        .addArgument("command", "The command you want information on", false)
+        .addImplicitStringArgument("command", "The command you want information on", false)
         .allowInDMs(true);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         let allTextCommands = services.commands.textCommands;
-        let searchTerm = args.join(" ");
+        let searchTerm = args["command"];
 
-        if (searchTerm != "") {
+        if (searchTerm != undefined) {
             // Get specific command.
             let command = allTextCommands.get(searchTerm);
 
@@ -24,7 +24,6 @@ export default class PingCommand extends TextCommand {
                 return;
             }
 
-
             let embed = new EmbedBuilder()
                 .setTitle(command.data.name)
                 .setDescription(`${!canExecuteCommand(command, message.member) ? ":warning: **Your permission level prevents you from running this command.**\n*See the bolded permission fields below for entries which apply to you.*\n\n" : ""}${command.data.description}`)
@@ -32,7 +31,7 @@ export default class PingCommand extends TextCommand {
 
             if (command.data.arguments.length != 0) {
                 embed.addFields(
-                    { name: "Arguments", value: command.data.arguments.map(argument => `${argument.required ? `<${argument.name}>` : `[${argument.name}]`} - ${argument.description}`).join("\n") }
+                    { name: "Arguments", value: command.data.arguments.map(argument => `${argument.required ? `<${argument.name}>` : `[${argument.name}]`} (type: \`${TextCommandArgType[argument.type]}\`) - ${argument.description}`).join("\n") }
                 );
             }
 
@@ -61,6 +60,10 @@ export default class PingCommand extends TextCommand {
 
             embed.addFields(
                 { name: "Usage", value: `\`${process.env.PREFIX}${command.data.name}${command.data.arguments.length != 0? ` ${command.data.arguments.map(argument => argument.required ? `<${argument.name}>` : `[${argument.name}]`).join(" ")}` : ""}\`` }
+            )
+
+            embed.addFields(
+                { name: "NOTE", value: `A type of \`string\` in an argument will require the use of quotation mark (single quote, double quote, and backticks), while a type of \`implicit_string\` does not require the use of quotation mark, and instead will capture all of the text after itself.` }
             )
 
             await message.reply({

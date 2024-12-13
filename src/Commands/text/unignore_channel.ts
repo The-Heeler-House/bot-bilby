@@ -9,28 +9,24 @@ export default class UnignoreChannelComamnd extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("unignore channel")
         .setDescription("Removes a channel for Bot Bilby to ignore.")
-        .addArgument("channel", "The channel to unignore.")
+        .addNumberArgument("channel", "The channel to unignore.")
         .addAllowedRoles(roleIds.leadership)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
-        if (args.length === 0 && message.mentions.channels.size === 0) {
-            message.reply("You need to provide me a channel to unignore!");
-            return;
-        }
-
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+        let channel = String(args["channel"])
         if (message.mentions.channels.size !== 0)
-            args[0] = message.mentions.channels.first().id;
+            channel = message.mentions.channels.first().id;
 
-        if (!services.state.state.ignoredChannels.includes(args[0])) {
+        if (!services.state.state.ignoredChannels.includes(channel)) {
             message.reply("I'm already listening to that channel.");
             return;
         }
 
-        services.state.state.ignoredChannels = services.state.state.ignoredChannels.filter(item => item != args[0]);
+        services.state.state.ignoredChannels = services.state.state.ignoredChannels.filter(item => item != channel);
         services.state.save();
 
-        message.reply("Got it, I'll listen to the <#" + args[0] + "> channel from now on");
+        await message.reply("Got it, I'll listen to the <#" + channel + "> channel from now on");
     }
 }

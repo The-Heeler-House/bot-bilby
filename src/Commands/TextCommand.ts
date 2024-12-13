@@ -11,7 +11,7 @@ export default class TextCommand {
      * @param message The message received from Discord.
      * @param args The processed arguments to this command.
      */
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [arg: string]: string }, services: Services) {
         await message.reply(":white_check_mark:");
     }
 }
@@ -95,15 +95,35 @@ export class TextCommandBuilder {
      * Adds an argument to the command.
      * @param name The name of the argument
      * @param description The description of the argument
+     * @param type The type of the argument
      * @returns This TextCommandBuilder
      */
-    addArgument(name: string, description: string, required: boolean = true): TextCommandBuilder {
+
+    #addArgument(name: string, description: string, required: boolean, type: TextCommandArgType): TextCommandBuilder {
         this.arguments.push({
             name,
             description,
-            required
+            required,
+            type
         });
         return this;
+    }
+
+
+    addStringArgument(name: string, description: string, required = true): TextCommandBuilder {
+        return this.#addArgument(name, description, required, TextCommandArgType.string)
+    }
+
+    addNumberArgument(name: string, description: string, required = true): TextCommandBuilder {
+        return this.#addArgument(name, description, required, TextCommandArgType.number)
+    }
+
+    addBooleanArgument(name: string, description: string, required = true): TextCommandBuilder {
+        return this.#addArgument(name, description, required, TextCommandArgType.boolean)
+    }
+
+    addImplicitStringArgument(name: string, description: string, required = true): TextCommandBuilder {
+        return this.#addArgument(name, description, required, TextCommandArgType.implicit_string)
     }
 
     /**
@@ -117,14 +137,22 @@ export class TextCommandBuilder {
     }
 }
 
+export enum TextCommandArgType {
+    "string",
+    "number",
+    "boolean",
+    "implicit_string"
+}
+
 interface TextCommandPermissions {
     allowedRoles: Snowflake[],
     deniedRoles: Snowflake[],
     allowedUsers: Snowflake[]
 }
 
-interface TextCommandArgument {
+export interface TextCommandArgument {
     name: string,
     description: string,
-    required: boolean
+    required: boolean,
+    type: TextCommandArgType
 }

@@ -7,18 +7,21 @@ export default class DebugCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("debug")
         .setDescription("Various debug commands for Bilby development")
+        .addImplicitStringArgument("args", "required args that only the dev knows lol")
         .addAllowedUsers(...devIds)
         .addAllowedRoles(roleIds.leadership) // Allowed in the very rare circumstance that staff need to fix bilby themselves.
         .allowInDMs(true);
 
-    async execute(message: Message, args: string[], services: Services) {
-        if (args[0] == "") {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+        const argList = args["args"].split(" ")
+
+        if (argList[0] == "") {
             await message.reply(":warning: **__READ THE FOLLOWING WARNING CAREFULLY__** :warning:\nIf you're running the debug command and see this, chances are you don't know what you're doing. In that case please stop while you're ahead.\nSome subcommands in this command can cause serious damage to Bilby's production environment if executed incorrectly.\n\nIf you *really* want to know what these commands do, ping one of the developers.");
             return;
         }
 
         let response: boolean = await (async () => {
-            switch (args[0]) {
+            switch (argList[0]) {
                 case "error_log":
                     // Outputs an error log as if an error was actually thrown.
                     await services.pager.sendError(new Error("Debug-intiaited error."), "Debug command", services.state.state.pagedUsers, { message, args });
@@ -30,17 +33,17 @@ export default class DebugCommand extends TextCommand {
                     await services.pager.sendPage("Debug-initiated log");
                     return true;
                 case "dump_mr_data":
-                    let data = await services.database.collections.muteroulette.findOne({ user: args[1] });
+                    let data = await services.database.collections.muteroulette.findOne({ user: argList[1] });
                     await message.reply({
                         files: [
                             new AttachmentBuilder(Buffer.from(JSON.stringify(data)))
-                                .setName(`mr_${args[1]}.json`)
+                                .setName(`mr_${argList[1]}.json`)
                                 .setDescription("Mute Roulette user data.")
                         ]
                     });
                     return true;
                 case "perms_check":
-                    if (!args[0]) return false;
+                    if (!argList[0]) return false;
 
                     let commands = await message.guild.commands.fetch()
                     let bilbyCommands = commands.filter(command => command.applicationId == message.client.user.id);

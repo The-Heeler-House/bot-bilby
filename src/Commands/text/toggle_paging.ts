@@ -11,7 +11,7 @@ export default class TogglePagingCommand extends TextCommand {
         .addAllowedUsers("763377551963717653", "186730180872634368")
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         if (services.state.state.pagedUsers.includes(message.author.id)) {
             services.state.state.pagedUsers = services.state.state.pagedUsers.filter(userid => userid != message.author.id);
             services.state.save();

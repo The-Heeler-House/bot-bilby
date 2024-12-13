@@ -12,7 +12,7 @@ export default class ListIgnoredChannelsCommand extends TextCommand {
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         const channels = services.state.state.ignoredChannels;
         if (channels.length == 0) {
             await message.reply(`I'm not ignoring any channels yet.`);

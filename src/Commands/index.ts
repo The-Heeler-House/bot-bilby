@@ -1,11 +1,104 @@
 import SlashCommand from "./SlashCommand";
-import TextCommand from "./TextCommand";
+import TextCommand, { TextCommandArgType, TextCommandArgument } from "./TextCommand";
 import { BaseInteraction, ChannelType, Client, Message, REST, Routes } from "discord.js";
 import { readdir } from "fs/promises";
 import * as logger from "../logger";
 import { Services } from "../Services";
 import { isTHHorDevServer } from "../Helper/EventsHelper";
 import { canExecuteCommand } from "../Helper/PermissionHelper";
+
+function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
+    const processStringRegex = /("[^"]*")|('[^']*')|(`[^`]*`)|(\S+)/g;
+    const testStringRegex = /^"([^"]*)"$|^'([^']*)'$|^`([^`]*)`$/
+    let processed: string[] = []
+    let match: RegExpExecArray
+
+    let output = {}
+
+    while ((match = processStringRegex.exec(rawArgs)) !== null) {
+        if (match[1]) {
+            processed.push(match[1])
+        } else if (match[2]) {
+            processed.push(match[2])
+        } else if (match[3]) {
+            processed.push(match[3])
+        } else if (match[4]) {
+            processed.push(match[4])
+        }
+    }
+
+    //? check if optional arg are placed at the end of the list
+    const requiredList = data.map(v => v.required)
+    let curRequired = true
+    for (const i of requiredList) {
+        if (!curRequired && i) {
+            throw new Error("(developer error) optional argument not at the end of the argument list")
+        }
+        curRequired = i
+    }
+
+    //? check if implicit string argument is at the absolute final of the list (if there's any)
+    for (let i = 0; i < data.length - 1; i++) {
+        if (data[i].type == TextCommandArgType.implicit_string) {
+            throw new Error("(developer error) implicit string argument is not at the end of the argument list")
+        }
+    }
+
+    //? check if argument length is the same
+    const argLength = data.length
+    const requiredArgLength = data.filter(v => v.required).length
+
+    if (processed.length < requiredArgLength)
+        throw new Error(`expected ${requiredArgLength} to ${argLength} arguments in command, found ${processed.length} argument(s) instead`)
+
+    for (let i = 0; i < processed.length; i++) {
+        if (i >= data.length) {
+            if (data[i - 1].type == TextCommandArgType.implicit_string) break
+            throw new Error(`expected ${requiredArgLength} to${argLength} arguments in command, found ${processed.length} argument(s) instead`)
+        }
+
+        if (i == processed.length - 1 && data[i + 1]) {
+            if (data[i + 1].required)
+                throw new Error(`expected ${requiredArgLength} to ${argLength} arguments in command, found ${processed.length} argument(s) instead`)
+        }
+    }
+
+    const invalidTypeMsg = (expected: TextCommandArgType, at: string) => `invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
+
+    processArg: for (let i = 0; i < processed.length; i++) {
+        switch (data[i].type) {
+            case TextCommandArgType.number:
+                const num = Number(processed[i])
+                if (isNaN(num)) {
+                    throw new Error(invalidTypeMsg(TextCommandArgType.number, data[i].name))
+                }
+                output[data[i].name] = num
+                break
+            case TextCommandArgType.boolean:
+                const bool = processed[i].toLowerCase().normalize()
+                if (!["true", "false"].includes(bool)) {
+                    throw new Error(invalidTypeMsg(TextCommandArgType.boolean, data[i].name))
+                }
+                output[data[i].name] = bool == "true" ? true : false
+                break
+            case TextCommandArgType.string:
+                const str = processed[i]
+                if (!testStringRegex.test(str)) {
+                    throw new Error(invalidTypeMsg(TextCommandArgType.string, data[i].name))
+                }
+                output[data[i].name] = str
+                break
+            case TextCommandArgType.implicit_string:
+                let implicit = ""
+                for (let j = i; j < processed.length; j++) implicit += processed[j] + " "
+                implicit = implicit.trim()
+                output[data[i].name] = implicit
+                break processArg
+        }
+    }
+
+    return output
+}
 
 /**
  * The Command Preprocessor is in charge of registering commands and executing them if they meet the right conditions.
@@ -130,9 +223,10 @@ export default class CommandPreprocessor {
         let commandName = [...this.textCommands.keys()].find(key => content.startsWith(key));
 
         if (commandName === undefined) return; // The above find function didn't find a command.
-        let args = content.replace(commandName, "").trim().split(" "); // Args splitting while respecting both prefix and command length.
-
         let command = this.textCommands.get(commandName);
+
+        let rawArgs = content.replace(commandName, "").trim(); // Args splitting while respecting both prefix and command length.
+        let args = {}
 
         try {
             if (!command) throw new ReferenceError(`Text command ${commandName} does not exist.`);
@@ -140,6 +234,13 @@ export default class CommandPreprocessor {
             // TODO: Do permission and environment checks.
             // Environment checks
             if (!command.data.allowedInDMs && [ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return;
+
+            try {
+                args = parseTextArgs(command.data.arguments, rawArgs)
+            } catch (e) {
+                await message.reply(`${e}`)
+                return
+            }
 
             if (canExecuteCommand(command, message.member)) command.execute(message, args, services);
         } catch (error) {

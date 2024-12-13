@@ -9,13 +9,13 @@ export default class EditTriggerCooldownCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("set trigger cooldown")
         .setDescription("Set a trigger's cooldown length.")
-        .addArgument("trigger", "The trigger to edit the cooldown length of.")
+        .addImplicitStringArgument("trigger", "The trigger to edit the cooldown length of.")
         .addAllowedRoles(roleIds.staff)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
-        let trigger = args.join(" ");
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+        let trigger = args["trigger"];
 
         const dbTrigger = await services.database.collections.triggers.findOne({ trigger }) as unknown as BotCharacter;
         if (!dbTrigger) {

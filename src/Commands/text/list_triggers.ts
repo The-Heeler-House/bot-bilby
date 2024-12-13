@@ -12,7 +12,7 @@ export default class ListTriggersCommand extends TextCommand {
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         const triggers = await services.database.collections.triggers.find().toArray() as unknown as Triggers[];
         if (triggers.length == 0) {
             await message.reply(`I didn't find any triggers. Please say \`${process.env.PREFIX}add trigger <trigger>\` to begin creating one.`);

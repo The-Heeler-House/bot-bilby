@@ -9,17 +9,16 @@ export default class AddCharacterCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("add character")
         .setDescription("Adds a character for Bot Bilby to switch to.")
-        .addArgument("name", "The name of the character.")
-        .addArgument("avatar", "A link to the avatar.")
+        .addStringArgument("name", "The name of the character.")
+        .addStringArgument("avatar", "A link to the avatar's image.")
         .addAllowedRoles(roleIds.staff)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
-        args = args.join(" ").split(" https://");
-        let name = args[0];
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+        let name = args["name"];
         let avatar: Response | null = null
         try {
-            avatar = await fetch(`https://${args[1]}`)
+            avatar = await fetch(`https://${args["avatar"]}`)
         } catch (e) {
             await message.reply(`No character image URL specified! Please refer to the help page for more information`)
             return

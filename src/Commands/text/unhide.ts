@@ -10,7 +10,7 @@ export default class UnhideCommand extends TextCommand {
         .addAllowedRoles(roleIds.staff)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         message.client.user.setStatus("dnd");
         await message.reply("Done! I am now visible.");
     }

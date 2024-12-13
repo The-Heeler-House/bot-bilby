@@ -10,32 +10,24 @@ export default class IgnoreChannelComamnd extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("ignore channel")
         .setDescription("Adds a channel for Bot Bilby to ignore.")
-        .addArgument("channel", "The channel to ignore.")
+        .addNumberArgument("channel", "The channel to ignore.")
         .addAllowedRoles(roleIds.leadership)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
-        if (args.length === 0 && message.mentions.channels.size === 0) {
-            message.reply("You need to provide me a channel to ignore!");
-            return;
-        }
-
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+        let channel = String(args["channel"])
         if (message.mentions.channels.size !== 0)
-            args[0] = message.mentions.channels.first().id;
+            channel = message.mentions.channels.first().id;
 
-        if (services.state.state.ignoredChannels.includes(args[0])) {
+        if (services.state.state.ignoredChannels.includes(channel)) {
             message.reply("I'm already ignoring that channel.");
             return;
         }
 
-        services.state.state.ignoredChannels.push(args[0]);
+        services.state.state.ignoredChannels.push(channel);
         services.state.save();
 
-        message.reply("Got it, I'll ignore the <#" + args[0] + "> channel from now on");
+        await message.reply("Got it, I'll ignore the <#" + channel + "> channel from now on");
     }
-}
-
-function escapeRegex(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

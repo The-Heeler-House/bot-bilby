@@ -8,14 +8,14 @@ export default class SayCommand extends TextCommand {
         .setName("cleanup guesswho")
         .setDescription("Clean up guesswho sessions that were created in a channel.")
         .addAllowedRoles(roleIds.staff)
-        .addArgument("channel", "Channel to cleanup")
+        .addNumberArgument("channel", "Channel ID to cleanup")
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         await message.reply(`WARNING: This command should not be run regularly since it can cause Discord to timeout the bot!`)
         let threads: Collection<string, TextThreadChannel>
         try {
-            let channel = await message.guild.channels.fetch(args[0].trim().replace(/^<#(.*)>$/g, "$1")) as TextChannel;
+            let channel = await message.guild.channels.fetch(String(args["channel"]).trim().replace(/^<#(.*)>$/g, "$1")) as TextChannel;
             threads = channel.threads.cache.filter(v => v.name.startsWith("guesswho-") && (!v.locked || !v.archived))
         } catch (e) {
             await message.reply("Invalid channel!");

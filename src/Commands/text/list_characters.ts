@@ -11,7 +11,7 @@ export default class ListCharactersCommand extends TextCommand {
         .addAllowedRoles(roleIds.staff)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         const characters = await services.database.collections.botCharacters.find().toArray() as unknown as BotCharacter[];
         if (characters.length == 0) {
             await message.reply(`I didn't find any characters. Please say \`${process.env.PREFIX}add character <name> <avatar_url>\` to create one.`);

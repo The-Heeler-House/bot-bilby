@@ -53,7 +53,7 @@ export default class StatusCommand extends TextCommand {
         .setName("status")
         .setDescription("Get the current status of the bot and the server.")
 
-    async execute(message: Message, args: string[], services: Services): Promise<void> {
+    async execute(message: Message, args: { [key: string]: string }, services: Services): Promise<void> {
         const serverUsedMem = Math.round((os.totalmem() - os.freemem()) / 1024 / 1024)
         const serverTotalMem = Math.round(os.totalmem() / 1024 / 1024)
         const processUsedMem = Math.round(process.memoryUsage().rss / 1024 / 1024)

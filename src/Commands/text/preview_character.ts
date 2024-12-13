@@ -9,14 +9,14 @@ export default class PreviewCharacterCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("preview character")
         .setDescription("Preview what a character looks like.")
-        .addArgument("character", "The character preset to preview.")
+        .addImplicitStringArgument("character", "The character preset to preview.")
         .addAllowedRoles(roleIds.staff)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
-        const character = await services.database.collections.botCharacters.findOne({ name: args.join(" ") }) as WithId<BotCharacter>;
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+        const character = await services.database.collections.botCharacters.findOne({ name: args["character"] }) as WithId<BotCharacter>;
         if (!character) {
-            await message.reply(`I don't recognise the character named ${args.join(" ")}. Please say \`${process.env.PREFIX}list characters\` to see the character list.`);
+            await message.reply(`I don't recognise the character named ${args["character"]}. Please say \`${process.env.PREFIX}list characters\` to see the character list.`);
             return;
         }
 

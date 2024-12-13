@@ -14,7 +14,7 @@ export default class AddTriggerCommand extends TextCommand {
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, _args: { [key: string]: string }, services: Services) {
         try {
             await message.reply("Creating a trigger. Please tell me what kind of trigger you want to create. Either `text` or `regex`.\n`text` is best for static triggers that just match an exact string.\n`regex` is best for triggers that still need to work if parts are missing, or if you want to use part of the trigger in the response.\nKeep in mind that you *will* need knowledge of RegEx (Regular Expressions) in order to create a working RegEx trigger.");
             let triggerType = await getUpcomingMessage(message.channel as TextChannel, (msg) => msg.author.id == message.author.id, 30_000);
@@ -57,7 +57,7 @@ export default class AddTriggerCommand extends TextCommand {
                 (message.channel as TextChannel).send(`<@${message.author.id}> This command has timed out. Please try again!`);
             } else {
                 logger.error("Encountered error while trying to create trigger\n", error, "\n", error.stack);
-                await services.pager.sendError(error, "Trying to create trigger", services.state.state.pagedUsers, { message, args });
+                await services.pager.sendError(error, "Trying to create trigger", services.state.state.pagedUsers, { message });
                 await message.reply(`That's awkward. I encountered an error while creating the trigger. Please try again.`);
             }
         }

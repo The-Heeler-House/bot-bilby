@@ -8,11 +8,11 @@ export default class AnnounceCommand extends TextCommand {
         .setName("announce")
         .setDescription("Sends a message into server-announcements as Bot Bilby.")
         .addAllowedRoles(roleIds.leadership)
-        .addArgument("message", "The message to send into server-announcements")
+        .addImplicitStringArgument("message", "The message to send into server-announcements")
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         let channel = await message.guild.channels.fetch(channelIds.announcements) as TextChannel;
-        await channel.send(args.join(" "));
+        await channel.send(args["message"]);
     }
 }

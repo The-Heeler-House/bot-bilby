@@ -10,7 +10,7 @@ export default class ToggleS3Command extends TextCommand {
         .addAllowedRoles(roleIds.staff)
         .allowInDMs(false);
 
-    async execute(message: Message, args: string[], services: Services) {
+    async execute(message: Message, args: { [key: string]: string }, services: Services) {
         let useS3 = !services.state.state.useS3;
 
         services.state.state.useS3 = useS3;
