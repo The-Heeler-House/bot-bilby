@@ -10,7 +10,7 @@ export default class IgnoreChannelComamnd extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("ignore channel")
         .setDescription("Adds a channel for Bot Bilby to ignore.")
-        .addNumberArgument("channel", "The channel to ignore.")
+        .addNumberArgument("channel", "The channel ID to ignore.")
         .addAllowedRoles(roleIds.leadership)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
