@@ -32,7 +32,7 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
     let curRequired = true
     for (const i of requiredList) {
         if (!curRequired && i) {
-            throw new Error("(developer error) optional argument not at the end of the argument list")
+            throw new Error("(developer error) optional arguments are not at the end of the argument list")
         }
         curRequired = i
     }
