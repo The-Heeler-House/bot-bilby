@@ -8,8 +8,7 @@ import { isTHHorDevServer } from "../Helper/EventsHelper";
 import { canExecuteCommand } from "../Helper/PermissionHelper";
 
 function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
-    const processStringRegex = /("[^"]*")|('[^']*')|(`[^`]*`)|(\S+)/g;
-    const testStringRegex = /^"([^"]*)"$|^'([^']*)'$|^`([^`]*)`$/
+    const processStringRegex = /"([^"]*)"|'([^']*)'|`([^`]*)`|(\S+)/g
     let processed: string[] = []
     let match: RegExpExecArray
 
@@ -83,9 +82,6 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
                 break
             case TextCommandArgType.string:
                 const str = processed[i]
-                if (!testStringRegex.test(str)) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.string, data[i].name))
-                }
                 output[data[i].name] = str
                 break
             case TextCommandArgType.implicit_string:

@@ -63,7 +63,7 @@ export default class PingCommand extends TextCommand {
             )
 
             embed.addFields(
-                { name: "NOTE", value: `A type of \`string\` in an argument will require the use of quotation mark (single quote, double quote, and backticks), while a type of \`implicit_string\` does not require the use of quotation mark, and instead will capture all of the text after itself.` }
+                { name: "NOTE", value: `A type of \`string\` in an argument does not require the use of quotation mark (single quote, double quote, and backticks) unless if the string contains whitespace, while a type of \`implicit_string\` does not require the use of quotation mark, and instead will capture all of the text after itself.` }
             )
 
             await message.reply({
