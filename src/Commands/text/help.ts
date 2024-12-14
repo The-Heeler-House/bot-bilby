@@ -65,11 +65,12 @@ export default class PingCommand extends TextCommand {
                 },
                 {
                     name: "Help about type",
-                    value:
-                        " - `boolean`: true | false" +
-                        " - `number`: it's number. what do you expect lol (example: 1234567890)" +
-                        " - `string`: an array of characters. for strings that contain whitespaces, the use of quotation mark is required (example: test123, 'string with whitespace')" +
+                    value: [
+                        " - `boolean`: true | false",
+                        " - `number`: it's number. what do you expect lol (example: 1234567890)",
+                        " - `string`: an array of characters. for strings that contain whitespaces, the use of quotation mark is required (example: test123, 'string with whitespace')",
                         " - `implicit_string`: a type of string where ALL characters beginning from the start of the argument to the end of the command (basically, string, but you do not need quotation mark)"
+                    ].join("\n")
                 }
             )
 
