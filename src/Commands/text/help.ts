@@ -15,6 +15,19 @@ export default class PingCommand extends TextCommand {
         let allTextCommands = services.commands.textCommands;
         let searchTerm = args["command"];
 
+        if (searchTerm == "arg_type") {
+            await message.reply([
+                "**Text commands** in Bot Bilby features a type system for arguments to ensure input data is valid:",
+                " - `boolean`: **true | false**",
+                " - `number`: ... what do you expect lol (**example: 1234567890**)",
+                " - `string`: an array of characters. for strings that contain whitespaces, the use of quotation mark is required (**example: test123, 'string with whitespace', \"another string with whitespace!\"**)",
+                " - `implicit_string`: a type of string where ALL characters beginning from the start of the argument to the end of the command (basically, it's like string, but you do not need quotation mark)",
+                " - `channel_mention`: can either by the ID of a channel, or it's mention in chat (**example: 1234567890123456789, #general (<#1234567890123456789>)**)",
+                " - `user_mention`: can either by the ID of a user, or it's mention in chat (**example: 1234567890123456789, @test123 (<@1234567890123456789>)**)",
+            ].join("\n"))
+            return
+        }
+
         if (searchTerm != undefined) {
             // Get specific command.
             let command = allTextCommands.get(searchTerm);
@@ -64,13 +77,8 @@ export default class PingCommand extends TextCommand {
                     value: `\`${process.env.PREFIX}${command.data.name}${command.data.arguments.length != 0? ` ${command.data.arguments.map(argument => argument.required ? `<${argument.name}>` : `[${argument.name}]`).join(" ")}` : ""}\``
                 },
                 {
-                    name: "Help about type",
-                    value: [
-                        " - `boolean`: true | false",
-                        " - `number`: it's number. what do you expect lol (example: 1234567890)",
-                        " - `string`: an array of characters. for strings that contain whitespaces, the use of quotation mark is required (example: test123, 'string with whitespace')",
-                        " - `implicit_string`: a type of string where ALL characters beginning from the start of the argument to the end of the command (basically, string, but you do not need quotation mark)"
-                    ].join("\n")
+                    name: "What is all these type?!",
+                    value: `To get help for type (like string, or number), type \`${process.env.PREFIX}help arg_type\``
                 }
             )
 

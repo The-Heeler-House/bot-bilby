@@ -18,7 +18,7 @@ export default class AddCharacterCommand extends TextCommand {
         let name = args["name"];
         let avatar: Response | null = null
         try {
-            avatar = await fetch(`https://${args["avatar"]}`)
+            avatar = await fetch(args["avatar"])
         } catch (e) {
             await message.reply(`No character image URL or invalid URL specified! Please refer to the help page for more information`)
             return

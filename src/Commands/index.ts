@@ -49,23 +49,15 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
 
     const invalidLengthMsg = `expected ${requiredArgLength == argLength ? requiredArgLength : `${requiredArgLength} to ${argLength}`} argument(s) in command, found ${processed.length} argument(s) instead`
 
-    if (processed.length < requiredArgLength || processed.length > argLength)
+    if (processed.length < requiredArgLength)
         throw new Error(invalidLengthMsg)
 
-    for (let i = 0; i < processed.length; i++) {
-        if (i >= data.length) {
-            if (data[i - 1].type == TextCommandArgType.implicit_string) break
-            throw new Error(invalidLengthMsg)
-        }
-
-        if (i == processed.length - 1 && data[i + 1]) {
-            if (data[i + 1].required)
-                throw new Error(invalidLengthMsg)
-        }
+    if (data.length == 0 || data[data.length - 1].type != TextCommandArgType.implicit_string) {
+        if (processed.length > argLength) throw new Error(invalidLengthMsg)
     }
 
+    //? process data and check if type matches
     const invalidTypeMsg = (expected: TextCommandArgType, at: string) => `invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
-
     processArg: for (let i = 0; i < processed.length; i++) {
         switch (data[i].type) {
             case TextCommandArgType.number:
@@ -81,6 +73,22 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
                     throw new Error(invalidTypeMsg(TextCommandArgType.boolean, data[i].name))
                 }
                 output[data[i].name] = bool == "true" ? true : false
+                break
+            case TextCommandArgType.channel_mention:
+                let channel = processed[i].trim().toLowerCase().normalize()
+                channel = channel.replace(/^\<#(\d+)\>$/g, "$1")
+                if (isNaN(Number(channel))) {
+                    throw new Error(invalidTypeMsg(TextCommandArgType.channel_mention, data[i].name))
+                }
+                output[data[i].name] = channel
+                break
+            case TextCommandArgType.user_mention:
+                let user = processed[i].trim().toLowerCase().normalize()
+                user = user.replace(/^\<@(\d+)\>$/g, "$1")
+                if (isNaN(Number(user))) {
+                    throw new Error(invalidTypeMsg(TextCommandArgType.user_mention, data[i].name))
+                }
+                output[data[i].name] = user
                 break
             case TextCommandArgType.string:
                 const str = processed[i]

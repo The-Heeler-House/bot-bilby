@@ -9,7 +9,7 @@ export default class UnignoreChannelComamnd extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("unignore channel")
         .setDescription("Removes a channel for Bot Bilby to ignore.")
-        .addNumberArgument("channel", "The channel ID to unignore.")
+        .addChannelMentionArgument("channel", "The channel ID to unignore.")
         .addAllowedRoles(roleIds.leadership)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);

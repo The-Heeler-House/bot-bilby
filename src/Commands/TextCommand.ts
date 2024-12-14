@@ -122,6 +122,14 @@ export class TextCommandBuilder {
         return this.#addArgument(name, description, required, TextCommandArgType.boolean)
     }
 
+    addChannelMentionArgument(name: string, description: string, required = true): TextCommandBuilder {
+        return this.#addArgument(name, description, required, TextCommandArgType.channel_mention)
+    }
+
+    addUserMentionArgument(name: string, description: string, required = true): TextCommandBuilder {
+        return this.#addArgument(name, description, required, TextCommandArgType.user_mention)
+    }
+
     addImplicitStringArgument(name: string, description: string, required = true): TextCommandBuilder {
         return this.#addArgument(name, description, required, TextCommandArgType.implicit_string)
     }
@@ -141,6 +149,8 @@ export enum TextCommandArgType {
     "string",
     "number",
     "boolean",
+    "channel_mention",
+    "user_mention",
     "implicit_string"
 }
 
