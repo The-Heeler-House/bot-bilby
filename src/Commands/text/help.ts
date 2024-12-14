@@ -31,7 +31,7 @@ export default class PingCommand extends TextCommand {
 
             if (command.data.arguments.length != 0) {
                 embed.addFields(
-                    { name: "Arguments", value: command.data.arguments.map(argument => `${argument.required ? `<${argument.name}>` : `[${argument.name}]`} (type: \`${TextCommandArgType[argument.type]}\`) - ${argument.description}`).join("\n") }
+                    { name: "Arguments", value: command.data.arguments.map(argument => `${argument.required ? `\`<${argument.name}>\`` : `\`[${argument.name}]\``} (type: \`${TextCommandArgType[argument.type]}\`) - ${argument.description}`).join("\n") }
                 );
             }
 
@@ -59,11 +59,18 @@ export default class PingCommand extends TextCommand {
             }
 
             embed.addFields(
-                { name: "Usage", value: `\`${process.env.PREFIX}${command.data.name}${command.data.arguments.length != 0? ` ${command.data.arguments.map(argument => argument.required ? `<${argument.name}>` : `[${argument.name}]`).join(" ")}` : ""}\`` }
-            )
-
-            embed.addFields(
-                { name: "NOTE", value: `A type of \`string\` in an argument does not require the use of quotation mark (single quote, double quote, and backticks) unless if the string contains whitespace, while a type of \`implicit_string\` does not require the use of quotation mark, and instead will capture all of the text after itself.` }
+                {
+                    name: "Usage",
+                    value: `\`${process.env.PREFIX}${command.data.name}${command.data.arguments.length != 0? ` ${command.data.arguments.map(argument => argument.required ? `<${argument.name}>` : `[${argument.name}]`).join(" ")}` : ""}\``
+                },
+                {
+                    name: "Help about type",
+                    value:
+                        " - `boolean`: true | false" +
+                        " - `number`: it's number. what do you expect lol (example: 1234567890)" +
+                        " - `string`: an array of characters. for strings that contain whitespaces, the use of quotation mark is required (example: test123, 'string with whitespace')" +
+                        " - `implicit_string`: a type of string where ALL characters beginning from the start of the argument to the end of the command (basically, string, but you do not need quotation mark)"
+                }
             )
 
             await message.reply({
