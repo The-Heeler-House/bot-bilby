@@ -47,9 +47,9 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
     const argLength = data.length
     const requiredArgLength = data.filter(v => v.required).length
 
-    const invalidLengthMsg = `expected ${requiredArgLength == argLength ? requiredArgLength : `${requiredArgLength} to ${argLength}`} arguments in command, found ${processed.length} argument(s) instead`
+    const invalidLengthMsg = `expected ${requiredArgLength == argLength ? requiredArgLength : `${requiredArgLength} to ${argLength}`} argument(s) in command, found ${processed.length} argument(s) instead`
 
-    if (processed.length < requiredArgLength)
+    if (processed.length < requiredArgLength || processed.length > argLength)
         throw new Error(invalidLengthMsg)
 
     for (let i = 0; i < processed.length; i++) {
