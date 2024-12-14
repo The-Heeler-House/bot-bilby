@@ -26,7 +26,7 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
         }
     }
 
-    //? check if optional arg are placed at the end of the list
+    //? check if optional args are placed at the end of the list
     const requiredList = data.map(v => v.required)
     let curRequired = true
     for (const i of requiredList) {
@@ -47,18 +47,20 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
     const argLength = data.length
     const requiredArgLength = data.filter(v => v.required).length
 
+    const invalidLengthMsg = `expected ${requiredArgLength == argLength ? requiredArgLength : `${requiredArgLength} to ${argLength}`} arguments in command, found ${processed.length} argument(s) instead`
+
     if (processed.length < requiredArgLength)
-        throw new Error(`expected ${requiredArgLength} to ${argLength} arguments in command, found ${processed.length} argument(s) instead`)
+        throw new Error(invalidLengthMsg)
 
     for (let i = 0; i < processed.length; i++) {
         if (i >= data.length) {
             if (data[i - 1].type == TextCommandArgType.implicit_string) break
-            throw new Error(`expected ${requiredArgLength} to${argLength} arguments in command, found ${processed.length} argument(s) instead`)
+            throw new Error(invalidLengthMsg)
         }
 
         if (i == processed.length - 1 && data[i + 1]) {
             if (data[i + 1].required)
-                throw new Error(`expected ${requiredArgLength} to ${argLength} arguments in command, found ${processed.length} argument(s) instead`)
+                throw new Error(invalidLengthMsg)
         }
     }
 

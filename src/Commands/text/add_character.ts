@@ -10,7 +10,7 @@ export default class AddCharacterCommand extends TextCommand {
         .setName("add character")
         .setDescription("Adds a character for Bot Bilby to switch to.")
         .addStringArgument("name", "The name of the character.")
-        .addStringArgument("avatar", "A link to the avatar's image.")
+        .addStringArgument("avatar", "An URL to the avatar's image.")
         .addAllowedRoles(roleIds.staff)
         .allowInDMs(false);
 
@@ -20,7 +20,7 @@ export default class AddCharacterCommand extends TextCommand {
         try {
             avatar = await fetch(`https://${args["avatar"]}`)
         } catch (e) {
-            await message.reply(`No character image URL specified! Please refer to the help page for more information`)
+            await message.reply(`No character image URL or invalid URL specified! Please refer to the help page for more information`)
             return
         }
 
