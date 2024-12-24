@@ -73,7 +73,7 @@ export default class MuteMeCommand extends SlashCommand {
                     "Needed some time away from the server."
                 )
                 .catch(async (error: any) => {
-                    await interaction.followUp({
+                    await interaction.reply({
                         content: `I was unable to mute you! Are you an admin?`,
                         ephemeral: true,
                     });
