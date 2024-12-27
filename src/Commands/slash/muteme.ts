@@ -99,7 +99,7 @@ export default class MuteMeCommand extends SlashCommand {
 
             await db.updateOne(
                 { key },
-                { $set: { "value": total_duration["value"] + muteTime } },
+                { $set: { "value": total_duration["value"] + (muteTime / 1000) } },
                 { upsert: true }
             )
         }
