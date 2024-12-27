@@ -26,6 +26,16 @@ export default class MuteMeCommand extends SlashCommand {
         // https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object-action-metadata
         const MAX_MUTE_TIME = 2419200_000
 
+        const db = services.database.collections.mutemeData
+        const key = "total_dutation"
+        let total_duration = await db.findOne({ key })
+
+        if (!total_duration) await db.updateOne(
+            { key },
+            { $set: { "value": 0 } },
+            { upsert: true }
+        )
+
         const INPUT = interaction.options.getString("length")
         const regexResult = /^(\d+)([hms])$/g.exec(INPUT)
         if (!regexResult) {
@@ -66,7 +76,9 @@ export default class MuteMeCommand extends SlashCommand {
                 .setDescription(`You have been muted for ${duration}${suffix}! Thank you for using the Heeler House's detox service.`)
                 .setImage(GIFs[Math.floor(Math.random() * GIFs.length)])
                 .setTimestamp()
+                .setFooter({ text: `Around ${Number(total_duration["value"] + (muteTime / 1000)).toLocaleString("en-US")}s of mute delivered to users using muteme command.` })
 
+            let success = true
             await interaction.member
                 .timeout(
                     muteTime,
@@ -77,11 +89,19 @@ export default class MuteMeCommand extends SlashCommand {
                         content: `I was unable to mute you! Are you an admin?`,
                         ephemeral: true,
                     });
+                    success = false
                 });
 
+            if (!success) return
             await interaction.reply({
                 embeds: [EMBED]
             })
+
+            await db.updateOne(
+                { key },
+                { $set: { "value": total_duration["value"] + muteTime } },
+                { upsert: true }
+            )
         }
     }
 }
