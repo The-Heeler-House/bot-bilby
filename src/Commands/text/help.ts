@@ -21,7 +21,7 @@ export default class PingCommand extends TextCommand {
                 " - `boolean`: **true | false**",
                 " - `number`: it's numbers, what do you expect lol (**example: 1234567890**)",
                 " - `string`: an array of characters. for strings that contain whitespaces, the use of quotation mark is required (**example: test123, 'string with whitespace', \"another string with whitespace!\"**)",
-                " - `implicit_string`: a type of string where ALL characters beginning from the start of the argument to the end of the command (basically, it's like string, but you do not need quotation mark)",
+                " - `implicit_string`: a type of string that doesn't require the use of quotation mark even if the string contains whitespaces",
                 " - `channel_mention`: can either by the ID of a channel, or it's mention in chat (**example: 1234567890123456789, #general (<#1234567890123456789>)**)",
                 " - `user_mention`: can either by the ID of a user, or it's mention in chat (**example: 1234567890123456789, @test123 (<@1234567890123456789>)**)",
             ].join("\n"))
