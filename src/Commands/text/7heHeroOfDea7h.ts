@@ -17,6 +17,9 @@ export default class PingCommand extends TextCommand {
         // get the message that was replied to
         const repliedMessage = await message.channel.messages.fetch(message.reference.messageId);
 
+        // check if the user is actually hero
+        if (repliedMessage.author.id != "378754039338369025") return
+
         // get the content of the message that was replied to
 
         const content = repliedMessage.content;
