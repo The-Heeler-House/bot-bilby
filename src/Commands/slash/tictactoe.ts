@@ -306,9 +306,10 @@ export default class TicTacToeCommand extends SlashCommand {
                     winner = users[currentTurn]
                     gameOver = 2
                     BUTTON_COLLECTOR.stop()
-                } else {
-                    currentTurn ^= 3 //? switches between 1 and 2 (it's XOR math, don't ask)
+                    return
                 }
+
+                currentTurn ^= 3 //? switches between 1 and 2 (it's XOR math, don't ask)
 
                 if (moveCount >= maxMoveCount) {
                     gameOver = 1
