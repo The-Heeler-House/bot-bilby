@@ -29,11 +29,8 @@ const buttonColorMapping = {
     [boardMapping.OPPONENT]: ButtonStyle.Danger
 }
 
-let board = []
-let boardSize = 0
-
 // Check for a win condition (5 in a row)
-function checkWin(board: number[][], player: number) {
+function checkWin(board: number[][], boardSize: number, player: number) {
     const n = boardSize
 
     // Check rows, columns, and diagonals
@@ -67,15 +64,15 @@ function checkWin(board: number[][], player: number) {
 }
 
 // Evaluation function (heuristic)
-function evaluate(board: number[][]) {
-    if (checkWin(board, boardMapping.OPPONENT)) return 1000  // Bot wins
-    if (checkWin(board, boardMapping.PLAYER)) return -1000 // Player wins
+function evaluate(board: number[][], boardSize: number) {
+    if (checkWin(board, boardSize, boardMapping.OPPONENT)) return 1000  // Bot wins
+    if (checkWin(board, boardSize, boardMapping.PLAYER)) return -1000 // Player wins
     return 0 // Neutral state
 }
 
 // Minimax with alpha-beta pruning
-function minimax(board: number[][], depth: number, isMaximizing: boolean, alpha: number, beta: number) {
-    const score = evaluate(board)
+function minimax(board: number[][], boardSize: number, depth: number, isMaximizing: boolean, alpha: number, beta: number) {
+    const score = evaluate(board, boardSize)
     if (score === 1000 || score === -1000 || depth === 0) return score
 
     const n = boardSize
@@ -86,7 +83,7 @@ function minimax(board: number[][], depth: number, isMaximizing: boolean, alpha:
             for (let j = 0; j < n; j++) {
                 if (board[i][j] === boardMapping.EMPTY) {
                     board[i][j] = boardMapping.OPPONENT
-                    const evaluate = minimax(board, depth - 1, false, alpha, beta)
+                    const evaluate = minimax(board, boardSize, depth - 1, false, alpha, beta)
                     board[i][j] = boardMapping.EMPTY
                     maxEval = Math.max(maxEval, evaluate)
                     alpha = Math.max(alpha, evaluate)
@@ -101,7 +98,7 @@ function minimax(board: number[][], depth: number, isMaximizing: boolean, alpha:
             for (let j = 0; j < n; j++) {
                 if (board[i][j] === boardMapping.EMPTY) {
                     board[i][j] = boardMapping.PLAYER
-                    const evaluate = minimax(board, depth - 1, true, alpha, beta)
+                    const evaluate = minimax(board, boardSize, depth - 1, true, alpha, beta)
                     board[i][j] = boardMapping.EMPTY
                     minEval = Math.min(minEval, evaluate)
                     beta = Math.min(beta, evaluate)
@@ -114,7 +111,7 @@ function minimax(board: number[][], depth: number, isMaximizing: boolean, alpha:
 }
 
 // Find the best move for the bot
-function findBestMove(board: number[][]) {
+function findBestMove(board: number[][], boardSize: number) {
     let bestMove = null
     let bestValue = -Infinity
 
@@ -124,7 +121,7 @@ function findBestMove(board: number[][]) {
         for (let j = 0; j < n; j++) {
             if (board[i][j] === boardMapping.EMPTY) {
                 board[i][j] = boardMapping.OPPONENT
-                const moveValue = minimax(board, 4, false, -Infinity, Infinity)
+                const moveValue = minimax(board, boardSize, 4, false, -Infinity, Infinity)
                 board[i][j] = boardMapping.EMPTY
                 if (moveValue >= bestValue) {
                     bestValue = moveValue
@@ -158,6 +155,8 @@ export default class TicTacToeCommand extends SlashCommand {
         interaction: ChatInputCommandInteraction<CacheType>,
         services: Services): Promise<void>
     {
+        let board = []
+        let boardSize = 0
         const startedAt = Date.now()
 
         boardSize = interaction.options.getInteger("size") ?? 5
@@ -320,7 +319,7 @@ export default class TicTacToeCommand extends SlashCommand {
             checker(sCell.x, sCell.y)
 
             if (users[currentTurn] == interaction.client.user.id && gameOver != 2) {
-                const nextMove = findBestMove(board)
+                const nextMove = findBestMove(board, boardSize)
                 if (nextMove)
                     checker(nextMove.x, nextMove.y)
             }
