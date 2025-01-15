@@ -291,7 +291,7 @@ export default class TicTacToeCommand extends SlashCommand {
                 y: Number(locationData[1]),
             }
 
-            if (board[sCell.x][sCell.y] != 0) {
+            if (board[sCell.x][sCell.y] != boardMapping.EMPTY) {
                 await e.reply({
                     content: "Please select a different cell!",
                     ephemeral: true
@@ -319,7 +319,7 @@ export default class TicTacToeCommand extends SlashCommand {
 
             checker(sCell.x, sCell.y)
 
-            if (users[currentTurn] == interaction.client.user.id) {
+            if (users[currentTurn] == interaction.client.user.id && gameOver != 2) {
                 const nextMove = findBestMove(board)
                 if (nextMove)
                     checker(nextMove.x, nextMove.y)
