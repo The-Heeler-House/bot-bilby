@@ -130,6 +130,16 @@ function findBestMove(board: number[][], boardSize: number) {
             }
         }
     }
+    if (bestMove == null) {
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (board[i][j] === boardMapping.EMPTY) {
+                    bestMove = { x: i, y: j }
+                }
+            }
+        }
+    }
+
     return bestMove
 }
 
