@@ -343,7 +343,8 @@ export default class TicTacToeCommand extends SlashCommand {
         })
 
         BUTTON_COLLECTOR.on("end", async e => {
-            if (gameOver != 2) {
+            if (gameOver == 0) {
+                gameOver = 1
                 await interaction.editReply({
                     content: message(),
                     components: boardButtons()
