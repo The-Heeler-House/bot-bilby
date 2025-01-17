@@ -34,6 +34,6 @@ export default class ToggleMediaCommand extends TextCommand {
             })
             current = !currentPerms.allow.has(PermissionsBitField.Flags.AttachFiles)
         }
-        await message.reply(`Successfully **${current ? "allow" : "disallow"}** media perms for everyone in <#${args["channel"]}> (excluding staff).`);
+        await message.reply(`Successfully **${current ? "allow" : "disallow"}** media perms for everyone in <#${args["channel"]}>.`);
     }
 }
