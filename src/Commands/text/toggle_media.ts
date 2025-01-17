@@ -8,7 +8,7 @@ export default class ToggleMediaCommand extends TextCommand {
         .setName("toggle media")
         .setDescription("Toggles whether media are allowed in a channel.")
         .addAllowedRoles(roleIds.staff)
-        .addChannelMentionArgument("channel", "Channel to disable media.")
+        .addChannelMentionArgument("channel", "Channel to disable/enable media.")
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {
