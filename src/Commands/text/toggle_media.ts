@@ -19,12 +19,18 @@ export default class ToggleMediaCommand extends TextCommand {
         if (!currentPerms) {
             await channel.permissionOverwrites.create(roleIds.fan, {
                 AttachFiles: false,
-                EmbedLinks: false
+                EmbedLinks: false,
+                UseExternalEmojis: false,
+                UseExternalSounds: false,
+                UseExternalStickers: false,
             })
         } else {
             await channel.permissionOverwrites.edit(roleIds.fan, {
                 AttachFiles: !currentPerms.allow.has(PermissionsBitField.Flags.AttachFiles),
-                EmbedLinks: !currentPerms.allow.has(PermissionsBitField.Flags.EmbedLinks)
+                EmbedLinks: !currentPerms.allow.has(PermissionsBitField.Flags.EmbedLinks),
+                UseExternalEmojis: !currentPerms.allow.has(PermissionsBitField.Flags.UseExternalEmojis),
+                UseExternalSounds: !currentPerms.allow.has(PermissionsBitField.Flags.UseExternalSounds),
+                UseExternalStickers: !currentPerms.allow.has(PermissionsBitField.Flags.UseExternalStickers),
             })
             current = !currentPerms.allow.has(PermissionsBitField.Flags.AttachFiles)
         }
