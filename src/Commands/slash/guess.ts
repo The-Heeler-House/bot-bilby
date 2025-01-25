@@ -515,7 +515,7 @@ export default class GuessCommand extends SlashCommand {
                         }
 
                         if (
-                            userAnswer.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9]/gu, "").toLowerCase() ===
+                            userAnswer.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9 ]/gu, "").toLowerCase() ===
                             currentEpisode.name.toLowerCase()
                         ) {
                             score += 0.5

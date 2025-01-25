@@ -294,7 +294,14 @@ export default class Connect4Command extends SlashCommand {
         collector.on("collect", async (reaction, user) => {
             const EMOJI = reaction.emoji.name
             const column = REACTION_MAPPING[EMOJI]
-            await buttonMessage.reactions.resolve(EMOJI).users.remove(user.id)
+            try {
+                await buttonMessage.reactions.resolve(EMOJI).users.remove(user.id)
+            } catch (e) {
+                await interaction.followUp({
+                    content: `Something has gone wrong while trying to remove your reaction!\n${e}`,
+                    ephemeral: true
+                })
+            }
 
             if (user.id != users[currentTurn]) return
 
