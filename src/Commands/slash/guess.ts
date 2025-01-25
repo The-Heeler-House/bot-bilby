@@ -188,7 +188,7 @@ export default class GuessCommand extends SlashCommand {
                         time: timer,
                     })
                 answerMessage.on("collect", (m) => {
-                    const answer = m.content.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9]/gu, "")
+                    const answer = m.content.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9 ]/gu, "")
                     const id = m.author.id
                     // if the user's answer matches the episode name, increment the score
                     if (
