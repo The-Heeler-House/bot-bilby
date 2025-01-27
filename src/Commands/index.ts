@@ -8,8 +8,9 @@ import { isTHHorDevServer } from "../Helper/EventsHelper";
 import { canExecuteCommand } from "../Helper/PermissionHelper";
 
 function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
-    const processStringRegex = /"([^"]*)"|'([^']*)'|`([^`]*)`|(\S+)/g
+    const processStringRegex = /"([^"]*)"(\W*)|'([^']*)'(\W*)|`([^`]*)`(\W*)|(\S+)(\W*)/g
     let processed: string[] = []
+    let separator: string[] = []
     let match: RegExpExecArray
 
     let output = {}
@@ -17,12 +18,23 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
     while ((match = processStringRegex.exec(rawArgs)) !== null) {
         if (match[1]) {
             processed.push(match[1])
-        } else if (match[2]) {
-            processed.push(match[2])
-        } else if (match[3]) {
+            separator.push(match[2])
+            continue
+        }
+        if (match[3]) {
             processed.push(match[3])
-        } else if (match[4]) {
-            processed.push(match[4])
+            separator.push(match[4])
+            continue
+        }
+        if (match[5]) {
+            processed.push(match[5])
+            separator.push(match[6])
+            continue
+        }
+        if (match[7]) {
+            processed.push(match[7])
+            separator.push(match[8])
+            continue
         }
     }
 
@@ -58,21 +70,22 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
 
     //? process data and check if type matches
     const invalidTypeMsg = (expected: TextCommandArgType, at: string) => `invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
-    processArg: for (let i = 0; i < processed.length; i++) {
-        switch (data[i].type) {
+    for (let i = 0; i < processed.length; i++) {
+        const data_pos = Math.min(i, data.length - 1)
+        switch (data[data_pos].type) {
             case TextCommandArgType.number:
                 const num = Number(processed[i])
                 if (isNaN(num)) {
                     throw new Error(invalidTypeMsg(TextCommandArgType.number, data[i].name))
                 }
-                output[data[i].name] = num
+                output[data[data_pos].name] = num
                 break
             case TextCommandArgType.boolean:
                 const bool = processed[i].toLowerCase().normalize()
                 if (!["true", "false"].includes(bool)) {
                     throw new Error(invalidTypeMsg(TextCommandArgType.boolean, data[i].name))
                 }
-                output[data[i].name] = bool == "true" ? true : false
+                output[data[data_pos].name] = bool == "true" ? true : false
                 break
             case TextCommandArgType.channel_mention:
                 let channel = processed[i].trim().toLowerCase().normalize()
@@ -80,7 +93,7 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
                 if (isNaN(Number(channel))) {
                     throw new Error(invalidTypeMsg(TextCommandArgType.channel_mention, data[i].name))
                 }
-                output[data[i].name] = channel
+                output[data[data_pos].name] = channel
                 break
             case TextCommandArgType.user_mention:
                 let user = processed[i].trim().toLowerCase().normalize()
@@ -88,18 +101,19 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
                 if (isNaN(Number(user))) {
                     throw new Error(invalidTypeMsg(TextCommandArgType.user_mention, data[i].name))
                 }
-                output[data[i].name] = user
+                output[data[data_pos].name] = user
                 break
             case TextCommandArgType.string:
-                const str = processed[i]
-                output[data[i].name] = str
+                let str = processed[i]
+                output[data[data_pos].name] = str
                 break
             case TextCommandArgType.implicit_string:
-                let implicit = ""
-                for (let j = i; j < processed.length; j++) implicit += processed[j] + " "
-                implicit = implicit.trim()
-                output[data[i].name] = implicit
-                break processArg
+                let impl_str = processed[i] + separator[i]
+                if (output[data[data_pos].name])
+                    output[data[data_pos].name] += impl_str
+                else
+                    output[data[data_pos].name] = impl_str
+                break
         }
     }
 
