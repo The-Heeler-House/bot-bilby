@@ -32,6 +32,7 @@ export default class DatabaseService {
         this.collections.guessWho = databases.bilby.collection("guessWho");
         this.collections.oldGuessWho = databases.bilby.collection("oldGuessWho");
         this.collections.mutemeData = databases.bilby.collection("mutemeData");
+        this.collections.commandBlacklist = databases.bilby.collection("commandBlacklist");
     }
 }
 
@@ -42,5 +43,6 @@ export interface DatabaseCollections {
     triggers?: mongoDB.Collection,
     guessWho?: mongoDB.Collection,
     oldGuessWho?: mongoDB.Collection,
-    mutemeData?: mongoDB.Collection
+    mutemeData?: mongoDB.Collection,
+    commandBlacklist?: mongoDB.Collection
 }
