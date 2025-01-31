@@ -4,7 +4,7 @@ import TextCommand, { TextCommandArgType, TextCommandBuilder } from "../TextComm
 import { PageBuilder } from "../../Helper/PaginationHelper";
 import { canExecuteCommand } from "../../Helper/PermissionHelper";
 
-export default class PingCommand extends TextCommand {
+export default class HelpCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("help")
         .setDescription("Shows a list of all text commands available to you, or about one specific command if provided.")
