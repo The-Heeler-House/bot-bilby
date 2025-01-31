@@ -286,7 +286,7 @@ export default class CommandPreprocessor {
 
         const blacklist = await services.database.collections.commandBlacklist.findOne({ user: interaction.user.id })
 
-        if (blacklist["command"].includes(interaction.commandName)) {
+        if (blacklist && blacklist["command"].includes(interaction.commandName)) {
             await interaction.reply({
                 content: "Sorry, but you have been blocked from running this command.",
                 ephemeral: true
