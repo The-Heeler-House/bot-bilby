@@ -45,7 +45,7 @@ async function getData() {
         .filter(v => !EXCLUDED_PAGE.includes(v.text))
 }
 
-export default class FortuneCommand extends SlashCommand {
+export default class CharacterStatCommand extends SlashCommand {
     public data = (new SlashCommandBuilder()
         .setName("characterstat")
         .setDescription("Check the stat for a Bluey character in a battle against other characters!")
@@ -66,6 +66,11 @@ export default class FortuneCommand extends SlashCommand {
         const character = interaction.options.getString("character")
         const equip = interaction.options.getString("equip")
         const hash = createHash("sha512")
+
+        const pleaseWait = new EmbedBuilder()
+            .setTitle("Please Wait...")
+            .setColor(0xFFFF00)
+            .setTimestamp()
 
         const generateEmbed = async (character: string, equip: string) => {
             const CHARACTER_NAME_PATH = "main .page-header #firstHeading"
@@ -111,13 +116,15 @@ export default class FortuneCommand extends SlashCommand {
 
         try {
             await interaction.reply({
+                embeds: [pleaseWait]
+            })
+
+            await interaction.editReply({
                 embeds: [await generateEmbed(character, equip)],
-                components: []
             })
         } catch (error) {
-            await interaction.reply({
+            await interaction.editReply({
                 content: "Character not found! Are you sure you selected a valid character from the list?",
-                ephemeral: true
             })
         }
     }
