@@ -124,6 +124,7 @@ export default class CharacterStatCommand extends SlashCommand {
             })
         } catch (error) {
             await interaction.editReply({
+                embeds: [],
                 content: "Character not found! Are you sure you selected a valid character from the list?",
             })
         }
