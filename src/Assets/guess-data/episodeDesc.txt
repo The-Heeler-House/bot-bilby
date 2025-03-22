@@ -70,7 +70,7 @@ s2 | e31 | Barky Boats | Bluey and Mackenzie are excited to spend time with thei
 s2 | e29 | Movies | It's Bluey's first trip to the cinema, but she's worried the movie will be too scary. When Bingo starts running amok in the theatre, she must conquer her fear and help Dad out.
 s2 | e28 | Seesaw | Dad has rudely plonked himself on one end of the seesaw. So Bluey and Bingo round up the entire playground to help flip him off, but they still need to find one more friend.
 s2 | e27 | Grandad | Grandad is supposed to be resting, but when Bluey and Bingo go to visit him, he makes a run for it with the kids and takes them on a madcap adventure into the bush.
-s2 | e26 | Sleepytime | Mum reads bedtime stories to Bingo and kisses her goodnight. Bingo tells her mom that she will wake up in her own bed the next morning, and she has a dream about a space adventure with Floppy.
+s2 | e26 | Sleepytime | Mum reads bedtime stories to Bingo and kisses her goodnight. Bingo tells her mum that she will wake up in her own bed the next morning, and she has a dream about a space adventure with Floppy.
 s2 | e23 | Flat pack | Bluey and Bingo construct a mini-civilization.
 s2 | e24 | Queens | Mum is crowned Queen with the girls as her butlers.
 s2 | e25 | Trains | Bluey and Bingo commute on the Dad-Train.
@@ -101,8 +101,8 @@ s1 | e50 | Shaun | Dad transforms his hand into Shaun, an uninspired emu with a 
 s1 | e49 | Asparagus | Dad chides Bluey for not minding her manners at the dinner table, but when Bluey gets a hold of a magical asparagus stick, she proves that everyone has a wild side.
 s1 | e48 | Teasing | Bluey, Bingo and Mum get into a debate with Dad about the definition of teasing. As they recall all the times he's been a big teaser, Dad argues that he was only playing.
 s1 | e47 | Neighbours | Bluey goes to mum for advice about pesky neighbours when her couch cushion playhouse is threatened by Bingo's huge stable of animals.
-s1 | e46 | Chickenrat | It's bedtime and Bingo can't remember where she left her beloved Flopp. After retracing their steps, Bingo and Bluey lead Mum through their bizarre day in the hope of tracking her down.
-s1 | e45 | Kids | While on a trip to the shops, Bingo and Bluey create issues for their parents when they insist on playing a game of `Kids.'
+s1 | e46 | Chickenrat | It's bedtime and Bingo can't remember where she left her beloved Floppy. After retracing their steps, Bingo and Bluey lead Mum through their bizarre day in the hope of tracking her down.
+s1 | e45 | Kids | While on a trip to the shops, Bingo and Bluey create issues for their parents when they insist on playing a game of "Kids".
 s1 | e44 | Mount Mumandad | Bingo and Bluey only have five minutes before bedtime, so they decide to race to the top of Mount Mumandad. They must work together to battle through bracing storms, avalanches, and stinky areas.
 s1 | e43 | Camping | While on a camping trip, Bluey makes a new friend named Jean-Luc. While they may not understand each other, they find a connection while playing and searching for a wild Daddy Pig.
 s1 | e42 | Hide and Seek | When the family gather for a game of hide and seek, Bluey takes her turn to count to 20. However, she struggles to stay focused on the game and not her toys.
