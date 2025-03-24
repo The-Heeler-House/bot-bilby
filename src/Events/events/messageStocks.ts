@@ -1,52 +1,42 @@
-import { Client, Events, TextChannel } from "discord.js";
+import { Client, Collection, Events, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import { customEvents } from "../BotEvent";
+const { time, TimestampStyles } = require('discord.js');
+
 // day reset time is 0am EST
 const resetTime = 4;
 
 const stockList = {
     "OFFT": "962936076404686859",
-    // "BLY": "961057412465438822",
-    // "OVER": "1126584442941616259",
+    "BLY": "961057412465438822",
+    "OVER": "1126584442941616259",
 }
 
 const stockEmojis = {
     "OFFT": "🗣️",
-    // "BLY": "🔵",
-    // "OVER": "🔥",
+    "BLY": "🔵",
+    "OVER": "🔥",
 }
 
 const updatesChannel = "1353760723116888236"
 
 async function fetchPeriod(start: Date, end: Date, channel: TextChannel) {
-    let messages;
-    let allMessages = [];
-    let lastMessage;
-    let found = false;
+    let allMessages = 0;
+    let lastMessageId: string | undefined;
 
-    while (!found) {
-        if (lastMessage === undefined) {
-            messages = await channel.messages.fetch({ limit: 100 });
-        } else {
-            messages = await channel.messages.fetch({ limit: 100, before: lastMessage.id });
-        }
-        messages = messages.filter(message => message.createdAt >= start && message.createdAt <= end)
-        if (messages.size !== 0) {
-            found = true;
-        }
-        console.log(messages.size);
-        allMessages = allMessages.concat(messages);
-        lastMessage = messages.last();
-    }
+    while (true) {
+        const options = { limit: 100, before: lastMessageId, cache: true };
+        const messages = await channel.messages.fetch(options);
+        if (messages.size === 0) break;
 
-    while (found && messages.size > 0) {
-        messages = await channel.messages.fetch({ limit: 100, before: lastMessage.id });
-        // console.log(messages.first().content)
-        messages = messages.filter(message => message.createdAt >= start && message.createdAt <= end)
-        allMessages = allMessages.concat(messages);
-        lastMessage = messages.last();
-        console.log(messages.size);
+        const filteredMessages = messages.filter(message => message.createdAt >= start && message.createdAt <= end);
+        allMessages += filteredMessages.size;
+
+        const lastMessage = messages.last();
+        if (!lastMessage || lastMessage.createdAt < start) break;
+
+        lastMessageId = lastMessage.id;
     }
 
     return allMessages;
@@ -61,7 +51,7 @@ export default class messageStocks extends BotEvent {
 
         // wait until the next 1 hour interval
         const nextHour = new Date();
-        nextHour.setHours(nextHour.getHours() + 1);
+        nextHour.setHours(nextHour.getUTCHours() + 1);
         nextHour.setMinutes(0);
         nextHour.setSeconds(0);
         nextHour.setMilliseconds(0);
@@ -70,12 +60,9 @@ export default class messageStocks extends BotEvent {
 
         console.log(`Waiting ${timeToWait}ms until the next hour`);
 
-        // setTimeout(() => {
-        //     this.execute(client, services, ...params);
-        // }, timeToWait);
-
-        // ready
-        console.log("Checking stocks");
+        setTimeout(() => {
+            this.execute(client, services, ...params);
+        }, timeToWait);
 
         initTime = new Date();
 
@@ -84,35 +71,30 @@ export default class messageStocks extends BotEvent {
         const stockMessages = await Promise.all(stocks.map(async stock => {
             const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
             const messages = await fetchPeriod(new Date(initTime.getTime() - 3600000), initTime, stockChannel);
+
             return messages
         }));
 
         const stockMessagesPreviousHour = await Promise.all(stocks.map(async stock => {
             const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
             const messages = await fetchPeriod(new Date(initTime.getTime() - 7200000), new Date(initTime.getTime() - 3600000), stockChannel);
+
             return messages
         }));
 
         const previousDayMessages = await Promise.all(stocks.map(async stock => {
-            const hoursSinceReset = initTime.getHours() < resetTime ? 24 - resetTime + initTime.getHours() : initTime.getHours() - resetTime;
-            // console.log(hoursSinceReset);
+            const hoursSinceReset = initTime.getUTCHours() < resetTime ? 24 - resetTime + initTime.getUTCHours() : initTime.getUTCHours() - resetTime;
             const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
-            const mountainTime = new Date(initTime.getTime() - 86400000).toLocaleString("en-US", { timeZone: "America/Denver" });
-            // console.log(mountainTime);
-            const lastDayMessages = await fetchPeriod(new Date(initTime.getTime() - 86400000 - hoursSinceReset * 3600000), new Date(initTime.getTime() - 86400000), stockChannel);
-            console.log(lastDayMessages.first().content);
-            console.log(lastDayMessages.last().content);
-            return lastDayMessages
+            const messages = await fetchPeriod(new Date(initTime.getTime() - 86400000 - hoursSinceReset * 3600000), new Date(initTime.getTime() - 86400000), stockChannel);
+
+            return messages
         }));
 
         const currentDayMessages = await Promise.all(stocks.map(async stock => {
-            const hoursSinceReset = initTime.getHours() < resetTime ? 24 - resetTime + initTime.getHours() : initTime.getHours() - resetTime;
-            // console.log(hoursSinceReset);
+            const hoursSinceReset = initTime.getUTCHours() < resetTime ? 24 - resetTime + initTime.getUTCHours() : initTime.getUTCHours() - resetTime;
             const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
             const messages = await fetchPeriod(new Date(initTime.getTime() - hoursSinceReset * 3600000), initTime, stockChannel);
-            // print the first and last message
-            console.log(messages.first().content);
-            console.log(messages.last().content);
+
             return messages
         }));
 
@@ -123,10 +105,10 @@ export default class messageStocks extends BotEvent {
                 emoji: stockEmojis[stock],
                 stock,
                 id: stockList[stock],
-                messages: stockMessages[i].size,
-                previousHourMessages: stockMessagesPreviousHour[i].size,
-                previousDayMessages: previousDayMessages[i].size,
-                currentDayMessages: currentDayMessages[i].size
+                messages: stockMessages[i],
+                previousHourMessages: stockMessagesPreviousHour[i],
+                previousDayMessages: previousDayMessages[i],
+                currentDayMessages: currentDayMessages[i]
             }
         });
 
@@ -137,14 +119,13 @@ export default class messageStocks extends BotEvent {
             const hourChangeEmoji = hourChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
             const dayChangeEmoji = dayChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
 
-            return `${stock.emoji} \`${stock.stock}\` - <#${stock.id}>\n` +
+            return `${stock.emoji} \`\$${stock.stock}\` - <#${stock.id}>\n` +
                `**${stock.messages.toLocaleString()}** messages in the last hour (**${hourChange.toFixed(2)}% change ${hourChangeEmoji}**)\n` +
                `**${stock.currentDayMessages.toLocaleString()}** messages in the current day (**${dayChange.toFixed(2)}% change ${dayChangeEmoji}**)`;
         }).join("\n\n");
 
-        await stockUpdates.send(`## Channel Activity Report - \`${initTime.toISOString()}\`**\n\n${stockMessagesDataString}`);
+        await stockUpdates.send(`##<:BanditHuh:1079130551535009822> Channel Activity Report - ${time(initTime)}\n\n${stockMessagesDataString}\n\n*Use these report stats to influence your trades. Remember, more channel activity equals more value!*`);
 
-        console.log("Stocks checked");
         // Repeat in 1 hour intervals
         setTimeout(() => {
             this.execute(client, services, ...params);
