@@ -7,6 +7,7 @@ import CommandPreprocessor from "./Commands";
 import * as logger from "./logger";
 import getServices from "./Services";
 import EventManager from "./Events";
+import { customEvents } from "./Events/BotEvent";
 
 const client = new Client({ intents: [
     GatewayIntentBits.Guilds,
@@ -43,7 +44,7 @@ client.on(Events.ClientReady, async () => {
     await commands.getSlashCommands(services);
     commands.getTextCommands(services);
     await commands.registerSlashCommands(client, services);
-    events.registerEvents(client, services);
+    await events.registerEvents(client, services);
 
     logger.command("Online!");
 
@@ -58,6 +59,8 @@ client.on(Events.ClientReady, async () => {
         ],
         status: "dnd"
     });
+
+    client.emit(customEvents.ManualFire);
 });
 
 client.on(Events.MessageCreate, async (message) => {

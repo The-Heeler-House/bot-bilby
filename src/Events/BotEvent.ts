@@ -1,11 +1,16 @@
 import { Client, ClientEvents, Events, GuildMember, Message, MessageReaction, User } from "discord.js";
 import { Services } from "../Services";
 
+export enum customEvents {
+    ManualFire = "manualFire"
+}
+
+
 export default class BotEvent {
     /**
      * The name of the event to hook into.
      */
-    public eventName: Events;
+    public eventName: Events | customEvents;
 
     /**
      * The code to execute on receiving the event.
@@ -38,4 +43,3 @@ export interface MessageReactionRemoveEventData{
 export interface GuildMemberAddEventData {
     member: GuildMember
 }
-
