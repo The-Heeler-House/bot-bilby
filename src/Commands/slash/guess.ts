@@ -107,17 +107,15 @@ export default class GuessCommand extends SlashCommand {
             path.join("src/Assets/guess-data/episodeDesc.txt"),
             "utf-8"
         )
-        const episodeEntry = text.split(/\r?\n^\r?\n/gm)
 
         // define a regular expression to match each episode
-        const regex = /^S(\d+) E(\d+) · (.+)$\r?\n^(.*)$/m
+        const regex = /^s(\d+) \| e(\d+) \| (.+) \| (.+)$/gm
 
         // create an array to store the episode information
         const episodes: Episode[] = []
 
-        // iterate over each match of the regular expression
-        for (const i of episodeEntry) {
-            let match = regex.exec(i)
+        let match: RegExpExecArray
+        while ((match = regex.exec(text)) !== null) {
             const season = match[1]
             const episode = match[2]
             const name = match[3]
@@ -190,7 +188,7 @@ export default class GuessCommand extends SlashCommand {
                         time: timer,
                     })
                 answerMessage.on("collect", (m) => {
-                    const answer = m.content
+                    const answer = m.content.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9 ]/gu, "")
                     const id = m.author.id
                     // if the user's answer matches the episode name, increment the score
                     if (
@@ -296,10 +294,10 @@ export default class GuessCommand extends SlashCommand {
 
             //? the string will get concatenated, it will not get break line unless specifically required
             const MULTIPLAYER_BEGIN_STR =
-                "> Welcome to the game! " +
-                "I will give you an episode description, and you reply with the episode title. " +
-                "This is the multiplayer version, be the first to answer and beat your friends!\n" +
-                "**Current Players:** $players"
+                "> Welcome to the game!\n" +
+                "> I will give you an episode description, and you reply with the episode title.\n" +
+                "> This is the multiplayer version, be the first to answer and beat your friends!\n" +
+                "> **Current Players:** $players"
 
             // message
             const message = await interaction.reply({
@@ -421,9 +419,9 @@ export default class GuessCommand extends SlashCommand {
 
             // send a welcome message to the user
             await interaction.reply(
-                "> Welcome to the game!" +
-                "I will give you an episode description, and you reply with the episode title!" +
-                "You have three lives, how much episodes can you name?"
+                "> Welcome to the game!\n" +
+                "> I will give you an episode description, and you reply with the episode title!\n" +
+                "> You have three lives, how much episodes can you name?"
             )
 
             // ask the first question
@@ -461,7 +459,7 @@ export default class GuessCommand extends SlashCommand {
                             time: timer,
                             errors: ["time"],
                         })
-                    const answer = answerMessage.first().content
+                    const answer = answerMessage.first().content.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9 ]/gu, "")
 
                     // if the user's answer matches the episode name, increment the score
                     if (
@@ -517,7 +515,7 @@ export default class GuessCommand extends SlashCommand {
                         }
 
                         if (
-                            userAnswer.toLowerCase() ===
+                            userAnswer.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9 ]/gu, "").toLowerCase() ===
                             currentEpisode.name.toLowerCase()
                         ) {
                             score += 0.5

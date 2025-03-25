@@ -44,7 +44,7 @@ export default class ReactionTrackingAddEvent extends BotEvent {
 
         services.state.volatileState.trackedReactions.set(`${reaction.message.id}_${reaction.emoji.id || reaction.emoji.toString()}`, {
             authorId: member.id,
-            emote: reaction.emoji,
+            emote: reaction.emoji as GuildEmoji,
             timestamp: Date.now()
         });
 

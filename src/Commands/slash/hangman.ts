@@ -179,7 +179,7 @@ export default class HangmanCommand extends SlashCommand {
 
         BUTTON_COLLECTOR.on("collect", async e => {
             if (interaction.user.id != e.user.id) {
-                e.reply({
+                await e.reply({
                     content: "Only the game host can end the game!",
                     ephemeral: true
                 })
@@ -187,7 +187,7 @@ export default class HangmanCommand extends SlashCommand {
             }
             if (e.customId == "quit") {
                 await gameOver()
-                e.reply({
+                await e.reply({
                     content: "You could have at least used up all your guesses..."
                 })
             }
