@@ -2,6 +2,8 @@ import { Snowflake } from "discord.js";
 
 export type stocks = 'OFFT' | 'BLY' | 'OVER';
 
+export const startingBalance = 1000;
+
 export const stockList: { [key in stocks]: Snowflake } = {
     "OFFT": "962936076404686859",
     "BLY": "961057412465438822",
@@ -14,7 +16,13 @@ export const stockEmojis: { [key in stocks]: string } = {
     "OVER": "🔥",
 }
 
-export interface StockUser {
+export const stockTickers: { [key in stocks]: string } = {
+    "OFFT": "$OFFT",
+    "BLY": "$BLY",
+    "OVER": "$OVER",
+}
+
+export interface User {
     user: Snowflake,
     balance: number,
     stocks: { [ticker: string]: number },
