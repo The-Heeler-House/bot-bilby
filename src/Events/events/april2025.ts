@@ -3,21 +3,10 @@ import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import { customEvents } from "../BotEvent";
 const { time, TimestampStyles } = require('discord.js');
+import { stockList, stockEmojis } from "../../Services/Database/models/april2025";
 
 // day reset time is 0am EST
 const resetTime = 4;
-
-const stockList = {
-    "OFFT": "962936076404686859",
-    "BLY": "961057412465438822",
-    "OVER": "1126584442941616259",
-}
-
-const stockEmojis = {
-    "OFFT": "🗣️",
-    "BLY": "🔵",
-    "OVER": "🔥",
-}
 
 const updatesChannel = "1353760723116888236"
 

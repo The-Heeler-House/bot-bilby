@@ -22,7 +22,8 @@ export default class DatabaseService {
         logger.command("Connected to MongoDB database.");
 
         const databases = {
-            bilby: client.db("bilby")
+            bilby: client.db("bilby"),
+            april2025: client.db("april2025")
         }
 
         this.collections.botCharacters = databases.bilby.collection("botCharacters");
@@ -33,6 +34,12 @@ export default class DatabaseService {
         this.collections.oldGuessWho = databases.bilby.collection("oldGuessWho");
         this.collections.mutemeData = databases.bilby.collection("mutemeData");
         this.collections.commandBlacklist = databases.bilby.collection("commandBlacklist");
+
+        // april fools 2025
+        this.collections.stocks = databases.april2025.collection("stocks");
+        this.collections.users = databases.april2025.collection("users");
+        this.collections.trades = databases.april2025.collection("trades");
+        this.collections.changes = databases.april2025.collection("changes");
     }
 }
 
@@ -44,5 +51,10 @@ export interface DatabaseCollections {
     guessWho?: mongoDB.Collection,
     oldGuessWho?: mongoDB.Collection,
     mutemeData?: mongoDB.Collection,
-    commandBlacklist?: mongoDB.Collection
+    commandBlacklist?: mongoDB.Collection,
+
+    stocks?: mongoDB.Collection,
+    users?: mongoDB.Collection,
+    trades?: mongoDB.Collection,
+    changes?: mongoDB.Collection
 }
