@@ -92,11 +92,14 @@ async function stonks(client: Client) {
     });
 
     const stockMessagesDataString = stockMessagesData.map(stock => {
-        const hourChange = ((stock.messages - stock.previousHourMessages) / stock.previousHourMessages * 100);
-        const dayChange = ((stock.currentDayMessages - stock.previousDayMessages) / stock.previousDayMessages * 100);
+        let hourChange = ((stock.messages - stock.previousHourMessages) / stock.previousHourMessages * 100);
+        let dayChange = ((stock.currentDayMessages - stock.previousDayMessages) / stock.previousDayMessages * 100);
 
-        const hourChangeEmoji = hourChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
-        const dayChangeEmoji = dayChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
+        if (isNaN(hourChange)) hourChange = 0
+        if (isNaN(dayChange)) dayChange = 0
+
+        const hourChangeEmoji = hourChange > 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
+        const dayChangeEmoji = dayChange > 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
 
         return `${stock.emoji} \`\$${stock.stock}\` - <#${stock.id}>\n` +
            `**${stock.messages.toLocaleString()}** messages in the last hour (**${hourChange.toFixed(2)}% change ${hourChangeEmoji}**)\n` +
