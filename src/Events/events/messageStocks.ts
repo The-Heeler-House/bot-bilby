@@ -105,10 +105,26 @@ async function stonks(client: Client) {
 
     await stockUpdates.send(`## <:BanditHuh:1079130551535009822> Channel Activity Report - ${time(initTime)}\n\n${stockMessagesDataString}\n\n*Use these report stats to influence your trades. Remember, more channel activity equals more value! <:BingoQueen:962664872104058910>*`);
 
-    // Repeat in 1 hour intervals
+    const afterTime = new Date();
+
+    // wait until the next 1 hour interval
+    const nextHour = new Date();
+    nextHour.setHours(nextHour.getUTCHours() + 1);
+    nextHour.setMinutes(0);
+    nextHour.setSeconds(0);
+    nextHour.setMilliseconds(0);
+
+    const timeToWait = nextHour.getTime() - afterTime.getTime() + 1000; // add 1 second to ensure we're past the next hour
+
+    const seconds = Math.floor((timeToWait / 1000) % 60);
+    const minutes = Math.floor((timeToWait / (1000 * 60)) % 60);
+    const hours = Math.floor((timeToWait / (1000 * 60 * 60)) % 24);
+
+    // console.log(`Waiting ${hours}h ${minutes}m ${seconds}s until the next hour`);
+
     setTimeout(() => {
         stonks(client);
-    }, 3600000); // 1 hour in milliseconds
+    }, timeToWait);
 }
 
 export default class messageStocks extends BotEvent {
@@ -116,7 +132,7 @@ export default class messageStocks extends BotEvent {
     public eventName = customEvents.ManualFire;
 
     async execute(client: Client, services: Services, ...params: any) {
-        const initTime = new Date();
+        const afterTime = new Date();
 
         // wait until the next 1 hour interval
         const nextHour = new Date();
@@ -125,13 +141,13 @@ export default class messageStocks extends BotEvent {
         nextHour.setSeconds(0);
         nextHour.setMilliseconds(0);
 
-        const timeToWait = nextHour.getTime() - initTime.getTime() + 1000; // add 1 second to ensure we're past the next hour
+        const timeToWait = nextHour.getTime() - afterTime.getTime() + 1000; // add 1 second to ensure we're past the next hour
 
         const seconds = Math.floor((timeToWait / 1000) % 60);
         const minutes = Math.floor((timeToWait / (1000 * 60)) % 60);
         const hours = Math.floor((timeToWait / (1000 * 60 * 60)) % 24);
 
-        console.log(`Waiting ${hours}h ${minutes}m ${seconds}s until the next hour`);
+        // console.log(`Waiting ${hours}h ${minutes}m ${seconds}s until the next hour`);
 
         setTimeout(() => {
             stonks(client);
