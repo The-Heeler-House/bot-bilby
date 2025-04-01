@@ -53,7 +53,7 @@ client.on(Events.ClientReady, async () => {
     client.user.setPresence({
         activities: [
             {
-                name: "a cricket match",
+                name: "The Heeler Exchange",
                 type: ActivityType.Playing
             }
         ],

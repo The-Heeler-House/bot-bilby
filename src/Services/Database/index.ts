@@ -40,7 +40,7 @@ export default class DatabaseService {
         this.collections.users = databases.april2025.collection("users");
         this.collections.trades = databases.april2025.collection("trades");
         this.collections.changes = databases.april2025.collection("changes");
-        this.collections.settings = databases.april2025.collection("settings");
+        this.collections.settings = databases.april2025.collection("stocksettings");
     }
 }
 

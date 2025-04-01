@@ -1,15 +1,15 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, GuildMember } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
-import { startingBalance, User, Trade, Stock } from "../../Services/Database/models/april2025";
+import { startingBalance, User, Trade, Stock, stockEmojis } from "../../Services/Database/models/april2025";
 import * as logger from "../../logger";
 
-export default class MuterouletteCommand extends SlashCommand {
+export default class April2025Command extends SlashCommand {
     public disabledTime = new Date(0);
 
     public data = new SlashCommandBuilder()
         .setName("stocks")
-        .setDescription("Trade in The Heeler Exchange and become the ultimate activilist (channel activity capitalist)!")
+        .setDescription("Trade in The Heeler Exchange and become the richest activilist (channel activity capitalist)!")
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("buy")
@@ -64,12 +64,7 @@ export default class MuterouletteCommand extends SlashCommand {
             subcommand
                 .setName("leaderboard")
                 .setDescription("List the richest stock traders!")
-        )
-        .addSubcommand((subcommand) =>
-            subcommand
-                .setName("market")
-                .setDescription("View the current The Heeler Exchange market!")
-        )  as SlashCommandBuilder
+        ) as SlashCommandBuilder
     async execute(
         interaction: ChatInputCommandInteraction,
         services: Services
@@ -87,9 +82,6 @@ export default class MuterouletteCommand extends SlashCommand {
             case "leaderboard":
                 await this.viewLeaderboard(interaction, services);
                 break;
-            case "market":
-                await this.viewMarket(interaction, services);
-                break;
         }
     }
     
@@ -97,15 +89,21 @@ export default class MuterouletteCommand extends SlashCommand {
         const ticker = interaction.options.getString("ticker")!;
         const shares = interaction.options.getInteger("shares")!;
         const userId = interaction.member.user.id;
-        const user = await services.database.collections.users.findOne({ user: userId });
+        var user = await services.database.collections.users.findOne({ user: userId });
 
         if (!user) {
             await services.database.collections.users.insertOne({
                 user: userId,
                 balance: startingBalance,
-                stocks: {},
+                stocks: {
+                    "OFFT": 0,
+                    "BLY": 0,
+                    "OVER": 0
+                },
                 lastUpdated: new Date()
             });
+
+            user = await services.database.collections.users.findOne({ user: userId });
         }
 
         const stock = await services.database.collections.stocks.findOne({ ticker });
@@ -116,7 +114,7 @@ export default class MuterouletteCommand extends SlashCommand {
 
         const cost = stock.price * shares;
         if (cost > user.balance) {
-            await interaction.reply("You don't have enough money to buy that many shares!");
+            await interaction.reply("You don't have enough dollarbucks to buy that many shares!");
             return;
         }
 
@@ -133,22 +131,28 @@ export default class MuterouletteCommand extends SlashCommand {
             time: new Date()
         });
 
-        await interaction.reply(`You have successfully bought **${shares.toLocaleString()}** shares of \`\$${ticker}\` for **$${cost.toLocaleString()}**!`);
+        await interaction.reply(`You have successfully bought **${shares.toLocaleString()}** shares of \`\$${ticker}\` for **${cost.toLocaleString()} dollarbucks**!`);
     }
 
     async sellStock(interaction: ChatInputCommandInteraction, services: Services) {
         const ticker = interaction.options.getString("ticker")!;
         const shares = interaction.options.getInteger("shares")!;
         const userId = interaction.member.user.id;
-        const user = await services.database.collections.users.findOne({ user: userId });
+        var user = await services.database.collections.users.findOne({ user: userId });
 
         if (!user) {
             await services.database.collections.users.insertOne({
                 user: userId,
                 balance: startingBalance,
-                stocks: {},
+                stocks: {
+                    "OFFT": 0,
+                    "BLY": 0,
+                    "OVER": 0
+                },
                 lastUpdated: new Date()
             });
+
+            user = await services.database.collections.users.findOne({ user: userId });
         }
 
         const stock = await services.database.collections.stocks.findOne({ ticker });
@@ -176,6 +180,84 @@ export default class MuterouletteCommand extends SlashCommand {
             time: new Date()
         });
 
-        await interaction.reply(`You have successfully sold **${shares.toLocaleString()}** shares of \`\$${ticker}\` for **$${cost.toLocaleString()}**!`);
+        await interaction.reply(`You have successfully sold **${shares.toLocaleString()}** shares of \`\$${ticker}\` for **${cost.toLocaleString()} dollarbucks**!`);
+    }
+
+    async viewPortfolio(interaction: ChatInputCommandInteraction, services: Services) {
+        const userId = interaction.member.user.id;
+        const member = interaction.member as GuildMember;
+
+        var user = await services.database.collections.users.findOne({ user: userId });
+
+        if (!user) {
+            await services.database.collections.users.insertOne({
+                user: userId,
+                balance: startingBalance,
+                stocks: {
+                    "OFFT": 0,
+                    "BLY": 0,
+                    "OVER": 0
+                },
+                lastUpdated: new Date()
+            });
+
+            user = await services.database.collections.users.findOne({ user: userId });
+        }
+
+        const stocksData = await services.database.collections.stocks.find().toArray();
+        const stockPrices = stocksData.reduce((acc, stock) => {
+            acc[stock.ticker] = stock.price;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const stocks = Object.keys(user.stocks).map(ticker => {
+            const shares = user.stocks[ticker];
+            const price = stockPrices[ticker] || 0;
+            const value = shares * price;
+            const emoji = stockEmojis[ticker];
+            return `${stockEmojis[ticker]} \`$${ticker}\`: **${shares}** shares @ $**${price.toLocaleString()}** (Value: **${value.toLocaleString()} dollarbucks**)`;
+        });
+
+        const stockValue = Object.entries(user.stocks).reduce((total, [ticker, shares]) => {
+            return total + (shares as number * (stockPrices[ticker] || 0));
+        }, 0);
+
+        const netWorth = user.balance + stockValue;
+
+        const embed = new EmbedBuilder()
+            .setTitle(`${member.displayName}'s Stock Portfolio`)
+            .setDescription(`:moneybag: Balance: **${user.balance.toLocaleString()} dollarbucks**\n:money_with_wings: Net Worth: **${netWorth.toLocaleString()} dollarbucks**\n\n${stocks.join("\n")}`);
+
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
+    async viewLeaderboard(interaction: ChatInputCommandInteraction, services: Services) {
+        const users = await services.database.collections.users.find().toArray();
+        const stocks = await services.database.collections.stocks.find().toArray();
+
+        const stockPrices = stocks.reduce((acc, stock) => {
+            acc[stock.ticker] = stock.price;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const leaderboard = users
+            .map(user => {
+                const stockValue = Object.entries(user.stocks).reduce((total, [ticker, shares]) => {
+                    return total + (shares as number * (stockPrices[ticker] || 0));
+                }, 0);
+                const netWorth = user.balance + stockValue;
+                return { user: user.user, netWorth };
+            })
+            .sort((a, b) => b.netWorth - a.netWorth)
+            .slice(0, 10)
+            .map((user, i) => {
+                return `${i + 1}. <@${user.user}> - Net Worth: $${user.netWorth.toLocaleString()}`;
+            });
+
+        const embed = new EmbedBuilder()
+            .setTitle("Richest Stock Traders")
+            .setDescription(leaderboard.join("\n"));
+
+        await interaction.reply({ embeds: [embed] });
     }
 }

@@ -2,7 +2,7 @@ import { Snowflake } from "discord.js";
 
 export type stocks = 'OFFT' | 'BLY' | 'OVER';
 
-export const startingBalance = 1000;
+export const startingBalance = 5000;
 
 export const stockList: { [key in stocks]: Snowflake } = {
     "OFFT": "962936076404686859",
@@ -14,12 +14,6 @@ export const stockEmojis: { [key in stocks]: string } = {
     "OFFT": "🗣️",
     "BLY": "🔵",
     "OVER": "🔥",
-}
-
-export const stockTickers: { [key in stocks]: string } = {
-    "OFFT": "$OFFT",
-    "BLY": "$BLY",
-    "OVER": "$OVER",
 }
 
 export interface User {
@@ -44,9 +38,22 @@ export interface Stock {
     lastUpdated: Date,
 }
 
+export interface StockSetting {
+    ticker: string,
+    volumeFactor: number,
+    volatilityFactor: number,
+    trendFactor: number,
+    limitingVolume: number,
+    trend: number,
+}
+
 export interface Change {
     ticker: string,
     price: number,
     volume: number,
+    volumeFactor: number,
+    volatilityFactor: number,
+    trendFactor: number,
+    settings: StockSetting,
     time: Date,
 }

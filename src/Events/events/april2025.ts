@@ -1,14 +1,26 @@
-import { Client, Collection, Events, Message, TextChannel } from "discord.js";
+import { Client, Collection, Events, Message, TextChannel, AttachmentBuilder, EmbedBuilder } from "discord.js";
 import BotEvent from "../BotEvent";
 import { Services } from "../../Services";
 import { customEvents } from "../BotEvent";
-const { time, TimestampStyles } = require('discord.js');
-import { stockList, stockEmojis } from "../../Services/Database/models/april2025";
+import { time, TimestampStyles } from 'discord.js';
+import gaussian from "gaussian";
+import { stockList, stockEmojis, Stock, StockSetting, Trade, Change } from "../../Services/Database/models/april2025";
+import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
+import { Chart, ChartConfiguration } from "chart.js";
+import 'chartjs-adapter-moment';
 
 // day reset time is 0am EST
 const resetTime = 4;
 
-const updatesChannel = "1353760723116888236"
+const updatesChannel = "1353760723116888236";
+const stockChannel = "1356357964432412847";
+const staffChannel = "1356505606130896936"
+
+const stockMessage = "1356740115250151436"
+
+function clamp(num, min, max) {
+    return Math.min(Math.max(num, min), max);
+}
 
 async function fetchPeriod(start: Date, end: Date, channel: TextChannel) {
     let allMessages = 0;
@@ -31,7 +43,7 @@ async function fetchPeriod(start: Date, end: Date, channel: TextChannel) {
     return allMessages;
 }
 
-async function stonks(client: Client) {
+async function channels(client: Client, services: Services) {
     const initTime = new Date();
 
     const stocks = Object.keys(stockList);
@@ -40,14 +52,14 @@ async function stonks(client: Client) {
         const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
         const messages = await fetchPeriod(new Date(initTime.getTime() - 3600000), initTime, stockChannel);
 
-        return messages
+        return messages;
     }));
 
     const stockMessagesPreviousHour = await Promise.all(stocks.map(async stock => {
         const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
         const messages = await fetchPeriod(new Date(initTime.getTime() - 7200000), new Date(initTime.getTime() - 3600000), stockChannel);
 
-        return messages
+        return messages;
     }));
 
     const previousDayMessages = await Promise.all(stocks.map(async stock => {
@@ -55,7 +67,7 @@ async function stonks(client: Client) {
         const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
         const messages = await fetchPeriod(new Date(initTime.getTime() - 86400000 - hoursSinceReset * 3600000), new Date(initTime.getTime() - 86400000), stockChannel);
 
-        return messages
+        return messages;
     }));
 
     const currentDayMessages = await Promise.all(stocks.map(async stock => {
@@ -63,7 +75,7 @@ async function stonks(client: Client) {
         const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
         const messages = await fetchPeriod(new Date(initTime.getTime() - hoursSinceReset * 3600000), initTime, stockChannel);
 
-        return messages
+        return messages;
     }));
 
     const stockUpdates = await client.channels.fetch(updatesChannel) as TextChannel;
@@ -77,7 +89,7 @@ async function stonks(client: Client) {
             previousHourMessages: stockMessagesPreviousHour[i],
             previousDayMessages: previousDayMessages[i],
             currentDayMessages: currentDayMessages[i]
-        }
+        };
     });
 
     const stockMessagesDataString = stockMessagesData.map(stock => {
@@ -86,6 +98,14 @@ async function stonks(client: Client) {
 
         const hourChangeEmoji = hourChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
         const dayChangeEmoji = dayChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
+
+        const trend = clamp(isNaN(hourChange) ? 0 : hourChange / 100, -1, 1) / 2 + clamp(isNaN(hourChange) ? 0 : dayChange / 100, -1, 1) / 2;
+
+        // update the trend
+        const stockInfo = services.database.collections.settings.findOne({ ticker: stock.stock });
+        if (stockInfo) {
+            services.database.collections.settings.updateOne({ ticker: stock.stock }, { $set: { trend } });
+        }
 
         return `${stock.emoji} \`\$${stock.stock}\` - <#${stock.id}>\n` +
            `**${stock.messages.toLocaleString()}** messages in the last hour (**${hourChange.toFixed(2)}% change ${hourChangeEmoji}**)\n` +
@@ -96,50 +116,323 @@ async function stonks(client: Client) {
 
     const afterTime = new Date();
 
-    // wait until the next 1 hour interval
-    const nextHour = new Date();
-    nextHour.setHours(nextHour.getUTCHours() + 1);
-    nextHour.setMinutes(0);
-    nextHour.setSeconds(0);
-    nextHour.setMilliseconds(0);
-
-    const timeToWait = nextHour.getTime() - afterTime.getTime() + 1000; // add 1 second to ensure we're past the next hour
-
-    const seconds = Math.floor((timeToWait / 1000) % 60);
-    const minutes = Math.floor((timeToWait / (1000 * 60)) % 60);
-    const hours = Math.floor((timeToWait / (1000 * 60 * 60)) % 24);
-
-    // console.log(`Waiting ${hours}h ${minutes}m ${seconds}s until the next hour`);
-
+    const timeToWait = getTimeToWait(afterTime, 60);
     setTimeout(() => {
-        stonks(client);
+        channels(client, services);
     }, timeToWait);
 }
 
+async function stockUpdate(client: Client, services: Services) {
+    const stocks = Object.keys(stockList);
+
+    const stockData = await Promise.all(stocks.map(async stock => {
+        const stockData = await services.database.collections.stocks.findOne({ ticker: stock });
+        return stockData;
+    }));
+
+    const stockSettings = await Promise.all(stocks.map(async stock => {
+        const stockSetting = await services.database.collections.settings.findOne({ ticker: stock });
+        return stockSetting;
+    }));
+
+    const initTime = new Date();
+    initTime.setMinutes(initTime.getMinutes() - initTime.getMinutes() % 5);
+    initTime.setSeconds(0);
+    initTime.setMilliseconds(0);
+
+    const previousInterval = new Date(initTime.getTime() - 300000);
+
+    const trades = await services.database.collections.trades.find({ time: { $gte: previousInterval, $lt: initTime } }).toArray();
+
+    const tradesByStock: Record<string, Trade[]> = stocks.reduce((acc, stock) => {
+        acc[stock] = [];
+        return acc;
+    }, {});
+
+    trades.forEach(trade => {
+        if (!tradesByStock[trade.ticker]) {
+            tradesByStock[trade.ticker] = [];
+        }
+        tradesByStock[trade.ticker].push(trade as any as Trade);
+    });
+
+    const changes = [];
+    for (const stock of stocks) {
+        const data = stockData.find(s => s.ticker === stock);
+        const settings = stockSettings.find(s => s.ticker === stock);
+        const trades = tradesByStock[stock];
+
+        const buyVolume = trades.reduce((acc, trade) => trade.amount > 0 ? acc + trade.amount : acc, 0);
+        const sellVolume = trades.reduce((acc, trade) => trade.amount < 0 ? acc + trade.amount : acc, 0);
+
+        const result = await SuperSecretAlgorithm(data, buyVolume, sellVolume, settings.volumeFactor, settings.limitingVolume, settings.volatilityFactor, settings.trend, settings.trendFactor);
+
+        const newVolume = trades.reduce((acc, trade) => acc + Math.abs(trade.amount), 0);
+
+        data.price = result.price;
+        data.lastUpdated = initTime;
+        data.volume += newVolume;
+
+        await services.database.collections.stocks.updateOne({ ticker: stock }, { $set: { price: data.price, volume: data.volume, lastUpdated: data.lastUpdated } });
+
+        const change: Change = { 
+            ticker: stock, 
+            price: data.price, 
+            volume: newVolume, 
+            volumeFactor: result.volumeFactor, 
+            volatilityFactor: result.volatilityFactor, 
+            trendFactor: result.trendFactor, 
+            settings: settings as any as StockSetting,
+            time: initTime 
+        };
+        changes.push(change);
+        await services.database.collections.changes.insertOne(change);
+    }
+
+    const stockUpdates = await client.channels.fetch(stockChannel) as TextChannel;
+
+    const newStockData = await Promise.all(stocks.map(async stock => {
+        const stockData = await services.database.collections.stocks.findOne({ ticker: stock });
+        return stockData;
+    }));
+
+    const newStockImages = await Promise.all(stocks.map(async stock => {
+        const stockImage = await graphData(services, stock, initTime);
+        const attachment = new AttachmentBuilder(stockImage, { name: `stock_changes_${stock}.png` });
+        return attachment;
+    }));
+
+    // make embeds for each stock, display ticker, channel_name, price, iteration change, iteration change%, and exchange (NASDUNNY) as inline fields, and a graph of the stock price over the last 24 hours
+    const stockEmbeds = new Collection<string, EmbedBuilder>();
+    for (let i = 0; i < stocks.length; i++) {
+        const stock = stocks[i];
+        const stockData = newStockData[i];
+        const stockImage = newStockImages[i];
+
+        const stockSetting = stockSettings.find(s => s.ticker === stock);
+
+        const previousData = await services.database.collections.changes.find({ ticker: stock, time: { $lt: initTime } }).sort({ time: -1 }).limit(1).toArray();
+        const previousPrice = previousData.length === 0 ? stockData[i].price : previousData[0].price;
+
+        const change = stockData.price - previousPrice;
+        const changePercent = (change / previousPrice) * 100;
+
+        const embed = new EmbedBuilder()
+            .addFields(
+            { name: " Ticker", value: stockEmojis[stock] + ` \`\$${stock}\``, inline: true },
+            { name: "Channel", value: `<#${stockList[stock]}>`, inline: true },
+            { name: "Price", value: "$" + String(stockData.price), inline: true },
+            { name: "Change", value: `${change >= 0 ? "+" : "-"}$${Math.abs(change).toFixed(2)}`, inline: true },
+            { name: "% Change", value: `${changePercent >= 0 ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%`, inline: true },
+            { name: "Exchange", value: "NASDUNNY", inline: true }
+            )
+            .setImage(`attachment://${stockImage.name}`)
+            .setTimestamp(initTime);
+
+        stockEmbeds.set(stock, embed);
+    }
+
+    const stockEmbedsArray = stockEmbeds.map(embed => embed);
+
+    const stockUpdateMessage = await stockUpdates.messages.fetch(stockMessage);
+    if (stockUpdateMessage) {
+        await stockUpdateMessage.edit({
+            content: `## <:BanditHuh:1079130551535009822> Stock Prices Report - ${time(initTime)}`,
+            embeds: stockEmbedsArray,
+            files: newStockImages
+        });
+    } else {
+        await stockUpdates.send({
+            content: `## <:BanditHuh:1079130551535009822> Stock Prices Report - ${time(initTime)}`,
+            embeds: stockEmbedsArray,
+            files: newStockImages
+        });
+    }
+
+    const stockStaffInfo = await client.channels.fetch(staffChannel) as TextChannel;
+    const stockChangesString = changes.map(change => {
+        // print all data in the change
+        return `${stockEmojis[change.ticker]} \`\$${change.ticker}\` - **${change.price}** (${change.volume.toLocaleString()} shares)\n` +
+            `Volume Factor: **${change.volumeFactor.toFixed(6)}**\n` +
+            `Volatility Factor: **${change.volatilityFactor.toFixed(6)}**\n` +
+            `Trend Factor: **${change.trendFactor.toFixed(6)}**\n`
+    }).join("\n");
+    await stockStaffInfo.send({
+        content: `## <:BanditHuh:1079130551535009822> Stock Changes - ${time(initTime)}\n\n${stockChangesString}`
+    });
+
+    const afterTime = new Date();
+
+    const timeToWaitStocks = getTimeToWait(afterTime, 5);
+    setTimeout(() => {
+        stockUpdate(client, services);
+    }, timeToWaitStocks);
+}
+
 export default class messageStocks extends BotEvent {
-    // get time
     public eventName = customEvents.ManualFire;
 
     async execute(client: Client, services: Services, ...params: any) {
+        // await init(services);
+
         const afterTime = new Date();
 
-        // wait until the next 1 hour interval
-        const nextHour = new Date();
-        nextHour.setHours(nextHour.getUTCHours() + 1);
-        nextHour.setMinutes(0);
-        nextHour.setSeconds(0);
-        nextHour.setMilliseconds(0);
-
-        const timeToWait = nextHour.getTime() - afterTime.getTime() + 1000; // add 1 second to ensure we're past the next hour
-
-        const seconds = Math.floor((timeToWait / 1000) % 60);
-        const minutes = Math.floor((timeToWait / (1000 * 60)) % 60);
-        const hours = Math.floor((timeToWait / (1000 * 60 * 60)) % 24);
-
-        // console.log(`Waiting ${hours}h ${minutes}m ${seconds}s until the next hour`);
-
+        const timeToWaitChannels = getTimeToWait(afterTime, 60);
+        // printTimeToWait(timeToWaitChannels);
         setTimeout(() => {
-            stonks(client);
-        }, timeToWait);
+            channels(client, services);
+        }, timeToWaitChannels);
+
+        const timeToWaitStocks = getTimeToWait(afterTime, 5);
+        // printTimeToWait(timeToWaitStocks);
+        setTimeout(() => {
+            stockUpdate(client, services);
+        }, timeToWaitStocks);
     }
+}
+
+function getTimeToWait(currentTime: Date, interval: number) {
+    const nextTime = new Date(currentTime.getTime());
+    nextTime.setMinutes((nextTime.getMinutes() + interval) - nextTime.getMinutes() % interval);
+    nextTime.setSeconds(0);
+    nextTime.setMilliseconds(0);
+
+    return nextTime.getTime() - currentTime.getTime() + 1000; // add 1 second to ensure we're past the next interval
+}
+function printTimeToWait(timeToWait: number) {
+    const seconds = Math.floor((timeToWait / 1000) % 60);
+    const minutes = Math.floor((timeToWait / (1000 * 60)) % 60);
+    const hours = Math.floor((timeToWait / (1000 * 60 * 60)) % 24);
+    console.log(`Waiting ${hours}h ${minutes}m ${seconds}s until the next interval`);
+}
+
+async function init(services: Services) {
+    for (const stock of Object.keys(stockList)) {
+        const newStock: Stock = { ticker: stock, price: 100, volume: 0, lastUpdated: new Date() };
+        const stockData = await services.database.collections.stocks.findOne({ ticker: stock });
+        if (!stockData) {
+            await services.database.collections.stocks.insertOne(newStock);
+        }
+    }
+    for (const stock of Object.keys(stockList)) {
+        const stockSetting: StockSetting = { ticker: stock, volumeFactor: 0.05, volatilityFactor: 0.025, trendFactor: 0.001, limitingVolume: 1000, trend: 0.0 };
+        const stockSettingData = await services.database.collections.settings.findOne({ ticker: stock });
+        if (!stockSettingData) {
+            await services.database.collections.settings.insertOne(stockSetting);
+        }
+    }
+    console.log("stocks.ts loaded");
+}
+
+async function SuperSecretAlgorithm(stock, buyVolume, sellVolume, volumeFactor, limitingVolume, volatilityFactor, trend, trendFactor) {
+    const price = stock.price;
+    const nextVolumeFactor = calculateVolumeFactor(buyVolume, sellVolume, volumeFactor, limitingVolume);
+    const nextVolatilityFactor = calculateVolatilityFactor(volatilityFactor);
+    const nextTrendFactor = calculateTrendFactor(trendFactor, trend);
+
+    const newPrice = price * (1 + nextVolumeFactor + nextVolatilityFactor + nextTrendFactor);
+
+    // round to 2 decimal places
+    const finalPrice = Math.round(newPrice * 100) / 100;
+
+    return {
+        price: Math.max(1, finalPrice),
+        volumeFactor: nextVolumeFactor,
+        volatilityFactor: nextVolatilityFactor,
+        trendFactor: nextTrendFactor,
+    };
+}
+
+function calculateVolumeFactor(buyVolume, sellVolume, volumeFactor, limitingVolume) {
+    const totalVolume = buyVolume + sellVolume;
+    if (totalVolume === 0) return 0;
+
+    const volumeRatio = (buyVolume - sellVolume) / totalVolume;
+
+    const volumeLimiter = Math.min(Math.log(1 + totalVolume / (limitingVolume/9)), 1);
+
+    return ((volumeFactor + 1) ** volumeRatio - 1) * volumeLimiter;
+}
+
+function calculateVolatilityFactor(volatility) {
+    return gaussian(0, (volatility / 3)**2).random(1)[0];
+}
+
+function calculateTrendFactor(trendFactor, trend) {
+    return trendFactor * trend;
+}
+
+export async function graphData(services: Services, stock: string, time: Date) {
+    const stockData = await services.database.collections.changes.find({ ticker: stock }).toArray();
+
+    const lastDay = stockData.filter(change => change.time.getTime() > time.valueOf() - 86400000);
+
+    // get the price at the start and end
+    const startPrice = lastDay[0].price;
+    const endPrice = lastDay[lastDay.length - 1].price;
+
+    const positive = endPrice > startPrice
+
+    const labels = lastDay.map(change => {
+        const elapsed = time.valueOf() - change.time.getTime();
+
+        return elapsed
+    });
+    const data = lastDay.map(change => change.price);
+
+    const width = 600; //px
+    const height = 300; //px
+    const backgroundColour = 'transparent'; // Uses https://www.w3schools.com/tags/canvas_fillstyle.asp
+    const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height, backgroundColour});
+
+    const configuration: ChartConfiguration<'line'> = {
+        type: "line",
+        data: {
+            labels,
+            datasets: [{
+                label: `$${stock}`,
+                data,
+                fill: true,
+                borderColor: positive ? 'green' : 'red',
+                backgroundColor: positive ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)',
+                tension: 0,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    min: 0, // Minimum time is 24 hours ago
+                    max: 86400000, // Maximum time is now
+                    ticks: {
+                        stepSize: 3600000,
+                        callback: function(value, index, values) {
+                            const elapsedHours = Math.round(value as number / 3600000);
+                            return `${elapsedHours}h`;
+                        },
+                    },
+                    reverse: true,
+                    grid: {
+                        display: false // Remove vertical grid lines
+                    }
+                },
+                y: {
+                    beginAtZero: false,
+                    border: {
+                        display: false,
+                    },
+                }
+            }
+        }
+    };
+    const image = await chartJSNodeCanvas.renderToBuffer(configuration);
+
+    return image;
 }
