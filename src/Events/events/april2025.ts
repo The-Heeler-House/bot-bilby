@@ -206,22 +206,20 @@ async function stockUpdate(client: Client, services: Services) {
     const stockEmbeds = new Collection<string, EmbedBuilder>();
     for (let i = 0; i < stocks.length; i++) {
         const stock = stocks[i];
-        const stockData = newStockData[i];
+        const nStockData = newStockData[i];
         const stockImage = newStockImages[i];
-
-        const stockSetting = stockSettings.find(s => s.ticker === stock);
 
         const previousData = await services.database.collections.changes.find({ ticker: stock, time: { $lt: initTime } }).sort({ time: -1 }).limit(1).toArray();
         const previousPrice = previousData.length === 0 ? stockData[i].price : previousData[0].price;
 
-        const change = stockData.price - previousPrice;
+        const change = nStockData.price - previousPrice;
         const changePercent = (change / previousPrice) * 100;
 
         const embed = new EmbedBuilder()
             .addFields(
             { name: " Ticker", value: stockEmojis[stock] + ` \`\$${stock}\``, inline: true },
             { name: "Channel", value: `<#${stockList[stock]}>`, inline: true },
-            { name: "Price", value: "$" + String(stockData.price), inline: true },
+            { name: "Price", value: "$" + String(nStockData.price), inline: true },
             { name: "Change", value: `${change >= 0 ? "+" : "-"}$${Math.abs(change).toFixed(2)}`, inline: true },
             { name: "% Change", value: `${changePercent >= 0 ? "+" : "-"}${Math.abs(changePercent).toFixed(2)}%`, inline: true },
             { name: "Exchange", value: "NASDUNNY", inline: true }
