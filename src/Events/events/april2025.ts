@@ -99,7 +99,7 @@ async function channels(client: Client, services: Services) {
         const hourChangeEmoji = hourChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
         const dayChangeEmoji = dayChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
 
-        const trend = clamp(isNaN(hourChange) ? 0 : hourChange / 100, -1, 1) / 2 + clamp(isNaN(hourChange) ? 0 : dayChange / 100, -1, 1) / 2;
+        const trend = clamp(isNaN(hourChange) ? 0 : hourChange / 100, -1, 1) / 2 + clamp(isNaN(dayChange) ? 0 : dayChange / 100, -1, 1) / 2;
 
         // update the trend
         const stockInfo = services.database.collections.settings.findOne({ ticker: stock.stock });
