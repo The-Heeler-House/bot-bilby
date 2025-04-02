@@ -163,7 +163,7 @@ async function stockUpdate(client: Client, services: Services) {
         const trades = tradesByStock[stock];
 
         const buyVolume = trades.reduce((acc, trade) => trade.amount > 0 ? acc + trade.amount : acc, 0);
-        const sellVolume = trades.reduce((acc, trade) => trade.amount < 0 ? acc + trade.amount : acc, 0);
+        const sellVolume = -1 * trades.reduce((acc, trade) => trade.amount < 0 ? acc + trade.amount : acc, 0);
 
         const result = await SuperSecretAlgorithm(data, buyVolume, sellVolume, settings.volumeFactor, settings.limitingVolume, settings.volatilityFactor, settings.trend, settings.trendFactor);
 
