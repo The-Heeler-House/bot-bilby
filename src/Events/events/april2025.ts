@@ -16,7 +16,7 @@ const updatesChannel = "1353760723116888236";
 const stockChannel = "1356357964432412847";
 const staffChannel = "1356505606130896936"
 
-const stockMessage = "1356740115250151436"
+const stockMessage = "1356780219377389729"
 
 function clamp(num, min, max) {
     return Math.min(Math.max(num, min), max);
