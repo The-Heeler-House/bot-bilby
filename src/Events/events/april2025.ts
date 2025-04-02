@@ -8,6 +8,7 @@ import { stockList, stockEmojis, Stock, StockSetting, Trade, Change } from "../.
 import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
 import { Chart, ChartConfiguration } from "chart.js";
 import 'chartjs-adapter-moment';
+import { last } from "cheerio/dist/commonjs/api/traversing";
 
 // day reset time is 0am EST
 const resetTime = 4;
@@ -78,6 +79,13 @@ async function channels(client: Client, services: Services) {
         return messages;
     }));
 
+    const last24Hours = await Promise.all(stocks.map(async stock => {
+        const stockChannel = await client.channels.fetch(stockList[stock]) as TextChannel;
+        const messages = await fetchPeriod(new Date(initTime.getTime() - 86400000), initTime, stockChannel);
+
+        return messages;
+    }));
+
     const stockUpdates = await client.channels.fetch(updatesChannel) as TextChannel;
 
     const stockMessagesData = stocks.map((stock, i) => {
@@ -88,7 +96,8 @@ async function channels(client: Client, services: Services) {
             messages: stockMessages[i],
             previousHourMessages: stockMessagesPreviousHour[i],
             previousDayMessages: previousDayMessages[i],
-            currentDayMessages: currentDayMessages[i]
+            currentDayMessages: currentDayMessages[i],
+            last24Hours: last24Hours[i]
         };
     });
 
@@ -99,7 +108,19 @@ async function channels(client: Client, services: Services) {
         const hourChangeEmoji = hourChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
         const dayChangeEmoji = dayChange >= 0 ? "<:yes:1090051438828326912>" : "<:no:1090051727732002907>";
 
-        const trend = clamp(isNaN(hourChange) ? 0 : hourChange / 100, -1, 1) / 2 + clamp(isNaN(dayChange) ? 0 : dayChange / 100, -1, 1) / 2;
+        const dayAvg = stock.last24Hours / 24;
+
+        const trendFactor = (clamp(isNaN(hourChange) ? 0 : hourChange / 100, -1, 1) / 2 + clamp(isNaN(dayChange) ? 0 : dayChange / 100, -1, 1) / 2)
+        const avgFactor = clamp((stock.messages - dayAvg) / dayAvg, -1, 1);
+
+        const trend =  trendFactor / 2 + avgFactor / 2;
+
+        const staffLogChannel = client.channels.cache.get(staffChannel) as TextChannel;
+        // log ticker, dayavg, trendFactor, avgFactor, trend
+        staffLogChannel.send(`\`\$${stock.stock}\` - **${dayAvg}** messages in the last 24 hours\n` +
+            `Trend Factor: **${trendFactor.toFixed(6)}**\n` +
+            `Average Factor: **${avgFactor.toFixed(6)}**\n` +
+            `Trend: **${trend.toFixed(6)}**`);
 
         // update the trend
         const stockInfo = services.database.collections.settings.findOne({ ticker: stock.stock });
