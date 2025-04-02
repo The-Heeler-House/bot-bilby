@@ -91,6 +91,11 @@ export default class April2025Command extends SlashCommand {
         const userId = interaction.member.user.id;
         var user = await services.database.collections.users.findOne({ user: userId });
 
+        if (shares <= 0) {
+            await interaction.reply("You must buy at least one share!");
+            return;
+        }
+
         if (!user) {
             await services.database.collections.users.insertOne({
                 user: userId,
@@ -137,6 +142,12 @@ export default class April2025Command extends SlashCommand {
     async sellStock(interaction: ChatInputCommandInteraction, services: Services) {
         const ticker = interaction.options.getString("ticker")!;
         const shares = interaction.options.getInteger("shares")!;
+
+        if (shares <= 0) {
+            await interaction.reply("You must sell at least one share!");
+            return;
+        }
+
         const userId = interaction.member.user.id;
         var user = await services.database.collections.users.findOne({ user: userId });
 
