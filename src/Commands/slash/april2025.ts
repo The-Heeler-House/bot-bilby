@@ -117,6 +117,11 @@ export default class April2025Command extends SlashCommand {
             return;
         }
 
+        if (stock.price < 1 || isNaN(stock.price)) {
+            await interaction.reply("The stock market is broken! Spam ping Jalen.");
+            return;
+        }
+
         const cost = stock.price * shares;
         if (cost > user.balance) {
             await interaction.reply("You don't have enough dollarbucks to buy that many shares!");
@@ -169,6 +174,11 @@ export default class April2025Command extends SlashCommand {
         const stock = await services.database.collections.stocks.findOne({ ticker });
         if (!stock) {
             await interaction.reply("That stock does not exist!");
+            return;
+        }
+
+        if (stock.price < 1 || isNaN(stock.price)) {
+            await interaction.reply("The stock market is broken! Spam ping Jalen.");
             return;
         }
 
