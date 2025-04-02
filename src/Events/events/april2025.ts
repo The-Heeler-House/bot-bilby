@@ -157,6 +157,7 @@ async function stockUpdate(client: Client, services: Services) {
     });
 
     const changes = [];
+    const buySellVolumes = [];
     for (const stock of stocks) {
         const data = stockData.find(s => s.ticker === stock);
         const settings = stockSettings.find(s => s.ticker === stock);
@@ -164,7 +165,9 @@ async function stockUpdate(client: Client, services: Services) {
 
         const buyVolume = trades.reduce((acc, trade) => trade.amount > 0 ? acc + trade.amount : acc, 0);
         const sellVolume = -1 * trades.reduce((acc, trade) => trade.amount < 0 ? acc + trade.amount : acc, 0);
-
+        
+        buySellVolumes.push({ stock, buyVolume, sellVolume });
+        
         const result = await SuperSecretAlgorithm(data, buyVolume, sellVolume, settings.volumeFactor, settings.limitingVolume, settings.volatilityFactor, settings.trend, settings.trendFactor);
 
         const newVolume = trades.reduce((acc, trade) => acc + Math.abs(trade.amount), 0);
@@ -249,11 +252,11 @@ async function stockUpdate(client: Client, services: Services) {
 
     const stockStaffInfo = await client.channels.fetch(staffChannel) as TextChannel;
     const stockChangesString = changes.map(change => {
-        // print all data in the change
-        return `${stockEmojis[change.ticker]} \`\$${change.ticker}\` - **${change.price}** (${change.volume.toLocaleString()} shares)\n` +
+        const buySellVolume = buySellVolumes.find(volume => volume.stock === change.ticker);
+        return `${stockEmojis[change.ticker]} \`\$${change.ticker}\` - **${change.price}** (${change.volume.toLocaleString()} shares, Buy: **${buySellVolume?.buyVolume.toLocaleString() || 0}**, Sell: **${buySellVolume?.sellVolume.toLocaleString() || 0}**)\n` +
             `Volume Factor: **${change.volumeFactor.toFixed(6)}**\n` +
             `Volatility Factor: **${change.volatilityFactor.toFixed(6)}**\n` +
-            `Trend Factor: **${change.trendFactor.toFixed(6)}**\n`
+            `Trend Factor: **${change.trendFactor.toFixed(6)}**\n`;
     }).join("\n");
     await stockStaffInfo.send({
         content: `## <:BanditHuh:1079130551535009822> Stock Changes - ${time(initTime)}\n\n${stockChangesString}`
