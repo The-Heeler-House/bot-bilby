@@ -358,7 +358,7 @@ async function SuperSecretAlgorithm(stock, buyVolume, sellVolume, volumeFactor, 
     const finalPrice = Math.round(newPrice * 100) / 100;
 
     return {
-        price: Math.max(1, finalPrice),
+        price: Math.max(.01, finalPrice),
         volumeFactor: nextVolumeFactor,
         volatilityFactor: nextVolatilityFactor,
         trendFactor: nextTrendFactor,
