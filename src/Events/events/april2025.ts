@@ -387,7 +387,10 @@ function calculateTrendFactor(trendFactor, trend) {
 export async function graphData(services: Services, stock: string, time: Date) {
     const stockData = await services.database.collections.changes.find({ ticker: stock }).toArray();
 
-    const lastDay = stockData.filter(change => change.time.getTime() > time.valueOf() - 86400000);
+    const lastDay = stockData
+
+    // get miliseconds from the very first change
+    const firstChange = lastDay[0].time.getTime();
 
     // get the price at the start and end
     const startPrice = lastDay[0].price;
@@ -432,12 +435,12 @@ export async function graphData(services: Services, stock: string, time: Date) {
                 x: {
                     type: 'linear',
                     min: 0, // Minimum time is 24 hours ago
-                    max: 86400000, // Maximum time is now
+                    max: firstChange, // Maximum time is now
                     ticks: {
-                        stepSize: 3600000,
+                        stepSize: 86400000,
                         callback: function(value, index, values) {
-                            const elapsedHours = Math.round(value as number / 3600000);
-                            return `${elapsedHours}h`;
+                            const elapsedDays = Math.round(value as number / 86400000);
+                            return `${elapsedDays}d`;
                         },
                     },
                     reverse: true,
