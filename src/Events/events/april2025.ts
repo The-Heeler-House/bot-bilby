@@ -256,20 +256,20 @@ async function stockUpdate(client: Client, services: Services) {
 
     const stockEmbedsArray = stockEmbeds.map(embed => embed);
 
-    // const stockUpdateMessage = await stockUpdates.messages.fetch(stockMessage);
-    // if (stockUpdateMessage) {
-    //     await stockUpdateMessage.edit({
-    //         content: `## <:BanditHuh:1079130551535009822> Stock Prices Report - ${time(initTime)}`,
-    //         embeds: stockEmbedsArray,
-    //         files: newStockImages
-    //     });
-    // } else {
+    const stockUpdateMessage = await stockUpdates.messages.fetch(stockMessage);
+    if (stockUpdateMessage) {
+        await stockUpdateMessage.edit({
+            content: `## <:BanditHuh:1079130551535009822> Stock Prices Report - ${time(initTime)}`,
+            embeds: stockEmbedsArray,
+            files: newStockImages
+        });
+    } else {
         await stockUpdates.send({
             content: `## <:BanditHuh:1079130551535009822> Stock Prices Report - ${time(initTime)}`,
             embeds: stockEmbedsArray,
             files: newStockImages
         });
-    // }
+    }
 
     const stockStaffInfo = await client.channels.fetch(staffChannel) as TextChannel;
     const stockChangesString = changes.map(change => {
