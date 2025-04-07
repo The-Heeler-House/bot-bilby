@@ -118,7 +118,7 @@ export default class April2025Command extends SlashCommand {
         }
 
         if (stock.price < 1 || isNaN(stock.price)) {
-            await interaction.reply("The stock market is broken! Spam ping Jalen.");
+            await interaction.reply("There is no more market to buy from...");
             return;
         }
 
@@ -177,7 +177,7 @@ export default class April2025Command extends SlashCommand {
             return;
         }
 
-        if (stock.price < 1 || isNaN(stock.price)) {
+        if (stock.price < 0.01 || isNaN(stock.price)) {
             await interaction.reply("The stock market is broken! Spam ping Jalen.");
             return;
         }
