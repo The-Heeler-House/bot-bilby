@@ -249,7 +249,7 @@ export default class April2025Command extends SlashCommand {
             .setTitle(`${member.displayName}'s Stock Portfolio`)
             .setDescription(`:moneybag: Balance: **${user.balance.toLocaleString()} dollarbucks**\n:money_with_wings: Net Worth: **${netWorth.toLocaleString()} dollarbucks**\n\n${stocks.join("\n")}`);
 
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.reply({ embeds: [embed] });
     }
 
     async viewLeaderboard(interaction: ChatInputCommandInteraction, services: Services) {
