@@ -278,8 +278,8 @@ export default class CommandPreprocessor {
         if (!interaction.isChatInputCommand()) return;
         if (!isTHHorDevServer(interaction.guildId)) {
             await interaction.reply({
-                content: "no:)",
-                ephemeral: true
+                content: "Hello. If you are seeing this message, then you probably have invited this bot to your private server to try and use it. While we don't have any rules about this, we also do not recommend this, as the bot was designed to work for The Heeler House Discord Server. Because of that, all functionality of the bot will not work outside of THH.\n\nThis is **not an error**. **Do not** contact the bot developers or THH staff about this.",
+                ephemeral: false
             })
             return;
         }
