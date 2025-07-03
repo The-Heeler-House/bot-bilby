@@ -17,8 +17,8 @@ export default class AccountAgeGateEvent extends BotEvent {
                 await member.roles.add(roleIds.newbie);
             } catch (e) {
                 const errorMsg = `Unable to add Heeler Newbie role from user "${member.user.username}" (id: ${member.id})! `
-                logger.warning(errorMsg)
-                await services.pager.sendPage(errorMsg)
+                logger.warning(errorMsg, "\n", e)
+                await services.pager.sendPage(errorMsg, "\n", e)
             }
         } else {
             // assign them the verifying role
@@ -26,8 +26,8 @@ export default class AccountAgeGateEvent extends BotEvent {
                 await member.roles.add(roleIds.verifying);
             } catch (e) {
                 const errorMsg = `Unable to add Verifying role from user "${member.user.username}" (id: ${member.id})! `
-                logger.warning(errorMsg)
-                await services.pager.sendPage(errorMsg)
+                logger.warning(errorMsg, "\n", e)
+                await services.pager.sendPage(errorMsg, "\n", e)
             }
         }
     }

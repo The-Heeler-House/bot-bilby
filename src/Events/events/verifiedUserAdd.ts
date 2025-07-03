@@ -18,8 +18,8 @@ export default class VerifiedUserAdd extends BotEvent {
                 await newMember.roles.remove(roleIds.verifying)
             } catch (e) {
                 const errorMsg = `Unable to remove new member role from user "${newMember.user.username}" (id: ${newMember.id})! `
-                logger.warning(errorMsg, e)
-                await services.pager.sendPage(errorMsg, e)
+                logger.warning(errorMsg, "\n", e)
+                await services.pager.sendPage(errorMsg, "\n", e)
             }
         }
     }
