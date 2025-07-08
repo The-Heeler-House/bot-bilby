@@ -36,6 +36,11 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
             separator.push(match[8])
             continue
         }
+        if (match[9]) {
+            processed.push(match[9])
+            separator.push(match[10])
+            continue
+        }
     }
 
     //? check if optional args are placed at the end of the list
