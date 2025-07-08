@@ -8,7 +8,7 @@ import { isTHHorDevServer } from "../Helper/EventsHelper";
 import { canExecuteCommand } from "../Helper/PermissionHelper";
 
 function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
-    const processStringRegex = /"([^"]*)"(\W*)|'([^']*)'(\W*)|`([^`]*)`(\W*)|(\S+)(\W*)/g
+    const processStringRegex = /"([^"]*)"(\W*)|'([^']*)'(\W*)|`([^`]*)`(\W*)|“([^“”]*)”(\W*)|(\S+)(\W*)/g
     let processed: string[] = []
     let separator: string[] = []
     let match: RegExpExecArray
