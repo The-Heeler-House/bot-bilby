@@ -1,0 +1,6 @@
+{
+    "fan": ["fan.png"],
+    "on_cup": ["on_cup.png"],
+    "boop": ["boop_1.png", "boop_2.png", "boop_3.png", "boop_4.png"],
+    "on_air": ["missed.png"]
+}

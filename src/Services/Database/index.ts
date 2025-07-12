@@ -5,6 +5,7 @@
 import * as mongoDB from "mongodb";
 import * as logger from "../../logger";
 import * as dotenv from "dotenv";
+import KeepyUppyData from "./models/keepyUppy";
 dotenv.config();
 
 export default class DatabaseService {
@@ -33,6 +34,7 @@ export default class DatabaseService {
         this.collections.oldGuessWho = databases.bilby.collection("oldGuessWho");
         this.collections.mutemeData = databases.bilby.collection("mutemeData");
         this.collections.commandBlacklist = databases.bilby.collection("commandBlacklist");
+        this.collections.keepyUppy = databases.bilby.collection<KeepyUppyData>("keepyUppy");
     }
 }
 
@@ -44,5 +46,6 @@ export interface DatabaseCollections {
     guessWho?: mongoDB.Collection,
     oldGuessWho?: mongoDB.Collection,
     mutemeData?: mongoDB.Collection,
-    commandBlacklist?: mongoDB.Collection
+    commandBlacklist?: mongoDB.Collection,
+    keepyUppy?: mongoDB.Collection<KeepyUppyData>
 }
