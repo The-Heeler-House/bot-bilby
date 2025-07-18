@@ -13,6 +13,10 @@ export default class SayCommand extends TextCommand {
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {
         let channel = await message.guild.channels.fetch(channelIds.offTopic) as TextChannel;
+        if (args["message"].trim().length == 0) {
+            await message.reply("Cannot send an empty message!")
+            return
+        }
         await channel.send({
             content: args["message"],
             files: message.attachments.map(v => v)
