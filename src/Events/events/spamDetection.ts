@@ -53,7 +53,7 @@ export default class SpamDetection extends BotEvent {
             }, alertCooldown)
         }
 
-        const mediaCnt = message.attachments.size + message.embeds.length
+        const mediaCnt = Math.ceil((message.attachments.size + message.embeds.length) / 3)
         mediaLog[channelId].cnt += mediaCnt
         mediaLog[channelId].queue.push(message.attachments.size + message.embeds.length)
         if (mediaLog[channelId].queue.size() > spamDetectionData.min_media_sample_size)
