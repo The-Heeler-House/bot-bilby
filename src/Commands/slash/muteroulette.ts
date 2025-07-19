@@ -51,7 +51,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     numAllTotal: 0,
                     numStreak: 0,
                     numMaxStreak: 0,
-                    lastTime: "",
+                    lastTime: new Date(),
                     powerUps: [],
                     mutePercentage: 0,
                 });
@@ -259,10 +259,10 @@ export default class MuterouletteCommand extends SlashCommand {
             }
 
             // check if the user ran the command within the last 10 seconds
-            if (Number(currentTime) - lastTime < 10000) {
+            if (Number(currentTime) - Number(lastTime) < 10000) {
                 await interaction.reply({
                     content: `You must wait ${Math.round(
-                        (10000 - (Number(currentTime) - lastTime)) / 1000
+                        (10000 - (Number(currentTime) - Number(lastTime))) / 1000
                     )} seconds before using this command again!${muteRouletteWarning}`,
                     ephemeral: true,
                 });
