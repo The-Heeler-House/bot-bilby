@@ -44,7 +44,7 @@ export default class SpamDetection extends BotEvent {
         messageLog[channelId].push(currentTime)
 
         if (messageLog[channelId].size() > spamDetectionData.min_message_cnt && !sentAlert[message.channelId]) {
-            await staffChannel.send(`<#${roleIds.staff}> Alert! Possible message spam in <#${message.channelId}> (${messageLog[channelId].size()} messages in ${spamDetectionData.min_message_time}s)`)
+            await staffChannel.send(`<@&${roleIds.staff}> Alert! Possible message spam in <#${message.channelId}> (${messageLog[channelId].size()} messages in ${spamDetectionData.min_message_time}s)`)
             sentAlert[message.channelId] = true
             setTimeout(() => {
                 sentAlert[message.channelId] = false
@@ -58,7 +58,7 @@ export default class SpamDetection extends BotEvent {
             mediaLog[channelId].cnt -= mediaLog[channelId].queue.shift()
 
         if (mediaLog[channelId].cnt > spamDetectionData.min_media_cnt && !sentAlert[message.channelId]) {
-            await staffChannel.send(`<#${roleIds.staff}> Alert! Possible media spam in <#${message.channelId}> (${mediaLog[channelId].cnt} messages in every ${spamDetectionData.min_media_sample_size} messages)`)
+            await staffChannel.send(`<@&${roleIds.staff}> Alert! Possible media spam in <#${message.channelId}> (${mediaLog[channelId].cnt} messages in every ${spamDetectionData.min_media_sample_size} messages)`)
             mediaLog[channelId].queue.clear()
             mediaLog[channelId].cnt = 0
             sentAlert[message.channelId] = true
