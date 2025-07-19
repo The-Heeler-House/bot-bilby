@@ -59,11 +59,11 @@ export default class SpamDetection extends BotEvent {
 
         if (mediaLog[channelId].cnt > spamDetectionData.min_media_cnt && !sentAlert[message.channelId]) {
             await staffChannel.send(`<#${roleIds.staff}> Alert! Possible media spam in <#${message.channelId}> (${mediaLog[channelId].cnt} messages in every ${spamDetectionData.min_media_sample_size} messages)`)
+            mediaLog[channelId].queue.clear()
+            mediaLog[channelId].cnt = 0
             sentAlert[message.channelId] = true
             setTimeout(() => {
                 sentAlert[message.channelId] = false
-                mediaLog[channelId].queue.clear()
-                mediaLog[channelId].cnt = 0
             }, alertCooldown)
         }
     }
