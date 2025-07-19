@@ -3,6 +3,7 @@ import BotEvent, { customEvents } from "../BotEvent";
 import { Services } from "../../Services";
 import Denque from "denque"
 import { channelIds, roleIds } from "../../constants";
+import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
 const messageLog: { [id: string]: Denque<number> } = {}
 const mediaLog: { [id: string]: { queue: Denque<number>, cnt: number } } = {}
@@ -13,6 +14,7 @@ export default class SpamDetection extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(client: Client, services: Services, message: Message): Promise<void> {
+        if (!isTHHorDevServer(message.guildId)) return
         const staffChannel = await message.guild.channels.fetch(channelIds.staff)
         if (!staffChannel.isTextBased()) return
 
