@@ -80,6 +80,14 @@ export default class DebugCommand extends TextCommand {
 
                     await message.reply(output.length == 0 ? "no perms" : output.join("\n"));
                     return;
+                case "volatile_state":
+                    await message.reply({
+                        files: [
+                            new AttachmentBuilder(Buffer.from(JSON.stringify(services.state.volatileState)))
+                                .setName(`vstate.json`)
+                        ]
+                    });
+                    return true;
                 default:
                     return false;
             }
