@@ -5,15 +5,13 @@ import Denque from "denque"
 import { channelIds, roleIds } from "../../constants";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
-const messageLog: { [id: string]: Denque<number> } = {}
-const mediaLog: { [id: string]: { queue: Denque<number>, cnt: number } } = {}
-
-const sentAlert: { [id: string]: boolean } = {}
 const alertCooldown = 15_000
 export default class SpamDetection extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(client: Client, services: Services, message: Message): Promise<void> {
+        const state = () => services.state.volatileState.spamDetection
+
         if (!isTHHorDevServer(message.guildId)) return
         const staffChannel = await message.guild.channels.fetch(channelIds.staff)
         if (!staffChannel.isTextBased()) return
@@ -25,12 +23,12 @@ export default class SpamDetection extends BotEvent {
         })
 
         if (!spamDetectionData) return
-        if (!messageLog[channelId]) {
-            messageLog[channelId] = new Denque<number>()
+        if (!state().messageLog[channelId]) {
+            state().messageLog[channelId] = new Denque<number>()
         }
 
-        if (!mediaLog[channelId]) {
-            mediaLog[channelId] = {
+        if (!state().mediaLog[channelId]) {
+            state().mediaLog[channelId] = {
                 queue: new Denque<number>(),
                 cnt: 0
             }
@@ -39,33 +37,33 @@ export default class SpamDetection extends BotEvent {
         const currentTime = message.createdTimestamp
         const cutoff = currentTime - spamDetectionData.min_message_time * 1_000
 
-        while (!messageLog[channelId].isEmpty() && messageLog[channelId].peekFront() < cutoff) {
-            messageLog[channelId].shift()
+        while (!state().messageLog[channelId].isEmpty() && state().messageLog[channelId].peekFront() < cutoff) {
+            state().messageLog[channelId].shift()
         }
 
-        messageLog[channelId].push(currentTime)
+        state().messageLog[channelId].push(currentTime)
 
-        if (messageLog[channelId].size() > spamDetectionData.min_message_cnt && !sentAlert[message.channelId]) {
-            await staffChannel.send(`<@&${roleIds.staff}> Alert! Messages going faster than usual in <#${message.channelId}> (${messageLog[channelId].size()} messages in ${spamDetectionData.min_message_time}s)`)
-            sentAlert[message.channelId] = true
+        if (state().messageLog[channelId].size() >= spamDetectionData.min_message_cnt && !state().sentAlert[message.channelId]) {
+            await staffChannel.send(`<@&${roleIds.staff}> Alert! Messages going faster than usual in <#${message.channelId}> (${state().messageLog[channelId].size()} messages in ${spamDetectionData.min_message_time}s)`)
+            state().sentAlert[message.channelId] = true
             setTimeout(() => {
-                sentAlert[message.channelId] = false
+                state().sentAlert[message.channelId] = false
             }, alertCooldown)
         }
 
         const mediaCnt = Math.ceil((message.attachments.size + message.embeds.length) / 3)
-        mediaLog[channelId].cnt += mediaCnt
-        mediaLog[channelId].queue.push(message.attachments.size + message.embeds.length)
-        if (mediaLog[channelId].queue.size() > spamDetectionData.min_media_sample_size)
-            mediaLog[channelId].cnt -= mediaLog[channelId].queue.shift()
+        state().mediaLog[channelId].cnt += mediaCnt
+        state().mediaLog[channelId].queue.push(mediaCnt)
+        if (state().mediaLog[channelId].queue.size() > spamDetectionData.min_media_sample_size)
+            state().mediaLog[channelId].cnt -= state().mediaLog[channelId].queue.shift()
 
-        if (mediaLog[channelId].cnt > spamDetectionData.min_media_cnt && !sentAlert[message.channelId]) {
-            await staffChannel.send(`<@&${roleIds.staff}> Alert! Possible media spam in <#${message.channelId}> (${mediaLog[channelId].cnt} messages in every ${spamDetectionData.min_media_sample_size} messages)`)
-            mediaLog[channelId].queue.clear()
-            mediaLog[channelId].cnt = 0
-            sentAlert[message.channelId] = true
+        if (state().mediaLog[channelId].cnt >= spamDetectionData.min_media_cnt && !state().sentAlert[message.channelId]) {
+            await staffChannel.send(`<@&${roleIds.staff}> Alert! Possible media spam in <#${message.channelId}> (${state().mediaLog[channelId].cnt} messages in every ${spamDetectionData.min_media_sample_size} messages)`)
+            state().mediaLog[channelId].queue.clear()
+            state().mediaLog[channelId].cnt = 0
+            state().sentAlert[message.channelId] = true
             setTimeout(() => {
-                sentAlert[message.channelId] = false
+                state().sentAlert[message.channelId] = false
             }, alertCooldown)
         }
     }

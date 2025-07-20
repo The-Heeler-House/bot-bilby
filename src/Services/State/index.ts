@@ -1,3 +1,4 @@
+import Denque from "denque";
 import { GuildEmoji, Message, PrivateThreadChannel, PublicThreadChannel, ReactionEmoji, Snowflake } from "discord.js";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
@@ -28,6 +29,12 @@ export default class StateService {
         trackedReactions: new Map(),
         slashCommandData: {
             guessWhoSessions: new Map()
+        },
+        spamDetection: {
+            messageLog: {},
+            mediaLog: {},
+
+            sentAlert: {}
         }
     };
 
@@ -114,6 +121,12 @@ export interface VolatileState {
     trackedReactions: Map<string, TrackedReaction>,
     slashCommandData: {
         guessWhoSessions: Map<string, GuessWhoSession>
+    },
+    spamDetection: {
+        messageLog: { [id: string]: Denque<number> }
+        mediaLog: { [id: string]: { queue: Denque<number>, cnt: number } }
+
+        sentAlert: { [id: string]: boolean }
     }
 }
 
