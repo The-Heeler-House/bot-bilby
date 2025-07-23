@@ -5,7 +5,7 @@ import Denque from "denque"
 import { channelIds, roleIds } from "../../constants";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
-const alertCooldown = 15_000
+const alertCooldown = 30_000
 export default class SpamDetection extends BotEvent {
     public eventName = Events.MessageCreate;
 
