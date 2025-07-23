@@ -1,4 +1,4 @@
-import { Client, Events, Message } from "discord.js";
+import { Client, Events, Message, MessageFlags } from "discord.js";
 import BotEvent, { customEvents } from "../BotEvent";
 import { Services } from "../../Services";
 import Denque from "denque"
@@ -44,7 +44,10 @@ export default class SpamDetection extends BotEvent {
         state().messageLog[channelId].push(currentTime)
 
         if (state().messageLog[channelId].size() >= spamDetectionData.min_message_cnt && !state().sentAlert[message.channelId]) {
-            await staffChannel.send(`@silent <@&${roleIds.staff}> Messages going faster than usual in <#${message.channelId}> (${state().messageLog[channelId].size()} messages in ${spamDetectionData.min_message_time}s)`)
+            await staffChannel.send({
+                content: `<@&${roleIds.staff}> Messages going faster than usual in <#${message.channelId}> (${state().messageLog[channelId].size()} messages in ${spamDetectionData.min_message_time}s)`,
+                flags: [ MessageFlags.SuppressNotifications ]
+            })
             state().sentAlert[message.channelId] = true
             setTimeout(() => {
                 state().sentAlert[message.channelId] = false
@@ -58,7 +61,10 @@ export default class SpamDetection extends BotEvent {
             state().mediaLog[channelId].cnt -= state().mediaLog[channelId].queue.shift()
 
         if (state().mediaLog[channelId].cnt >= spamDetectionData.min_media_cnt && !state().sentAlert[message.channelId]) {
-            await staffChannel.send(`@silent <@&${roleIds.staff}> Possible media spam in <#${message.channelId}> (${state().mediaLog[channelId].cnt} media in every ${spamDetectionData.min_media_sample_size} messages)`)
+            await staffChannel.send({
+                content: `<@&${roleIds.staff}> Possible media spam in <#${message.channelId}> (${state().mediaLog[channelId].cnt} media in every ${spamDetectionData.min_media_sample_size} messages)`,
+                flags: [ MessageFlags.SuppressNotifications ]
+            })
             state().mediaLog[channelId].queue.clear()
             state().mediaLog[channelId].cnt = 0
             state().sentAlert[message.channelId] = true
