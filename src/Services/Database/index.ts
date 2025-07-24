@@ -9,7 +9,6 @@ import KeepyUppyData from "./models/keepyUppy";
 import Trigger from "./models/trigger"
 import MuteRoulette from "./models/muteroulette"
 import SpamDetection from "./models/spamDetection";
-import RandomPicker from "./models/randomPicker";
 dotenv.config();
 
 export default class DatabaseService {
@@ -41,7 +40,6 @@ export default class DatabaseService {
             "commandBlacklist",
             "keepyUppy",
             "spamDetection",
-            "randomPicker"
         ]
 
         for (const collection of collections) {
@@ -62,5 +60,4 @@ export interface DatabaseCollections {
     commandBlacklist?: mongoDB.Collection,
     keepyUppy?: mongoDB.Collection<KeepyUppyData>,
     spamDetection?: mongoDB.Collection<SpamDetection>,
-    randomPicker?: mongoDB.Collection<RandomPicker>
 }
