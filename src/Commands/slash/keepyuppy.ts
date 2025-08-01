@@ -1,9 +1,11 @@
-import { Attachment, AttachmentBuilder, Message } from "discord.js";
+import { Attachment, AttachmentBuilder, InteractionContextType, Message, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, GuildMember } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import path from "path";
 import keepyUppyMap from "../../Assets/keepyuppy-data/map.json"
 import sharp from "sharp";
+import SlashCommand from "../SlashCommand";
 
 /**
     state:
@@ -29,21 +31,38 @@ const randomChoice = function<T>(arr: T[]) {
     return arr[Math.floor(Math.random() * arr.length)]
 }
 
-export default class KeepyUppyCommand extends TextCommand {
-    public data = new TextCommandBuilder()
+export default class KeepyUppyCommand extends SlashCommand {
+    public data = (new SlashCommandBuilder()
         .setName("kp")
         .setDescription("Keepy Uppy!")
-        .addStringArgument("action", "Specify action to do.")
-        .allowInDMs(false);
+        .addSubcommand(sub =>
+            sub.setName("boop")
+                .setDescription("boop the balloon")
+        )
+        .addSubcommand(sub =>
+            sub.setName("fan")
+                .setDescription("use the fan, if you're cheeky")
+        )
+        .addSubcommand(sub =>
+            sub.setName("restart")
+                .setDescription("restart the game, in case you lose")
+        )
+        .setContexts(InteractionContextType.Guild)) as SlashCommandBuilder
 
-    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+    async execute(interaction: ChatInputCommandInteraction, services: Services) {
         const keepyUppyCollection = services.database.collections.keepyUppy
 
-        const keepyUppyDbData = await keepyUppyCollection.findOne({ channel: message.channelId })
-        if (!keepyUppyDbData) return
+        const keepyUppyDbData = await keepyUppyCollection.findOne({ channel: interaction.channelId })
+        if (!keepyUppyDbData) {
+            await interaction.reply({
+                content: "Game is not setup for this channel!",
+                flags: MessageFlags.Ephemeral
+            })
+            return
+        }
 
         const respond_boop = async () => {
-            await keepyUppyCollection.updateOne({ channel: message.channelId }, { $set: { "balloon_state": "off_ground" } })
+            await keepyUppyCollection.updateOne({ channel: interaction.channelId }, { $set: { "balloon_state": "off_ground" } })
             let msg = ""
             switch (keepyUppyDbData.balloon_state) {
                 case "off_ground":
@@ -56,7 +75,7 @@ export default class KeepyUppyCommand extends TextCommand {
                     msg = "*boop*\nCatched!"
                     break
             }
-            await message.reply({
+            await interaction.reply({
                 content: msg,
                 files: [
                     new AttachmentBuilder(
@@ -70,9 +89,9 @@ export default class KeepyUppyCommand extends TextCommand {
         }
 
         const respond_missed = async () => {
-            await keepyUppyCollection.updateOne({ channel: message.channelId }, { $set: { "balloon_state": "almost_on_ground" } })
-            await message.reply({
-                content: "Oh no! You missed, and it's falling to the ground!",
+            await keepyUppyCollection.updateOne({ channel: interaction.channelId }, { $set: { "balloon_state": "almost_on_ground" } })
+            await interaction.reply({
+                content: "Oh no! You missed, and it's falling to the ground! Quick, boop it before someone use a fan on it.",
                 files: [
                     new AttachmentBuilder(
                         await sharp(`${keepyUppyGameData}/${randomChoice<string>(keepyUppyMap.on_air)}`)
@@ -85,7 +104,7 @@ export default class KeepyUppyCommand extends TextCommand {
         }
 
         const respond_pop = async () => {
-            await keepyUppyCollection.updateOne({ channel: message.channelId }, {
+            await keepyUppyCollection.updateOne({ channel: interaction.channelId }, {
                 $set: {
                     "balloon_state": "popped",
                     "currentStreak": 0
@@ -94,16 +113,16 @@ export default class KeepyUppyCommand extends TextCommand {
                     "longestStreak": keepyUppyDbData.currentStreak
                 }
             })
-            await message.reply({
-                content: "https://tenor.com/view/bluey-keepy-uppy-balloon-family-bingo-gif-19219146",
+            await interaction.reply({
+                content: `Game over! This balloon has managed to survive a total of ${keepyUppyDbData.currentStreak}. Longest streak set was ${Math.max(keepyUppyDbData.currentStreak, keepyUppyDbData.longestStreak)}. To restart, run \`kp restart\``,
+                files: ["https://c.tenor.com/RCACTh5KAwEAAAAd/tenor.gif"]
             })
-            await message.reply(`Game over! This balloon has managed to survive a total of ${keepyUppyDbData.currentStreak}. Longest streak set was ${Math.max(keepyUppyDbData.currentStreak, keepyUppyDbData.longestStreak)}. To restart, run \`kp restart\``)
         }
 
         const respond_land_on_cup = async () => {
-            await keepyUppyCollection.updateOne({ channel: message.channelId }, { $set: { "balloon_state": "land_on_cup" } })
-            await message.reply({
-                content: "*plop*\nBalloon has managed to land on a cup! Quick, boop it before someone blow a fan on it! But be careful, cause your boop can also make it fall down!",
+            await keepyUppyCollection.updateOne({ channel: interaction.channelId }, { $set: { "balloon_state": "land_on_cup" } })
+            await interaction.reply({
+                content: "*plop*\nBalloon has managed to land on a cup! Quick, boop it before someone use a fan on it! But be careful, cause your boop can also make it fall down!",
                 files: [
                     new AttachmentBuilder(
                         await sharp(`${keepyUppyGameData}/${randomChoice<string>(keepyUppyMap.on_cup)}`)
@@ -116,8 +135,8 @@ export default class KeepyUppyCommand extends TextCommand {
         }
 
         const respond_blow = async () => {
-            await keepyUppyCollection.updateOne({ channel: message.channelId }, { $set: { "balloon_state": "blown_by_fan" } })
-            await message.reply({
+            await keepyUppyCollection.updateOne({ channel: interaction.channelId }, { $set: { "balloon_state": "blown_by_fan" } })
+            await interaction.reply({
                 content: "*woosh*\nBalloon has flown into a different place!",
                 files: [
                     new AttachmentBuilder(
@@ -131,7 +150,7 @@ export default class KeepyUppyCommand extends TextCommand {
         }
 
         const respond_fail_blow = async () => {
-            await message.reply({
+            await interaction.reply({
                 content: "Woops, the fan just lost power! Balloon is in the same position!",
             })
         }
@@ -157,6 +176,10 @@ export default class KeepyUppyCommand extends TextCommand {
                     else await respond_pop()
                     break
                 case "popped":
+                    await interaction.reply({
+                        content: "Please restart the game first!",
+                        flags: MessageFlags.Ephemeral
+                    })
                     break
             }
         }
@@ -182,12 +205,16 @@ export default class KeepyUppyCommand extends TextCommand {
                     else await respond_fail_blow()
                     break
                 case "popped":
+                    await interaction.reply({
+                        content: "Please restart the game first!",
+                        flags: MessageFlags.Ephemeral
+                    })
                     break
             }
         }
 
-        await keepyUppyCollection.updateOne({ channel: message.channelId }, { $inc: { currentStreak: 1 } })
-        switch (args["action"].toLowerCase().trim().normalize()) {
+        await keepyUppyCollection.updateOne({ channel: interaction.channelId }, { $inc: { currentStreak: 1 } })
+        switch (interaction.options.getSubcommand()) {
             case "boop":
                 await action_boop()
                 break
@@ -196,14 +223,14 @@ export default class KeepyUppyCommand extends TextCommand {
                 break
             case "restart":
                 if (keepyUppyDbData.balloon_state != "popped") {
-                    await message.reply("You cannot restart an ongoing session!")
+                    await interaction.reply("You cannot restart an ongoing session!")
                 } else {
-                    await keepyUppyCollection.updateOne({ channel: message.channelId }, { $set: { "balloon_state": "off_ground" } })
+                    await keepyUppyCollection.updateOne({ channel: interaction.channelId }, { $set: { "balloon_state": "off_ground" } })
                     await respond_boop()
                 }
                 break
             default:
-                await message.reply("No action or invalid action specified! Use `kp boop` to boop the balloon and `kp fan` to use the fan.")
+                await interaction.reply("No action or invalid action specified! Use `/kp boop` to boop the balloon and `/kp fan` to use the fan.")
                 break
         }
     }
