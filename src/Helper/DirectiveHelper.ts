@@ -162,20 +162,40 @@ export async function processResponse(
             return (argv[0] == argv[1]).toString();
         },
         ">": function(argv: string[]) {
-            return (parseInt(argv[0]) > parseInt(argv[1])).toString();
+            return (parseFloat(argv[0]) > parseFloat(argv[1])).toString();
         },
         ">=": function(argv: string[]) {
-            return (parseInt(argv[0]) >= parseInt(argv[1])).toString();
+            return (parseFloat(argv[0]) >= parseFloat(argv[1])).toString();
         },
         "<": function(argv: string[]) {
-            return (parseInt(argv[0]) < parseInt(argv[1])).toString();
+            return (parseFloat(argv[0]) < parseFloat(argv[1])).toString();
         },
         "<=": function(argv: string[]) {
-            return (parseInt(argv[0]) <= parseInt(argv[1])).toString();
+            return (parseFloat(argv[0]) <= parseFloat(argv[1])).toString();
         },
         // Special comparer function for ranges. Used as {range:<min_value>:<value>:<max_value>}. Returns "true" if within range, "false" if outside range
         "range": function(argv: string[]) {
-            return (parseInt(argv[0]) < parseInt(argv[1]) && parseInt(argv[2]) > parseInt(argv[1])).toString();
+            return (parseFloat(argv[0]) < parseFloat(argv[1]) && parseFloat(argv[2]) > parseFloat(argv[1])).toString();
+        },
+        // Math related function. Used as {math:<operator>:<first_value>:<second_value>}
+        // <operator> includes: +, -, *, /, //, **, %
+        "math": function(argv: string[]) {
+            switch (argv[0]) {
+                case "+":
+                    return parseFloat(argv[1]) + parseFloat(argv[2])
+                case "-":
+                    return parseFloat(argv[1]) - parseFloat(argv[2])
+                case "*":
+                    return parseFloat(argv[1]) * parseFloat(argv[2])
+                case "/":
+                    return parseFloat(argv[1]) / parseFloat(argv[2])
+                case "//":
+                    return Math.floor(parseFloat(argv[1]) / parseFloat(argv[2]))
+                case "**":
+                    return parseFloat(argv[1]) ** parseFloat(argv[2])
+                case "%":
+                    return parseFloat(argv[1]) % parseFloat(argv[2])
+            }
         }
     }
 
