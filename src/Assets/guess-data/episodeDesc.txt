@@ -23,12 +23,12 @@ s3 | e29 | Puppets | Bluey and Bingo teach Unicorse good manners so he can ask M
 s3 | e28 | Stories | Indy thinks she's no good because her model horse looks like a cow, but Calypso encourages her not to give up, so she tries to fix it with a little help from Winton.
 s3 | e27 | Musical Statues | At the end of a long day, Bluey and her family are out of sync and out of sorts, so Mum gets everyone to play musical statues.
 s3 | e26 | Fairytale | Dad tells Bluey and Bingo a real-life fairy tale about growing up in a wild place called the '80s, about a boy who was cursed when he was mean to his little brother.
-s3 | e25 | Ragdoll | Dad agrees to take Bluey and Bingo to the shops to buy an ice cream if they can get him into the car. The only problem is, he's just entered `Ragdoll' mode.
+s3 | e25 | Ragdoll | Dad agrees to take Bluey and Bingo to the shops to buy an ice cream if they can get him into the car. The only problem is, he's just entered 'Ragdoll' mode.
 s3 | e24 | Faceytalk | Bluey and Bingo love to video chat with Muffin and Socks so they can all draw pictures together. When Muffin won't give Socks a turn, the kids discover what happens when they hog.
 s3 | e23 | Family Meeting | When Dad's accused of fluffing in Bluey's face as he climbs out of bed, he's put on trial with Mum as the judge, and Bluey and Bingo as witnesses. Bluey might also have to explain what she was doing there.
 s3 | e22 | Whale Watching | Bluey promises her customer, Bingo, the best tour ever in a game of Whale Watching, but they need Mum and Dad to join in, and they are too tired to play after a late night.
 s3 | e21 | Tina | Tired of being told what to do, Bluey and Bingo enlist their giant invisible friend to show Mum and Dad who's boss; now they can do anything they want, until Mum and Dad rebel.
-s3 | e20 | Driving | With only five minutes to play `Driving', Bluey and Mum race against the clock to buy milk for a grumpy guest and have to escape an angry shopkeeper.
+s3 | e20 | Driving | With only five minutes to play 'Driving', Bluey and Mum race against the clock to buy milk for a grumpy guest and have to escape an angry shopkeeper.
 s3 | e19 | Pizza Girls | Bluey and Bingo are making mud pizzas and delivering them to the grownups, but their pedal car's wheel keeps falling off.
 s3 | e18 | Rain | When a heavy summer rain thunders over the Heeler home, Bluey is determined to dam the water in the front yard, while Mum tries to stop her constantly tracking mud into the house.
 s3 | e17 | Pavlova | Mum won't let Bingo have pavlova, so the kids find a way by playing a cheeky game of Café in the kitchen. But Dad the chef sets up a competing shop that only serves edamame beans.
@@ -55,7 +55,7 @@ s2 | e47 | Ice Cream | Bluey and Bingo want a lick of each other's ice cream, bu
 s2 | e46 | Road Trip | Mum helps Bluey and Bingo find ways to entertain themselves on a family road trip, while Dad tries to stay ahead of the grey nomad convoy or risk camping near the toilets.
 s2 | e45 | Handstand | At a party, Bingo is desperate to show off her handstand skills, while Nanna can't find a way to make herself useful. They're both feeling a bit lost, until they find each other.
 s2 | e44 | Duck Cake | Bluey wants to help Dad make Bingo's birthday cake, but first she must put away her toys. But nothing can tempt her to clean up, until Dad drops the cake.
-s2 | e43 | Muffin Cone | When Muffin can't stop sucking her thumb, she has to wear a cone of shame. But the cone gets in her way and she can no longer play `sandwich shop' with Bluey and Bingo.
+s2 | e43 | Muffin Cone | When Muffin can't stop sucking her thumb, she has to wear a cone of shame. But the cone gets in her way and she can no longer play 'sandwich shop' with Bluey and Bingo.
 s2 | e42 | Bin Night | Bluey, Bingo and Dad always take out the bins. Over a few weeks, Bingo tells Dad about a new kid at kindy who is mean to her and Mum offers some good advice.
 s2 | e41 | Octopus | When Chloe tries to teach her dad to improvise and play Bluey's game of Octopus at home, he finds it hard to understand or enjoy, until they both realize they can play it their own way.
 s2 | e40 | Bad Mood | Bingo is playing Bad Mood with Dad, standing on his feet as Dad stomps around the house, controlling everything Bingo does and causing chaos.
@@ -79,18 +79,18 @@ s2 | e20 | Tickle Crabs | When Dad brings a pair of tenacious crabs home from th
 s2 | e18 | Piggyback | The Heelers take a late afternoon walk by the river, but Bingo decides she's too tired to walk any further and needs a piggyback. To distract her, Mum and Dad invent fun games and get her little legs moving again.
 s2 | e17 | Fancy Restaurant | Bluey and Bingo want Mum and Dad to be romantic, so they set up a special evening for the two at their fancy restaurant. Everything goes according to plan, until chef Bingo's special arrives.
 s2 | e16 | Army | Jack is the new dog at school and the newest recruit in Rusty's Army. Jack struggles with following instructions and always forgets his hat, but Rusty will make a soldier out of him.
-s2 | e15 | Trains | Bingo is a model citizen who commutes on the `Dad Train' to drop off her daughter at day care, go to work as a vet, and then go back home again. However, there's trouble on the line when a mischievous Bluey throws everyone off schedule.
-s2 | e14 | Mum School | Bluey plays mum to a brood of bouncy balloons, including an irrepressible floater named Greeny. Mum and Bluey play `Mum School', in which Mum agrees to teach Bluey how to control her rowdy kids and be a better mum.
+s2 | e15 | Trains | Bingo is a model citizen who commutes on the 'Dad Train' to drop off her daughter at day care, go to work as a vet, and then go back home again. However, there's trouble on the line when a mischievous Bluey throws everyone off schedule.
+s2 | e14 | Mum School | Bluey plays mum to a brood of bouncy balloons, including an irrepressible floater named Greeny. Mum and Bluey play 'Mum School', in which Mum agrees to teach Bluey how to control her rowdy kids and be a better mum.
 s2 | e13 | Dad Baby | When Dad shows the kids how to use their old baby-harness, a new game is born: Dad Baby. However, dad is unprepared for the harsh realities of giving birth to a baby Bingo.
 s2 | e11 | Charades | Bluey and Bingo spend the day at Nana's and want everyone to play charades, but their cousins Muffin and Socks are too young to understand the rules. Nana must quickly think of how to keep the game on track.
 s2 | e10 | Rug Island | Bluey and Bingo pretend that they are living on a desert island in the back garden and they discover Dad washed up on the beach. Dad needs to embrace his inner kid if he wants to make Bingo and Bluey's Rug Island his home, too.
 s2 | e9 | Bingo | When Bluey has a play date at Chloe's, Bingo must learn how to play without her sister. However, all the games she knows need more than one person. Luckily, Dad has a problem that needs solving.
 s2 | e8 | Daddy Dropoff | It's Dad's turn to give the kids breakfast and drop them off at school on time, but Bluey and Bingo are not going to make it easy for him. The girls make Dad play so many games and they quickly derail his plan.
-s2 | e7 | Favourite Thing | At dinner, the Heelers play a game called `My Favorite Thing Today' and take turns remembering their favourite thing from the day. However, when Bluey laughs at something her sister said earlier, Bingo's mood darkens.
+s2 | e7 | Favourite Thing | At dinner, the Heelers play a game called 'My Favorite Thing Today' and take turns remembering their favourite thing from the day. However, when Bluey laughs at something her sister said earlier, Bingo's mood darkens.
 s2 | e6 | Stumpfest | While Dad and his mates pull out some tree stumps in the garden, Bluey, Bingo and Muffin turn one stump into a nail salon. When it comes time to pull out the girls' stump, Dad must strike a deal.
 s2 | e5 | Hairdressers | Bluey and Bingo play a game of hairdressers, catering to Mum and all her needs. Then Dad comes along for a haircut, too, and Bluey and Bingo are surprised to discover that he has lice.
 s2 | e4 | Squash | When Dad and Uncle Stripe play a game of squash, Bluey and Bingo pretend that they are in control of their every move. Bingo proves that big siblings don't always beat little siblings.
-s2 | e1 | Dance Mode | When Dad eats her last chip, Bingo is given three chances to put Mum and Dad in `Dance Mode' as a form of payback. The game involves flicking someone's tail when there's music on to send them into an endless dance.
+s2 | e1 | Dance Mode | When Dad eats her last chip, Bingo is given three chances to put Mum and Dad in 'Dance Mode' as a form of payback. The game involves flicking someone's tail when there's music on to send them into an endless dance.
 s2 | e3 | Library | Muffin plays the game of library her way.
 s2 | e2 | Swim School | Mum, Dad and Bingo must pass swim school.
 s2 | e1 | Bin Night | Bluey, Bingo and Dad always take out the bins.

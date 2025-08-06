@@ -1,4 +1,4 @@
-export default interface GuessUser {
+export default interface GuessLeaderboard {
     user: string,
     score: number
 }

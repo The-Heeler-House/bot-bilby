@@ -9,6 +9,7 @@ import KeepyUppyData from "./models/keepyUppy";
 import Trigger from "./models/trigger"
 import MuteRoulette from "./models/muteroulette"
 import SpamDetection from "./models/spamDetection";
+import GuessLeaderboard from "./models/guess"
 dotenv.config();
 
 export default class DatabaseService {
@@ -52,7 +53,7 @@ export default class DatabaseService {
 export interface DatabaseCollections {
     botCharacters?: mongoDB.Collection,
     muteroulette?: mongoDB.Collection<MuteRoulette>,
-    guess?: mongoDB.Collection,
+    guess?: mongoDB.Collection<GuessLeaderboard>,
     triggers?: mongoDB.Collection<Trigger>,
     guessWho?: mongoDB.Collection,
     oldGuessWho?: mongoDB.Collection,
