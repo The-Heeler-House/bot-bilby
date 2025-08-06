@@ -21,6 +21,36 @@ type Episode = {
     description: string
 }
 
+/**
+ * Measure the differences of two texts by measuring their Levenshtein distance
+ */
+function lev_distance(text1: string, text2: string) {
+    const matrix = []
+    for (let i = 0; i <= text2.length; i++) {
+        matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= text1.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= text2.length; i++) {
+        for (let j = 1; j <= text1.length; j++) {
+            if (text2.charAt(i - 1) === text1.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1]; // No change
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j] + 1,    // Deletion
+                    matrix[i][j - 1] + 1,    // Insertion
+                    matrix[i - 1][j - 1] + 1 // Substitution
+                );
+            }
+        }
+    }
+
+    return matrix[text2.length][text1.length];
+}
+
 export default class GuessCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("guess")
@@ -188,13 +218,11 @@ export default class GuessCommand extends SlashCommand {
                         time: timer,
                     })
                 answerMessage.on("collect", (m) => {
-                    const answer = m.content.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9 ]/gu, "")
+                    const input = m.content.toLowerCase()
+                    const answer = currentEpisode.name.toLowerCase()
                     const id = m.author.id
                     // if the user's answer matches the episode name, increment the score
-                    if (
-                        answer.toLowerCase() ===
-                        currentEpisode.name.toLowerCase()
-                    ) {
+                    if (lev_distance(input, answer) <= 1) {
                         interaction.channel.send(
                             `<:Yes:1090051438828326912> **Correct!** <@${id}> receives 1 point!`
                         )
@@ -459,13 +487,12 @@ export default class GuessCommand extends SlashCommand {
                             time: timer,
                             errors: ["time"],
                         })
-                    const answer = answerMessage.first().content.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9 ]/gu, "")
+
+                    const input = answerMessage.first().content.toLowerCase()
+                    const answer = currentEpisode.name.toLowerCase()
 
                     // if the user's answer matches the episode name, increment the score
-                    if (
-                        answer.toLowerCase() ===
-                        currentEpisode.name.toLowerCase()
-                    ) {
+                    if (lev_distance(input, answer) <= 1) {
                         score++
                         await interaction.channel.send("<:Yes:1090051438828326912> **Correct!**")
                         timer -= 100
@@ -495,7 +522,7 @@ export default class GuessCommand extends SlashCommand {
                             await endGame(interaction, score)
                             return
                         }
-                        var userAnswer = option //? when the user answer, the first arg will be the answer
+                        var userRetryAnswer = option //? when the user answer, the first arg will be the answer
                         var useHint = false
                         if (option === "h") {
                             await interaction.channel.send(
@@ -508,16 +535,13 @@ export default class GuessCommand extends SlashCommand {
                                     time: timer,
                                     errors: ["time"],
                                 })
-                            userAnswer = retryMessage
+                            userRetryAnswer = retryMessage
                                 .first()
                                 .content.toLowerCase()
                             useHint = true
                         }
 
-                        if (
-                            userAnswer.normalize("NFD").replace(/(\p{Diacritic})|[^a-zA-Z0-9 ]/gu, "").toLowerCase() ===
-                            currentEpisode.name.toLowerCase()
-                        ) {
+                        if (lev_distance(userRetryAnswer, answer) <= 1) {
                             score += 0.5
                             await interaction.channel.send(
                                 `<:Yes:1090051438828326912> **Correct!** ${

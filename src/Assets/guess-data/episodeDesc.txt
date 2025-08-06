@@ -115,7 +115,7 @@ s1 | e36 | Backpackers | Mum and Dad set out on an adventure and decide to wear 
 s1 | e35 | Zoo | Bluey creates a zoo in her backyard that features all sorts of amazing creatures, including the big blue daddy gorilla; when he escapes, zookeeper Bluey attempts to track him down.
 s1 | e34 | The Dump | While visiting the dump, Dad announces that he is the best at everything. When Bluey finds out that Dad threw out one of her old drawings, she starts to doubt whether he is the best.
 s1 | e33 | Trampoline | When Dad is forced to stop playing with the girls to do some work, the girls do everything in their power to keep him playing games with them on the trampoline.
-s1 | e32 | Bumpy and the Wise Old Wolfhound | When Bingo has to go to hospital, Bluey and Dad make a homemade video to cheer her up, featuring the story of Barnicus' quest to heal her spotted dog called Bumpy.
+* s1 | e32 | Bumpy and the Wise Old Wolfhound | When Bingo has to go to hospital, Bluey and Dad make a homemade video to cheer her up, featuring the story of Barnicus' quest to heal her spotted dog called Bumpy.
 s1 | e31 | Work | During a game of 'work', Dad hires Bluey and Bingo at his drainpipe factory. When Bluey takes charge, Dad is less than impressed with the her no dancing rule.
 s1 | e30 | Fairies | When Bluey's house becomes overrun by mischievous fairies, the whole family work together to hunt the invisible imps.
 s1 | e29 | The Creek | Dad and the kids decide to go on a journey to their local creek after getting bored of the local playground; although out of her comfort zone, Bluey's eyes are opened to the beauty of the natural world.
