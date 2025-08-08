@@ -229,13 +229,15 @@ async function singleplayer(interaction: ChatInputCommandInteraction, episodes: 
                 }
 
                 // if the user's answer matches the episode name, increment the score
-                if (DL_distance(input, answer) <= 1) {
+                const str_diff = DL_distance(input, answer)
+                if (str_diff <= 1) {
                     userScore += hasAnsweredIncorrect ? 0.5 : 1
-                    await interaction.channel.send(
-                        "<:Yes:1090051438828326912> **Correct!** " +
-                        `${hasAnsweredIncorrect ? (hasUsedHint ? "(With Hint)" : "(Second Guess)") : ""}` +
+                    await interaction.channel.send([
+                        "<:Yes:1090051438828326912>",
+                        str_diff == 0 ? "**Correct!**" : `**Accepted** (answer was __${answer}__)`,
+                        `${hasAnsweredIncorrect ? (hasUsedHint ? "(With Hint)" : "(Second Guess)") : ""}`,
                         `(+${hasAnsweredIncorrect ? 0.5 : 1} point, now ${userScore} points)`
-                    )
+                    ].join(" "))
                     timeLeft -= 100
 
                     // ask the next question after a short delay to avoid flooding the channel
@@ -424,11 +426,13 @@ async function multiplayer(interaction: ChatInputCommandInteraction, episodes: E
                 const answer = selectedEp.name.toLowerCase()
 
                 // if the user's answer matches the episode name, increment the score
-                if (DL_distance(input, answer) <= 1) {
-                    await interaction.channel.send(
-                        "<:Yes:1090051438828326912> **Correct!** " +
+                const str_diff = DL_distance(input, answer)
+                if (str_diff <= 1) {
+                    await interaction.channel.send([
+                        "<:Yes:1090051438828326912>",
+                        str_diff == 0 ? "**Correct!**" : `**Accepted** (answer was __${answer}__)`,
                         `<@${userAnswerData.author.id}> receives 1 point!`
-                    )
+                    ].join(" "))
 
                     players[userAnswerData.author.id].score++
 
