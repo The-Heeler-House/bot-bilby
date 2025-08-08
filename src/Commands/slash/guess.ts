@@ -30,34 +30,83 @@ type Episode = {
 }
 
 /**
- * Measure the differences of two texts by measuring their Levenshtein distance
+ * Wrapper class for access a 2D Int32Array while storing internally as a 1D array
  */
-function lev_distance(text1: string, text2: string) {
-    const matrix = []
-    for (let i = 0; i <= text2.length; i++) {
-        matrix[i] = [i];
+class Int32Array2D {
+    width: number
+    height: number
+    data: Int32Array<ArrayBuffer>
+    constructor(width: number, height: number) {
+        this.width = width;
+        this.height = height;
+        this.data = new Int32Array(width * height); // defaults to 0
     }
 
-    for (let j = 0; j <= text1.length; j++) {
-        matrix[0][j] = j;
-    }
-
-    for (let i = 1; i <= text2.length; i++) {
-        for (let j = 1; j <= text1.length; j++) {
-            if (text2.charAt(i - 1) === text1.charAt(j - 1)) {
-                matrix[i][j] = matrix[i - 1][j - 1]; // No change
-            } else {
-                matrix[i][j] = Math.min(
-                    matrix[i - 1][j] + 1,    // Deletion
-                    matrix[i][j - 1] + 1,    // Insertion
-                    matrix[i - 1][j - 1] + 1 // Substitution
-                );
-            }
+    #_getIndex(x: number, y: number) {
+        if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
+            throw new RangeError(`Coordinates out of bounds: (${x}, ${y})`);
         }
+        return y * this.width + x;
     }
 
-    return matrix[text2.length][text1.length];
+    get(x: number, y: number) {
+        return this.data[this.#_getIndex(x, y)];
+    }
+
+    set(x: number, y: number, value: number) {
+        this.data[this.#_getIndex(x, y)] = value | 0; // force to 32-bit int
+    }
 }
+
+/**
+ * function to calculate the Damerau–Levenshtein distance between two string
+ * @param a first string
+ * @param b second string
+ * @returns the "edit length" of string (addition, deletion, substitutions, and transposition)
+ */
+function DL_distance(a: string, b: string) {
+    const alphabet = new Set(a + b)
+    let da = {}
+    for (let i of alphabet) da[i] = 1
+
+    let d = new Int32Array2D(a.length + 2, b.length + 2)
+    let maxdist = a.length + b.length
+    d.set(0, 0, maxdist)
+    for (let i = 1; i <= a.length + 1; i++) {
+        d.set(i, 0, maxdist)
+        d.set(i, 1, i - 1)
+    }
+    for (let j = 1; j <= b.length + 1; j++) {
+        d.set(0, j, maxdist)
+        d.set(1, j, j - 1)
+    }
+
+    for (let i = 2; i <= a.length + 1; i++) {
+        let db = 1;
+        for (let j = 2; j <= b.length + 1; j++) {
+            let k = da[b[j - 2]]
+            let l = db
+            let cost = 0
+
+            if (a[i - 2] == b[j - 2]) {
+                cost = 0
+                db = j
+            } else {
+                cost = 1
+            }
+
+            d.set(i, j, Math.min(
+                d.get(i - 1, j - 1) + cost,
+                d.get(i    , j - 1) + 1,
+                d.get(i - 1, j    ) + 1,
+                d.get(k - 1, l - 1) + ((i - 1) - (k - 1) - 1) + cost + ((j - 1) - (l - 1) - 1)
+            ))
+        }
+        da[a[i - 2]] = i
+    }
+    return d.get(a.length + 1, b.length + 1)
+}
+
 
 // function to save a score to the leaderboard
 async function saveScore(leaderboard: Collection<GuessLeaderboard>, user: string, score: number) {
@@ -181,7 +230,7 @@ async function singleplayer(interaction: ChatInputCommandInteraction, episodes: 
                 }
 
                 // if the user's answer matches the episode name, increment the score
-                if (lev_distance(input, answer) <= 1) {
+                if (DL_distance(input, answer) <= 1) {
                     userScore += hasAnsweredIncorrect ? 0.5 : 1
                     await interaction.channel.send(
                         "<:Yes:1090051438828326912> **Correct!** " +
@@ -375,7 +424,7 @@ async function multiplayer(interaction: ChatInputCommandInteraction, episodes: E
                 const answer = selectedEp.name.toLowerCase()
 
                 // if the user's answer matches the episode name, increment the score
-                if (lev_distance(input, answer) <= 1) {
+                if (DL_distance(input, answer) <= 1) {
                     await interaction.channel.send(
                         "<:Yes:1090051438828326912> **Correct!** " +
                         `<@${userAnswerData.author.id}> receives 1 point!`
