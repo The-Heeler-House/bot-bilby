@@ -114,7 +114,7 @@ export default class KeepyUppyCommand extends SlashCommand {
                 }
             })
             await interaction.reply({
-                content: `Game over! This balloon has managed to survive a total of ${keepyUppyDbData.currentStreak}. Longest streak set was ${Math.max(keepyUppyDbData.currentStreak, keepyUppyDbData.longestStreak)}. To restart, run \`kp restart\``,
+                content: `Game over! This balloon has managed to survive a total of ${keepyUppyDbData.currentStreak} actions. Longest streak set was ${Math.max(keepyUppyDbData.currentStreak, keepyUppyDbData.longestStreak)} actions. To restart, run \`kp restart\``,
                 files: ["https://c.tenor.com/RCACTh5KAwEAAAAd/tenor.gif"]
             })
         }
