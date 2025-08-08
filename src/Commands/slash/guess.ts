@@ -122,7 +122,6 @@ async function saveScore(leaderboard: Collection<GuessLeaderboard>, user: string
 
 async function generateLeaderboard(leaderboard: Collection<GuessLeaderboard>, interaction: ChatInputCommandInteraction) {
     const entryGenerator = leaderboard.find().sort({ score: -1 })
-    // get only the first 10 people, for some reason
     const MAX_ENTRY = 10
 
     const leaderboardEmbed = new EmbedBuilder()
@@ -136,7 +135,7 @@ async function generateLeaderboard(leaderboard: Collection<GuessLeaderboard>, in
         const id = playerEntry.user
         try {
             const user = await interaction.guild.members.fetch(id)
-            desc += `${cnt}. \`${user.displayName}\`: **${playerEntry.score} Episodes**\n`
+            desc += `${cnt}. \`${user.displayName}\`: **${playerEntry.score} points**\n`
             cnt++
         } catch (err) {}
     }
@@ -145,9 +144,9 @@ async function generateLeaderboard(leaderboard: Collection<GuessLeaderboard>, in
         .findOne({ user: interaction.user.id }, { sort: {score: -1} })
 
     if (thisUserScore) {
-        desc += `\nYour highscore: **${thisUserScore.score} Episodes**`
+        desc += `\nYour highscore: **${thisUserScore.score} points**`
     } else {
-        desc += `\nYour highscore: **none yet**`
+        desc += `\nYour highscore: *no data found*`
     }
     leaderboardEmbed.setDescription(desc)
     return leaderboardEmbed
@@ -234,7 +233,8 @@ async function singleplayer(interaction: ChatInputCommandInteraction, episodes: 
                     userScore += hasAnsweredIncorrect ? 0.5 : 1
                     await interaction.channel.send(
                         "<:Yes:1090051438828326912> **Correct!** " +
-                        `${hasAnsweredIncorrect ? (hasUsedHint ? "(With Hint)" : "(Second Guess)") : ""}`
+                        `${hasAnsweredIncorrect ? (hasUsedHint ? "(With Hint)" : "(Second Guess)") : ""}` +
+                        `(+${hasAnsweredIncorrect ? 0.5 : 1} point, now ${userScore} points)`
                     )
                     timeLeft -= 100
 
@@ -273,7 +273,7 @@ async function singleplayer(interaction: ChatInputCommandInteraction, episodes: 
     }
 
     await interaction.channel.send(
-        `:alarm_clock: **Game over!** You managed to guess ${userScore} episodes!`
+        `:alarm_clock: **Game over!** You managed to score ${userScore} points!`
     )
     await saveScore(leaderboard, interaction.user.id, userScore)
     await interaction.channel.send({ embeds: [await generateLeaderboard(leaderboard, interaction)] })
