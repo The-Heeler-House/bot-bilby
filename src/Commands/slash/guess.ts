@@ -35,7 +35,7 @@ type Episode = {
 class Int32Array2D {
     width: number
     height: number
-    data: Int32Array<ArrayBuffer>
+    data: Int32Array
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;

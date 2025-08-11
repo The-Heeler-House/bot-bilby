@@ -226,13 +226,16 @@ export default class Connect4Command extends SlashCommand {
             boardText.push(
                 "** **",
                 status[gameState],
-                `**Player ${emojiMapping[BoardMapping.PLAYER]}: <@${users[BoardMapping.PLAYER]}> | Opponent ${emojiMapping[BoardMapping.OPPONENT]}: <@${users[BoardMapping.OPPONENT]}>**`,
                 currentTurnText[gameState]
             )
             return new EmbedBuilder()
                 .setColor(0x0000FF)
                 .setTitle("Connect 4!")
                 .setDescription(boardText.join("\n"))
+                .addFields(
+                    {name: `Player ${emojiMapping[BoardMapping.PLAYER]}`, value: `<@${users[BoardMapping.PLAYER]}>`, inline: true},
+                    {name: `Opponent ${emojiMapping[BoardMapping.OPPONENT]}`, value: `<@${users[BoardMapping.OPPONENT]}>`, inline: true},
+                )
                 .setTimestamp()
         }
 
