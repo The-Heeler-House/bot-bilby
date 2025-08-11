@@ -13,9 +13,9 @@ export const roleIds = {
 
 export const channelIds = {
     offTopic: devConstants.channelIds.offTopic || "962936076404686859",
-    staff: devConstants.channelIds.staff || "1263106351878508657",
+    staff: devConstants.channelIds.staff || "1404230415954214993",
     bilby: devConstants.channelIds.bilby || "966921162804301824",
-    chatLog: devConstants.channelIds.chatLog || "961201095038873630",
+    chatLog: devConstants.channelIds.chatLog || "1404252855594123316",
     mediaLog: devConstants.channelIds.mediaLog || "1098673855809204294",
     reactionLog: devConstants.channelIds.reactionLog || "1241199271022301266",
     announcements: devConstants.channelIds.announcements || "961056736398172200"
