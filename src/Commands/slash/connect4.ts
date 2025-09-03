@@ -218,7 +218,7 @@ export default class Connect4Command extends SlashCommand {
 
             let currentTurnText = {
                 [GameState.INIT]: "",
-                [GameState.RUNNING]: `**Current Turn: <@${users[currentTurn]}>**`,
+                [GameState.RUNNING]: `**Current Turn: ${emojiMapping[currentTurn]} <@${users[currentTurn]}>**`,
                 [GameState.TIE]: "",
                 [GameState.WIN]: ""
             }
