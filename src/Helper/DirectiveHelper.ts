@@ -106,7 +106,6 @@ export async function processResponse(
         fetch_user: async function(argv: string[]) {
             try {
                 const member = await message.guild.members.fetch(argv[0])
-                return JSON.stringify({ a: argv[0], b: member, c: message.guild.members })
                 let property = member
                 for (const p of argv[1].split(".")) {
                     property = property[p]
