@@ -100,6 +100,22 @@ export async function processResponse(
             toString: () => `<@${message.author.id}>`
         },
 
+        // Fetch a user
+        // Read a property of a user. Used as {fetch_user:<user_id>:<property.path>}
+        // For reference on what to read on property, refer to Discord.js's documentation on the User object
+        fetch_user: async function(argv: string[]) {
+            try {
+                const member = await message.guild.members.fetch(argv[0])
+                let property = member
+                for (const p of argv[1].split(".")) {
+                    property = property[p]
+                }
+                return property
+            } catch (e) {
+                return ""
+            }
+        },
+
         // Functions.
         // Select capture group. Used as {group:[index]} (index start as 0 for the first capture group, and so on).
         // If no index is provided, the content of all capture group will be displayed.
