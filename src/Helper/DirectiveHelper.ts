@@ -105,8 +105,8 @@ export async function processResponse(
         // For reference on what to read on property, refer to Discord.js's documentation on the User object
         fetch_user: async function(argv: string[]) {
             try {
-                const member = await message.guild.members.cache.get(argv[0])
-                return member
+                const member = await message.guild.members.fetch(argv[0])
+                return JSON.stringify({ a: argv[0], b: member, c: message.guild.members })
                 let property = member
                 for (const p of argv[1].split(".")) {
                     property = property[p]
