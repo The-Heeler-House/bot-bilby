@@ -51,7 +51,7 @@ async function processDirectives(
     if (variables[root] != undefined) {
         if (typeof variables[root] === "function") {
             // Support for functions in variables.
-            let funcOutput = variables[root](argv);
+            let funcOutput = await variables[root](argv);
             if (typeof funcOutput === "object") {
                 output.text = funcOutput.text;
                 output.terminate = funcOutput.terminate;
