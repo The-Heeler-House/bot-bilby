@@ -1,4 +1,4 @@
-import { Client, Events, Message, MessageFlags } from "discord.js";
+import { Client, Events, Message, MessageFlags, TextChannel } from "discord.js";
 import BotEvent, { customEvents } from "../BotEvent";
 import { Services } from "../../Services";
 import Denque from "denque"
@@ -61,6 +61,9 @@ export default class SpamDetection extends BotEvent {
             state().mediaLog[channelId].cnt -= state().mediaLog[channelId].queue.shift()
 
         if (state().mediaLog[channelId].cnt >= spamDetectionData.min_media_cnt && !state().sentAlert[message.channelId]) {
+            if (message.channel instanceof TextChannel) {
+                await message.channel.setRateLimitPerUser(5, "Media spam.")
+            }
             await staffChannel.send({
                 content: `<@&${roleIds.staff}> Possible media spam in <#${message.channelId}> (${state().mediaLog[channelId].cnt} media in every ${spamDetectionData.min_media_sample_size} messages)`,
                 flags: [ MessageFlags.SuppressNotifications ]
