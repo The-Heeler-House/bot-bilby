@@ -1,29 +1,35 @@
-import * as devConstants from '../testingIds.json';
+import config from "config"
 
 export const roleIds = {
-    helperInTraining: devConstants.roleIds.helperInTraining || "1102308206430134312",
-    staff: devConstants.roleIds.staff || "1073391142881722400",
-    helper: devConstants.roleIds.helper || "1079592438819205130",
-    mod: devConstants.roleIds.mod || "960044331572547654",
-    leadership: devConstants.roleIds.leadership || "1073388656183742514",
-    verifying: devConstants.roleIds.verifying || "1273082107282849803",
-    newbie: devConstants.roleIds.newbie || "1272596845540933713",
-    fan: devConstants.roleIds.fan || "961101330141814815"
+    helperInTraining: config.get<string>("roleIds.helperInTraining"),
+    staff: config.get<string>("roleIds.staff"),
+    helper: config.get<string>("roleIds.helper"),
+    mod: config.get<string>("roleIds.mod"),
+    leadership: config.get<string>("roleIds.leadership"),
+    verifying: config.get<string>("roleIds.verifying"),
+    newbie: config.get<string>("roleIds.newbie"),
+    fan: config.get<string>("roleIds.fan")
 }
 
 export const channelIds = {
-    offTopic: devConstants.channelIds.offTopic || "962936076404686859",
-    staff: devConstants.channelIds.staff || "1404230415954214993",
-    bilby: devConstants.channelIds.bilby || "966921162804301824",
-    chatLog: devConstants.channelIds.chatLog || "1404252855594123316",
-    mediaLog: devConstants.channelIds.mediaLog || "1098673855809204294",
-    reactionLog: devConstants.channelIds.reactionLog || "1241199271022301266",
-    announcements: devConstants.channelIds.announcements || "961056736398172200"
+    offTopic: config.get<string>("channelIds.offTopic"),
+    staff: config.get<string>("channelIds.staff"),
+    bilby: config.get<string>("channelIds.bilby"),
+    chatLog: config.get<string>("channelIds.chatLog"),
+    mediaLog: config.get<string>("channelIds.mediaLog"),
+    reactionLog: config.get<string>("channelIds.reactionLog"),
+    announcements: config.get<string>("channelIds.announcements")
 }
 
-export const devIds = devConstants.devIds || [ "186730180872634368", "763377551963717653", "640921495245422632" ];
+export const channelCategoryIds = {
+    staffPro: config.get<string>("channelCategoryIds.staffPro"),
+    staffInfo: config.get<string>("channelCategoryIds.staffInfo"),
+    leadership: config.get<string>("channelCategoryIds.leadership"),
+}
 
-export const THH_SERVER_ID = "959534476520730724"
+export const devIds = config.get<string[]>("devIds")
+
+export const THH_SERVER_ID = config.get<string>("serverId")
 
 export const badWordFilter = {
     "match_all": ["fuck", "nigg", "fuk", "cunt", "cnut", "bitch", "dick", "d1ck", "pussy", "asshole", "b1tch", "b!tch", "blowjob", "c0ck", "hentai", "nigga", "nigger", "faggot", "vagina", "penis", "genital", "nlgga", "nlgger", "gringo", "chink", "porn", "p0rn", "shagger", "clit", "erotic", "ejaculate", "fellatio"],

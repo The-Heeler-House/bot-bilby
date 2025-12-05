@@ -25,7 +25,6 @@ npm i
 4. Inside the `.env` file, fill in the following information (replace the dot between the quotation mark with actual value):
 ```env
 TOKEN="..." # the bot token
-DEVELOPMENT_GUILD="..." # guild to register guild commands in. if this is omitted, global commands will be registered instead.
 PREFIX="..." # text command prefix, can be any length.
 MONGO_URL="" # connection URL for MongoDB database (should be in the form of: "mongodb://...")
 API_PORT=8080 # port that the BilbyAPI service will listen on. used for non-bilby related projects where data from bilby is needed.
@@ -34,7 +33,7 @@ S3_ENDPOINT="..." # Endpoint to access S3/MinIO instance
 S3_ACCESS_KEY="..." # Access key for S3/MinIO instance
 S3_SECRET_KEY="..." # Secret key for S3/MinIO instance
 ```
-5. Fill out `testingIds.json` with the channel and role ids from your server.
+5. Create a file named `local.json` in the `config` directory. Setup the configuration file by following the `default.json` file while filling the IDs specifically for your server.
 
 ### **Run the bot**
 Once everything have seen set up, compile and run the bot using:

@@ -1,22 +1,3 @@
 {
-    "roleIds": {
-        "helperInTraining": "",
-        "staff": "",
-        "mod": "",
-        "helper": "",
-        "leadership": "",
-        "verifying": "",
-        "newbie": "",
-        "fan": ""
-    },
-    "channelIds": {
-        "offTopic": "",
-        "staff": "",
-        "bilby": "",
-        "chatLog": "",
-        "mediaLog": "",
-        "reactionLog": "",
-        "announcements": ""
-    },
-    "devIds": null
+    "NOTICE": "testingIds.json is no longer used along with DEVELOPMENT_GUILD env variable. please create a file named 'local.json' inside the 'config' directory. Follow the default config file at 'config/default.json' and fill in the information as you would have in old testingIds, along with 'serverId' property replacing DEVELOPMENT_GUILD env variable"
 }

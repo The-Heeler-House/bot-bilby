@@ -4,3 +4,5 @@ dist/
 .DS_Store
 state.json
 .idea
+config/*
+!config/default.json
