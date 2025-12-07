@@ -8,40 +8,13 @@ import { isTHHorDevServer } from "../Helper/EventsHelper";
 import { canExecuteCommand } from "../Helper/PermissionHelper";
 
 function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
-    const processStringRegex = /"([^"]*)"( *)|'([^']*)'( *)|`([^`]*)`( *)|“([^“”]*)”( *)|(\S+)(\W*)/g
-    let processed: string[] = []
-    let separator: string[] = []
+    const processStringRegex = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|(\S+)/g
     let match: RegExpExecArray
-
-    let output = {}
-
-    while ((match = processStringRegex.exec(rawArgs)) !== null) {
-        if (match[1]) {
-            processed.push(match[1])
-            separator.push(match[2])
-            continue
-        }
-        if (match[3]) {
-            processed.push(match[3])
-            separator.push(match[4])
-            continue
-        }
-        if (match[5]) {
-            processed.push(match[5])
-            separator.push(match[6])
-            continue
-        }
-        if (match[7]) {
-            processed.push(match[7])
-            separator.push(match[8])
-            continue
-        }
-        if (match[9]) {
-            processed.push(match[9])
-            separator.push(match[10])
-            continue
-        }
+    let output: { [key: string]: any } = {}
+    for (let i of data) {
+        output[i.name] = 'ERR_NO_DATA'
     }
+    let dataArgCounter = 0
 
     //? check if optional args are placed at the end of the list
     const requiredList = data.map(v => v.required)
@@ -60,65 +33,77 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
         }
     }
 
-    //? check if argument length is the same
-    const argLength = data.length
-    const requiredArgLength = data.filter(v => v.required).length
+    const invalidTypeMsg = (expected: TextCommandArgType, at: string) => `Invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
+    const parseOutputArgs = () => `The command has been parsed as follows:\n${Object.keys(output).map(v => ` \\- \`${v}\`: \`${output[v]}\``).join("\n")}`
+    const overflowArgs = (arg: string) => `I don't know what do to next with \`${arg}\` :c\n(did you forget to close string with double quotes?)`
+    const underflowArgs = () => `I'm missing the following argument(s): ${data.slice(dataArgCounter).map(v => `\`${v.name}\``).join(", ")} :3`
 
-    const invalidLengthMsg = `expected ${requiredArgLength == argLength ? requiredArgLength : `${requiredArgLength} to ${argLength}`} argument(s) in command, found ${processed.length} argument(s) instead`
+    while ((match = processStringRegex.exec(rawArgs)) !== null) {
+        let argContent = ""
 
-    if (processed.length < requiredArgLength)
-        throw new Error(invalidLengthMsg)
+        if (match[1]) { //? handle double-quotes
+            argContent = match[1]
+        }
+        else if (match[2]) { //? handle single-quotes
+            argContent = match[2]
+        }
+        else if (match[3]) { //? handle normal input with no quotes
+            argContent = match[3]
+        }
 
-    if (data.length == 0 || data[data.length - 1].type != TextCommandArgType.implicit_string) {
-        if (processed.length > argLength) throw new Error(invalidLengthMsg)
-    }
+        if (dataArgCounter >= data.length) {
+            throw new Error(`Too many arguments! expected ${data.length} argument(s), found ${dataArgCounter + 1} argument(s) instead.\n${parseOutputArgs()}\n${overflowArgs(argContent)}`)
+        }
 
-    //? process data and check if type matches
-    const invalidTypeMsg = (expected: TextCommandArgType, at: string) => `invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
-    for (let i = 0; i < processed.length; i++) {
-        const data_pos = Math.min(i, data.length - 1)
-        switch (data[data_pos].type) {
+        if (data[dataArgCounter].type == TextCommandArgType.implicit_string) {
+            argContent = rawArgs.slice(match.index)
+            output[data[dataArgCounter].name] = argContent
+            dataArgCounter++
+            break
+        }
+
+        switch (data[dataArgCounter].type) {
             case TextCommandArgType.number:
-                const num = Number(processed[i])
+                const num = Number(argContent)
                 if (isNaN(num)) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.number, data[i].name))
+                    throw new Error(invalidTypeMsg(TextCommandArgType.number, data[dataArgCounter].name))
                 }
-                output[data[data_pos].name] = num
+                output[data[dataArgCounter].name] = num
                 break
             case TextCommandArgType.boolean:
-                const bool = processed[i].toLowerCase().normalize()
+                const bool = argContent.toLowerCase().normalize()
                 if (!["true", "false"].includes(bool)) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.boolean, data[i].name))
+                    throw new Error(invalidTypeMsg(TextCommandArgType.boolean, data[dataArgCounter].name))
                 }
-                output[data[data_pos].name] = bool == "true" ? true : false
+                output[data[dataArgCounter].name] = bool == "true" ? true : false
                 break
             case TextCommandArgType.channel_mention:
-                let channel = processed[i].trim().toLowerCase().normalize()
+                let channel = argContent.trim().toLowerCase().normalize()
                 channel = channel.replace(/^\<#(\d+)\>$/g, "$1")
                 if (isNaN(Number(channel))) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.channel_mention, data[i].name))
+                    throw new Error(invalidTypeMsg(TextCommandArgType.channel_mention, data[dataArgCounter].name))
                 }
-                output[data[data_pos].name] = channel
+                output[data[dataArgCounter].name] = channel
                 break
             case TextCommandArgType.user_mention:
-                let user = processed[i].trim().toLowerCase().normalize()
+                let user = argContent.trim().toLowerCase().normalize()
                 user = user.replace(/^\<@(\d+)\>$/g, "$1")
                 if (isNaN(Number(user))) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.user_mention, data[i].name))
+                    throw new Error(invalidTypeMsg(TextCommandArgType.user_mention, data[dataArgCounter].name))
                 }
-                output[data[data_pos].name] = user
+                output[data[dataArgCounter].name] = user
                 break
             case TextCommandArgType.string:
-                let str = processed[i]
-                output[data[data_pos].name] = str
+                let str = argContent
+                output[data[dataArgCounter].name] = str
                 break
-            case TextCommandArgType.implicit_string:
-                let impl_str = processed[i] + separator[i]
-                if (output[data[data_pos].name])
-                    output[data[data_pos].name] += impl_str
-                else
-                    output[data[data_pos].name] = impl_str
-                break
+        }
+        dataArgCounter++
+    }
+
+    if (dataArgCounter < data.length) {
+        if (data[dataArgCounter].required) {
+            throw new Error(`Arguments missing! expected ${data.length} argument(s), found ${dataArgCounter} argument(s) instead.\n${parseOutputArgs()}\n${underflowArgs()}`)
         }
     }
 
