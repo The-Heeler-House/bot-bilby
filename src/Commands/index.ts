@@ -11,9 +11,6 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
     const processStringRegex = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|(\S+)/g
     let match: RegExpExecArray
     let output: { [key: string]: any } = {}
-    for (let i of data) {
-        output[i.name] = 'ERR_NO_DATA'
-    }
     let dataArgCounter = 0
 
     //? check if optional args are placed at the end of the list
@@ -34,7 +31,7 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
     }
 
     const invalidTypeMsg = (expected: TextCommandArgType, at: string) => `Invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
-    const parseOutputArgs = () => `The command has been parsed as follows:\n${Object.keys(output).map(v => ` \\- \`${v}\`: \`${output[v]}\``).join("\n")}`
+    const parseOutputArgs = () => `The arguments has been parsed as follows:\n${Object.keys(output).map(v => ` \\- \`${v}\`: \`${output[v]}\``).join("\n")}`
     const overflowArgs = (arg: string) => `I don't know what do to next with \`${arg}\` :c\n(did you forget to close string with double quotes?)`
     const underflowArgs = () => `I'm missing the following argument(s): ${data.slice(dataArgCounter).map(v => `\`${v.name}\``).join(", ")} :3`
 
