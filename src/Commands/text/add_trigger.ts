@@ -10,7 +10,7 @@ export default class AddTriggerCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("add trigger")
         .setDescription("Adds a trigger for Bot Bilby respond to.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 

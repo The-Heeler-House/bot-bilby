@@ -7,7 +7,7 @@ export default class ToggleGateCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("toggle gate")
         .setDescription("Toggles whether the join gate is enabled or not.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

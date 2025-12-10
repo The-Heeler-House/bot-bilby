@@ -8,7 +8,7 @@ export default class ListCharactersCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("list characters")
         .setDescription("Gets a list of all characters.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

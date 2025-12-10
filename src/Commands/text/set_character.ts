@@ -11,7 +11,7 @@ export default class SetCharacterCommand extends TextCommand {
         .setName("set character")
         .setDescription("Changes the username and avatar of Bot Bilby to predefined characters.")
         .addImplicitStringArgument("character", "The character preset to set to.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

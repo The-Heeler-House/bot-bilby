@@ -9,7 +9,7 @@ export default class GetTriggerCommand extends TextCommand {
         .setName("get trigger")
         .setDescription("Gets information about a trigger.")
         .addImplicitStringArgument("trigger", "The trigger to get information for.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 

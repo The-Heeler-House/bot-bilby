@@ -7,7 +7,7 @@ export default class SayCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("cleanup guesswho")
         .setDescription("Clean up guesswho sessions that were created in a channel.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addChannelMentionArgument("channel", "Channel to cleanup")
         .allowInDMs(false);
 

@@ -10,7 +10,7 @@ export default class GetTriggerCommand extends TextCommand {
         .setName("view trigger")
         .setDescription("Outputs the response for a trigger.")
         .addImplicitStringArgument("trigger", "The trigger to get the response from.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 

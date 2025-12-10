@@ -7,7 +7,7 @@ export default class SayCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("say")
         .setDescription("Sends a message into off-topic as Bot Bilby.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addImplicitStringArgument("message", "The message to send into off-topic")
         .allowInDMs(false);
 

@@ -7,7 +7,7 @@ export default class ToggleS3Command extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("toggle s3")
         .setDescription("Toggles the S3 container used for storing the attachments.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

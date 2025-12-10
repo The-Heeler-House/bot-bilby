@@ -10,7 +10,7 @@ export default class PreviewCharacterCommand extends TextCommand {
         .setName("preview character")
         .setDescription("Preview what a character looks like.")
         .addImplicitStringArgument("character", "The character preset to preview.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

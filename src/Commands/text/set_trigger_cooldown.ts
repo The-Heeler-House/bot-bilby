@@ -10,7 +10,7 @@ export default class EditTriggerCooldownCommand extends TextCommand {
         .setName("set trigger cooldown")
         .setDescription("Set a trigger's cooldown length.")
         .addImplicitStringArgument("trigger", "The trigger to edit the cooldown length of.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 

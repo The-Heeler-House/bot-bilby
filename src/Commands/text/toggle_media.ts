@@ -7,7 +7,7 @@ export default class ToggleMediaCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("toggle media")
         .setDescription("Toggles whether media are allowed in a channel.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addChannelMentionArgument("channel", "Channel to disable/enable media.")
         .allowInDMs(false);
 

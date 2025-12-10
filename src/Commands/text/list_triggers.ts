@@ -8,7 +8,7 @@ export default class ListTriggersCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("list triggers")
         .setDescription("Gets a list of all triggers.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 

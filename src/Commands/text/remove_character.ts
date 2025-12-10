@@ -10,7 +10,7 @@ export default class RemoveCharacterCommand extends TextCommand {
         .setName("remove character")
         .setDescription("Removes a character from Bot Bilby.")
         .addImplicitStringArgument("character", "The name of the character to remove.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

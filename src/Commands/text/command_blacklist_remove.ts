@@ -10,7 +10,7 @@ export default class CommandBlacklistCommand extends TextCommand {
         .setDescription("Remove a user from the command blacklist.")
         .addUserMentionArgument("user", "The user to remove from blacklist.")
         .addImplicitStringArgument("command", "Command(s) to allow running. To add multiple command, separate them with a comma. Omit this argument to allow **all** commands.", false)
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

@@ -7,7 +7,7 @@ export default class HideCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("hide")
         .setDescription("Makes Bot Bilby invisible.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

@@ -10,7 +10,7 @@ export default class EditTriggerCommand extends TextCommand {
         .setName("edit trigger")
         .setDescription("Edits a trigger.")
         .addImplicitStringArgument("trigger", "The trigger to edit.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 

@@ -10,7 +10,7 @@ export default class RemoveTriggerCommand extends TextCommand {
         .setName("remove trigger")
         .setDescription("Removes a trigger.")
         .addImplicitStringArgument("trigger", "The trigger to remove.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 

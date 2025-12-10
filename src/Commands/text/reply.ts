@@ -7,7 +7,7 @@ export default class ReplyCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("reply")
         .setDescription("Reply a message as Bot Bilby.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addStringArgument("message_link", "Message you want to reply (message as a link)")
         .addImplicitStringArgument("message", "The message to send")
         .allowInDMs(false);

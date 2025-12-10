@@ -7,7 +7,7 @@ export default class TogglePagingCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("toggle page ping")
         .setDescription("Toggles whether the executor is pinged for Bot Bilby errors.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .addAllowedUsers("763377551963717653", "186730180872634368")
         .allowInDMs(false);
 

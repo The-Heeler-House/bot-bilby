@@ -11,7 +11,7 @@ export default class AddCharacterCommand extends TextCommand {
         .setDescription("Adds a character for Bot Bilby to switch to.")
         .addStringArgument("name", "The name of the character.")
         .addStringArgument("avatar", "An URL to the avatar's image.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {

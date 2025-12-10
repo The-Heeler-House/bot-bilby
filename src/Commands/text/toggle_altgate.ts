@@ -7,7 +7,7 @@ export default class ToggleGateCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("toggle altgate")
         .setDescription("Toggles whether the alt gate is enabled or not.")
-        .addAllowedRoles(roleIds.staff)
+        .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {
