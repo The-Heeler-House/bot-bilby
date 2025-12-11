@@ -5,17 +5,17 @@ import { roleIds } from "../../constants";
 
 export default class ToggleGateCommand extends TextCommand {
     public data = new TextCommandBuilder()
-        .setName("toggle gate")
-        .setDescription("Toggles whether the join gate is enabled or not.")
+        .setName("set joingate")
+        .setDescription("Set the duration for joingate (aka. how long must an account be to join)")
+        .addNumberArgument("duration", "The duration in days")
         .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {
-        let joinGate = !services.state.state.joinGate;
-
-        services.state.state.joinGate = joinGate;
+        let duration = Number(args["duration"])
+        services.state.state.joinGate = duration;
         services.state.save();
 
-        await message.reply(`Successfully **${joinGate ? "enabled" : "disabled"}** the join gate.`);
+        await message.reply(`Join gate duration set to ${duration} day(s).`);
     }
 }

@@ -6,7 +6,7 @@ import path from "path";
 const STATE_PATH = path.join(__dirname, "../../../state.json");
 
 const defaultState: State = {
-    joinGate: true,
+    joinGate: 5, // 5 days by default
     altGate: false,
     trackedMessages: new Map<string, TrackedMessage>(),
     ignoredChannels: [],
@@ -92,7 +92,7 @@ export default class StateService {
 }
 
 export interface State {
-    joinGate: boolean,
+    joinGate: number,
     altGate: boolean,
     trackedMessages: Map<string, TrackedMessage>,
     ignoredChannels: Snowflake[];
