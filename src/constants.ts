@@ -17,6 +17,7 @@ export const channelIds = {
     bilby: config.get<string>("channelIds.bilby"),
     chatLog: config.get<string>("channelIds.chatLog"),
     mediaLog: config.get<string>("channelIds.mediaLog"),
+    memberLog: config.get<string>("channelIds.memberLog"),
     reactionLog: config.get<string>("channelIds.reactionLog"),
     announcements: config.get<string>("channelIds.announcements")
 }
