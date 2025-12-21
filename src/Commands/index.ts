@@ -33,7 +33,7 @@ function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
     const invalidTypeMsg = (expected: TextCommandArgType, at: string) => `Invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
     const parseOutputArgs = () => `The arguments has been parsed as follows:\n${Object.keys(output).map(v => ` \\- \`${v}\`: \`${output[v]}\``).join("\n")}`
     const overflowArgs = (arg: string) => `I don't know what do to next with \`${arg}\` :c\n(did you forget to close string with double quotes?)`
-    const underflowArgs = () => `I'm missing the following argument(s): ${data.slice(dataArgCounter).map(v => `\`${v.name}\``).join(", ")} :3`
+    const underflowArgs = () => `I'm missing the following argument(s): ${data.slice(dataArgCounter).map(v => `\`${v.name}\` <type ${v.type}>`).join(", ")} :3`
 
     while ((match = processStringRegex.exec(rawArgs)) !== null) {
         let argContent = ""

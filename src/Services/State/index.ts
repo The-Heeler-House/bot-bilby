@@ -31,8 +31,8 @@ export default class StateService {
             guessWhoSessions: new Map()
         },
         spamDetection: {
-            messageLog: {},
-            mediaLog: {},
+            shouldLog: {},
+            log: {},
 
             sentAlert: {}
         }
@@ -123,8 +123,8 @@ export interface VolatileState {
         guessWhoSessions: Map<string, GuessWhoSession>
     },
     spamDetection: {
-        messageLog: { [id: string]: Denque<number> }
-        mediaLog: { [id: string]: { queue: Denque<number>, cnt: number } }
+        shouldLog: { [id: string]: boolean }
+        log: { [id: string]: {timestamp: number, flags: number, wscore: number}[] }
 
         sentAlert: { [id: string]: boolean }
     }

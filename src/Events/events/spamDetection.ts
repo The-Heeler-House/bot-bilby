@@ -5,12 +5,31 @@ import Denque from "denque"
 import { channelIds, roleIds } from "../../constants";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
-const alertCooldown = 30_000
+const weight = {
+    fast_msg: 2,
+    msg_has_media: 1,
+    msg_has_only_media: 2,
+    burst_media_msg: 3,
+    repeated_text: 4,
+    short_text: 1,
+    burst_text_msg: 3
+}
+
+const flags = {
+    fastMessaging: 1 << 0,
+    hasMedia: 1 << 1,
+    hasMedidAndEmptyMessage: 1 << 2,
+    burstMedia: 1 << 3,
+    shortMessage: 1 << 4,
+    burstMessages: 1 << 5
+}
+
+const messageStates = new Map<string, Map<string, Denque<Message>>>()
 export default class SpamDetection extends BotEvent {
     public eventName = Events.MessageCreate;
 
     async execute(client: Client, services: Services, message: Message): Promise<void> {
-        const state = () => services.state.volatileState.spamDetection
+        let finalFlags = 0
 
         if (!isTHHorDevServer(message.guildId)) return
         const staffChannel = await message.guild.channels.fetch(channelIds.staff)
@@ -18,62 +37,86 @@ export default class SpamDetection extends BotEvent {
 
         const channelId = message.channelId
         if (message.author.bot) return
-        const spamDetectionData = await services.database.collections.spamDetection.findOne({
+        const spamDetectionConf = await services.database.collections.spamDetection.findOne({
             channel: channelId
         })
 
-        if (!spamDetectionData) return
-        if (!state().messageLog[channelId]) {
-            state().messageLog[channelId] = new Denque<number>()
+        if (!spamDetectionConf) return
+
+        const userId = message.author.id
+        const now = Date.now() * 1000
+        let score = 0
+
+        if (!messageStates.has(channelId)) {
+            messageStates.set(channelId, new Map<string, Denque<Message>>())
         }
 
-        if (!state().mediaLog[channelId]) {
-            state().mediaLog[channelId] = {
-                queue: new Denque<number>(),
-                cnt: 0
+        const userStates = messageStates.get(channelId)
+
+        if (!userStates.has(userId)) {
+            userStates.set(userId, new Denque<Message>())
+        }
+
+        const recentUserMsgs = userStates.get(userId)
+
+        //? clean up old messages
+        while (!recentUserMsgs.isEmpty()) {
+            if (now - recentUserMsgs.peekFront().createdTimestamp > spamDetectionConf.window_ms) {
+                recentUserMsgs.shift()
+            } else {
+                break
             }
         }
 
-        const currentTime = message.createdTimestamp
-        const cutoff = currentTime - spamDetectionData.min_message_time * 1_000
-
-        while (!state().messageLog[channelId].isEmpty() && state().messageLog[channelId].peekFront() < cutoff) {
-            state().messageLog[channelId].shift()
-        }
-
-        state().messageLog[channelId].push(currentTime)
-
-        if (state().messageLog[channelId].size() >= spamDetectionData.min_message_cnt && !state().sentAlert[message.channelId]) {
-            await staffChannel.send({
-                content: `<@&${roleIds.staff}> Messages going faster than usual in <#${message.channelId}> (${state().messageLog[channelId].size()} messages in ${spamDetectionData.min_message_time}s)`,
-                flags: [ MessageFlags.SuppressNotifications ]
-            })
-            state().sentAlert[message.channelId] = true
-            setTimeout(() => {
-                state().sentAlert[message.channelId] = false
-            }, alertCooldown)
-        }
-
-        const mediaCnt = Math.ceil((message.attachments.size + message.embeds.length) / 3)
-        state().mediaLog[channelId].cnt += mediaCnt
-        state().mediaLog[channelId].queue.push(mediaCnt)
-        if (state().mediaLog[channelId].queue.size() > spamDetectionData.min_media_sample_size)
-            state().mediaLog[channelId].cnt -= state().mediaLog[channelId].queue.shift()
-
-        if (state().mediaLog[channelId].cnt >= spamDetectionData.min_media_cnt && !state().sentAlert[message.channelId]) {
-            if (message.channel instanceof TextChannel) {
-                await message.channel.setRateLimitPerUser(5, "Media spam.")
+        //? how fast messages are sent
+        const lastMsg = recentUserMsgs.peekBack()
+        if (lastMsg) {
+            const delta = now - lastMsg.createdTimestamp
+            if (delta < spamDetectionConf.min_delta_ms) {
+                finalFlags |= flags.fastMessaging
+                score += 2
             }
-            await staffChannel.send({
-                content: `<@&${roleIds.staff}> Possible media spam in <#${message.channelId}> (${state().mediaLog[channelId].cnt} media in every ${spamDetectionData.min_media_sample_size} messages)`,
-                flags: [ MessageFlags.SuppressNotifications ]
-            })
-            state().mediaLog[channelId].queue.clear()
-            state().mediaLog[channelId].cnt = 0
-            state().sentAlert[message.channelId] = true
-            setTimeout(() => {
-                state().sentAlert[message.channelId] = false
-            }, alertCooldown)
+        }
+
+        if (message.attachments.size > 0) {
+            finalFlags |= flags.hasMedia
+            score += 1
+            if (message.content.length == 0) {
+                finalFlags |= flags.hasMedidAndEmptyMessage
+                score += 3
+            }
+            let mediaCount = 0
+            for (const msg of recentUserMsgs.toArray()) {
+                if (msg.attachments.size > 0) mediaCount++
+            }
+            if (mediaCount >= 5) {
+                finalFlags |= flags.burstMedia
+                score += 3
+            }
+        }
+
+        if (message.content.length > 0) {
+            if (message.content.length <= 5) {
+                finalFlags |= flags.shortMessage
+                score += 1
+            }
+            let textCount = 0
+            for (const msg of recentUserMsgs.toArray()) {
+                if (msg.content.length > 0) textCount++
+            }
+            if (textCount >= 8) {
+                finalFlags |= flags.burstMessages
+                score += 3
+            }
+        }
+
+        recentUserMsgs.push(message)
+        if (recentUserMsgs.size() > spamDetectionConf.max_recent) {
+            recentUserMsgs.shift()
+        }
+
+        if (services.state.volatileState.spamDetection.shouldLog[channelId]) {
+            services.state.volatileState.spamDetection.log[channelId].push({ timestamp: message.createdTimestamp, flags: finalFlags, wscore: score })
         }
     }
 }
