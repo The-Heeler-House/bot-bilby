@@ -44,7 +44,7 @@ export default class SpamDetection extends BotEvent {
         if (!spamDetectionConf) return
 
         const userId = message.author.id
-        const now = Date.now() * 1000
+        const now = Date.now()
         let score = 0
 
         if (!messageStates.has(channelId)) {
