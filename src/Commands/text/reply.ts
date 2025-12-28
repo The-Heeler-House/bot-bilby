@@ -14,7 +14,7 @@ export default class ReplyCommand extends TextCommand {
 
     async execute(message: Message, args: { [key: string]: string }, services: Services) {
         let messageLink = args["message_link"]
-        let messageRegex = /discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)/gm
+        let messageRegex = /discord(app)?\.com\/channels\/(\d+)\/(\d+)\/(\d+)/gm
         let result = messageRegex.exec(messageLink)
         if (!result) {
             await message.reply("Invalid message link!")
