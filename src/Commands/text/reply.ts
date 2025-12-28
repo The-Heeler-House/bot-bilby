@@ -26,8 +26,8 @@ export default class ReplyCommand extends TextCommand {
             return
         }
 
-        let channelId = result[2]
-        let messageId = result[3]
+        let channelId = result[3]
+        let messageId = result[4]
 
         try {
             let channel = await message.guild.channels.fetch(channelId) as TextChannel;
