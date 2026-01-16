@@ -1,6 +1,16 @@
 import SlashCommand from "./SlashCommand";
-import TextCommand, { TextCommandArgType, TextCommandArgument } from "./TextCommand";
-import { BaseInteraction, ChannelType, Client, Message, REST, Routes } from "discord.js";
+import TextCommand, {
+    TextCommandArgType,
+    TextCommandArgument,
+} from "./TextCommand";
+import {
+    BaseInteraction,
+    ChannelType,
+    Client,
+    Message,
+    REST,
+    Routes,
+} from "discord.js";
 import { readdir } from "fs/promises";
 import * as logger from "../logger";
 import { Services } from "../Services";
@@ -8,110 +18,150 @@ import { isTHHorDevServer } from "../Helper/EventsHelper";
 import { canExecuteCommand } from "../Helper/PermissionHelper";
 
 function parseTextArgs(data: TextCommandArgument[], rawArgs: string) {
-    const processStringRegex = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|(\S+)/g
-    let match: RegExpExecArray
-    let output: { [key: string]: any } = {}
-    let dataArgCounter = 0
+    const processStringRegex =
+        /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|(\S+)/g;
+    let match: RegExpExecArray;
+    let output: { [key: string]: any } = {};
+    let dataArgCounter = 0;
 
     //? check if optional args are placed at the end of the list
-    const requiredList = data.map(v => v.required)
-    let curRequired = true
+    const requiredList = data.map((v) => v.required);
+    let curRequired = true;
     for (const i of requiredList) {
         if (!curRequired && i) {
-            throw new Error("(developer error) optional arguments are not at the end of the argument list")
+            throw new Error(
+                "(developer error) optional arguments are not at the end of the argument list",
+            );
         }
-        curRequired = i
+        curRequired = i;
     }
 
     //? check if implicit string argument is at the absolute final of the list (if there's any)
     for (let i = 0; i < data.length - 1; i++) {
         if (data[i].type == TextCommandArgType.implicit_string) {
-            throw new Error("(developer error) implicit string argument is not at the end of the argument list")
+            throw new Error(
+                "(developer error) implicit string argument is not at the end of the argument list",
+            );
         }
     }
 
-    const invalidTypeMsg = (expected: TextCommandArgType, at: string) => `Invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
-    const parseOutputArgs = () => `The arguments has been parsed as follows:\n${Object.keys(output).map(v => ` \\- \`${v}\`: \`${output[v]}\``).join("\n")}`
-    const overflowArgs = (arg: string) => `I don't know what do to next with \`${arg}\` :c\n(did you forget to close string with double quotes?)`
-    const underflowArgs = () => `I'm missing the following argument(s): ${data.slice(dataArgCounter).map(v => `\`${v.name}\` <type ${v.type}>`).join(", ")} :3`
+    const invalidTypeMsg = (expected: TextCommandArgType, at: string) =>
+        `Invalid type at argument \`${at}\`, expected type \`${TextCommandArgType[expected]}\``;
+    const parseOutputArgs = () =>
+        `The arguments has been parsed as follows:\n${Object.keys(output)
+            .map((v) => ` \\- \`${v}\`: \`${output[v]}\``)
+            .join("\n")}`;
+    const overflowArgs = (arg: string) =>
+        `I don't know what do to next with \`${arg}\` :c\n(did you forget to close string with double quotes?)`;
+    const underflowArgs = () =>
+        `I'm missing the following argument(s): ${data
+            .slice(dataArgCounter)
+            .map((v) => `\`${v.name}\` <type ${TextCommandArgType[v.type]}>`)
+            .join(", ")} :3`;
 
     while ((match = processStringRegex.exec(rawArgs)) !== null) {
-        let argContent = ""
+        let argContent = "";
 
-        if (match[1]) { //? handle double-quotes
-            argContent = match[1]
-        }
-        else if (match[2]) { //? handle single-quotes
-            argContent = match[2]
-        }
-        else if (match[3]) { //? handle normal input with no quotes
-            argContent = match[3]
+        if (match[1]) {
+            //? handle double-quotes
+            argContent = match[1];
+        } else if (match[2]) {
+            //? handle single-quotes
+            argContent = match[2];
+        } else if (match[3]) {
+            //? handle normal input with no quotes
+            argContent = match[3];
         }
 
         if (dataArgCounter >= data.length) {
-            throw new Error(`Too many arguments! expected ${data.length} argument(s), found ${dataArgCounter + 1} argument(s) instead.\n${parseOutputArgs()}\n${overflowArgs(argContent)}`)
+            throw new Error(
+                `Too many arguments! expected ${data.length} argument(s), found ${dataArgCounter + 1} argument(s) instead.\n${parseOutputArgs()}\n${overflowArgs(argContent)}`,
+            );
         }
 
         if (data[dataArgCounter].type == TextCommandArgType.implicit_string) {
-            argContent = rawArgs.slice(match.index)
-            output[data[dataArgCounter].name] = argContent
-            dataArgCounter++
-            break
+            argContent = rawArgs.slice(match.index);
+            output[data[dataArgCounter].name] = argContent;
+            dataArgCounter++;
+            break;
         }
 
         switch (data[dataArgCounter].type) {
             case TextCommandArgType.number:
-                const num = Number(argContent)
+                const num = Number(argContent);
                 if (isNaN(num)) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.number, data[dataArgCounter].name))
+                    throw new Error(
+                        invalidTypeMsg(
+                            TextCommandArgType.number,
+                            data[dataArgCounter].name,
+                        ),
+                    );
                 }
-                output[data[dataArgCounter].name] = num
-                break
+                output[data[dataArgCounter].name] = num;
+                break;
             case TextCommandArgType.boolean:
-                const bool = argContent.toLowerCase().normalize()
+                const bool = argContent.toLowerCase().normalize();
                 if (!["true", "false"].includes(bool)) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.boolean, data[dataArgCounter].name))
+                    throw new Error(
+                        invalidTypeMsg(
+                            TextCommandArgType.boolean,
+                            data[dataArgCounter].name,
+                        ),
+                    );
                 }
-                output[data[dataArgCounter].name] = bool == "true" ? true : false
-                break
+                output[data[dataArgCounter].name] =
+                    bool == "true" ? true : false;
+                break;
             case TextCommandArgType.channel_mention:
-                let channel = argContent.trim().toLowerCase().normalize()
-                channel = channel.replace(/^\<#(\d+)\>$/g, "$1")
+                let channel = argContent.trim().toLowerCase().normalize();
+                channel = channel.replace(/^\<#(\d+)\>$/g, "$1");
                 if (isNaN(Number(channel))) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.channel_mention, data[dataArgCounter].name))
+                    throw new Error(
+                        invalidTypeMsg(
+                            TextCommandArgType.channel_mention,
+                            data[dataArgCounter].name,
+                        ),
+                    );
                 }
-                output[data[dataArgCounter].name] = channel
-                break
+                output[data[dataArgCounter].name] = channel;
+                break;
             case TextCommandArgType.user_mention:
-                let user = argContent.trim().toLowerCase().normalize()
-                user = user.replace(/^\<@(\d+)\>$/g, "$1")
+                let user = argContent.trim().toLowerCase().normalize();
+                user = user.replace(/^\<@(\d+)\>$/g, "$1");
                 if (isNaN(Number(user))) {
-                    throw new Error(invalidTypeMsg(TextCommandArgType.user_mention, data[dataArgCounter].name))
+                    throw new Error(
+                        invalidTypeMsg(
+                            TextCommandArgType.user_mention,
+                            data[dataArgCounter].name,
+                        ),
+                    );
                 }
-                output[data[dataArgCounter].name] = user
-                break
+                output[data[dataArgCounter].name] = user;
+                break;
             case TextCommandArgType.string:
-                let str = argContent
-                output[data[dataArgCounter].name] = str
-                break
+                let str = argContent;
+                output[data[dataArgCounter].name] = str;
+                break;
         }
-        dataArgCounter++
+        dataArgCounter++;
     }
 
     if (dataArgCounter < data.length) {
         if (data[dataArgCounter].required) {
-            throw new Error(`Arguments missing! expected ${data.length} argument(s), found ${dataArgCounter} argument(s) instead.\n${parseOutputArgs()}\n${underflowArgs()}`)
+            throw new Error(
+                `Arguments missing! expected ${data.length} argument(s), found ${dataArgCounter} argument(s) instead.\n${parseOutputArgs()}\n${underflowArgs()}`,
+            );
         }
     }
 
-    return output
+    return output;
 }
 
 /**
  * The Command Preprocessor is in charge of registering commands and executing them if they meet the right conditions.
  */
 export default class CommandPreprocessor {
-    public slashCommands = new Map<string, SlashCommand>()
+    public slashCommands = new Map<string, SlashCommand>();
     public textCommands = new Map<string, TextCommand>();
 
     constructor() {}
@@ -122,21 +172,36 @@ export default class CommandPreprocessor {
     getSlashCommands(services: Services): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             readdir(`${__dirname}/slash`)
-                .then(files => files.filter(file => file.endsWith(".js")))
-                .then(async commandsDir => {
+                .then((files) => files.filter((file) => file.endsWith(".js")))
+                .then(async (commandsDir) => {
                     for (const commandFile of commandsDir) {
-                        const command: SlashCommand = new (await import(`${__dirname}/slash/${commandFile}`)).default();
+                        const command: SlashCommand = new (
+                            await import(`${__dirname}/slash/${commandFile}`)
+                        ).default();
                         if ("data" in command && "execute" in command) {
                             this.slashCommands.set(command.data.name, command);
                         } else {
-                            logger.warning("Attempted to add slash command", command, "but it is missing either the data property or the execute function. Skipping command...");
+                            logger.warning(
+                                "Attempted to add slash command",
+                                command,
+                                "but it is missing either the data property or the execute function. Skipping command...",
+                            );
                         }
                     }
                     resolve();
                 })
-                .catch(async error => {
-                    logger.error("Encountered an error when trying to get slash commands directory. See error below.\n", error, "\n", error.stack);
-                    await services.pager.sendCrash(error, "Get slash commands", services.state.state.pagedUsers);
+                .catch(async (error) => {
+                    logger.error(
+                        "Encountered an error when trying to get slash commands directory. See error below.\n",
+                        error,
+                        "\n",
+                        error.stack,
+                    );
+                    await services.pager.sendCrash(
+                        error,
+                        "Get slash commands",
+                        services.state.state.pagedUsers,
+                    );
                     process.exit(1);
                 });
         });
@@ -147,21 +212,36 @@ export default class CommandPreprocessor {
      */
     getTextCommands(services: Services) {
         readdir(`${__dirname}/text`)
-            .then(files => files.filter(file => file.endsWith(".js")))
-            .then(async commandsDir => {
+            .then((files) => files.filter((file) => file.endsWith(".js")))
+            .then(async (commandsDir) => {
                 for (const commandFile of commandsDir) {
-                    const command: TextCommand = new (await import(`${__dirname}/text/${commandFile}`)).default();
+                    const command: TextCommand = new (
+                        await import(`${__dirname}/text/${commandFile}`)
+                    ).default();
 
                     if ("data" in command && "execute" in command) {
                         this.textCommands.set(command.data.name, command);
                     } else {
-                        logger.warning("Attempted to add text command", commandFile, "but it is missing either the data property or the execute function. Skipping command...");
+                        logger.warning(
+                            "Attempted to add text command",
+                            commandFile,
+                            "but it is missing either the data property or the execute function. Skipping command...",
+                        );
                     }
                 }
             })
-            .catch(async error => {
-                logger.error("Encountered an error when trying to get text commands directory.\n", error, "\n", error.stack);
-                await services.pager.sendCrash(error, "Get text commands", services.state.state.pagedUsers);
+            .catch(async (error) => {
+                logger.error(
+                    "Encountered an error when trying to get text commands directory.\n",
+                    error,
+                    "\n",
+                    error.stack,
+                );
+                await services.pager.sendCrash(
+                    error,
+                    "Get text commands",
+                    services.state.state.pagedUsers,
+                );
                 process.exit(1);
             });
     }
@@ -174,7 +254,7 @@ export default class CommandPreprocessor {
     async registerSlashCommands(client: Client, services: Services) {
         const commands = [];
 
-        this.slashCommands.forEach(command => {
+        this.slashCommands.forEach((command) => {
             commands.push(command.data.toJSON());
         });
 
@@ -183,35 +263,69 @@ export default class CommandPreprocessor {
         if (process.env.DEVELOPMENT_GUILD != undefined) {
             try {
                 try {
-                    await rest.put(
-                        Routes.applicationCommands(client.user.id),
-                        { body: [] }
-                    );
+                    await rest.put(Routes.applicationCommands(client.user.id), {
+                        body: [],
+                    });
                 } catch (error) {
-                    logger.warning("Encountered an error while trying to unregister all global commands.\n", error, "\n", error.stack);
+                    logger.warning(
+                        "Encountered an error while trying to unregister all global commands.\n",
+                        error,
+                        "\n",
+                        error.stack,
+                    );
                 }
 
                 const data = await rest.put(
-                    Routes.applicationGuildCommands(client.user.id, process.env.DEVELOPMENT_GUILD as string),
-                    { body: commands }
+                    Routes.applicationGuildCommands(
+                        client.user.id,
+                        process.env.DEVELOPMENT_GUILD as string,
+                    ),
+                    { body: commands },
                 );
 
-                logger.command("Registered", commands.length.toString(), "slash commands in guild id", process.env.DEVELOPMENT_GUILD as string);
+                logger.command(
+                    "Registered",
+                    commands.length.toString(),
+                    "slash commands in guild id",
+                    process.env.DEVELOPMENT_GUILD as string,
+                );
             } catch (error) {
-                logger.error("Encountered an error while trying to register all slash commands as guild commands.\n", error, "\n", error.stack);
-                await services.pager.sendError(error, "Trying to register all slash commands as guild commands.", services.state.state.pagedUsers);
+                logger.error(
+                    "Encountered an error while trying to register all slash commands as guild commands.\n",
+                    error,
+                    "\n",
+                    error.stack,
+                );
+                await services.pager.sendError(
+                    error,
+                    "Trying to register all slash commands as guild commands.",
+                    services.state.state.pagedUsers,
+                );
             }
         } else {
             try {
                 const data = await rest.put(
                     Routes.applicationCommands(client.user.id),
-                    { body: commands }
+                    { body: commands },
                 );
 
-                logger.command("Registered", commands.length.toString(), "slash commands globally");
+                logger.command(
+                    "Registered",
+                    commands.length.toString(),
+                    "slash commands globally",
+                );
             } catch (error) {
-                logger.error("Encountered an error while trying to register all slash commands as global commands.\n", error, "\n", error.stack);
-                await services.pager.sendError(error, "Trying to register all slash commands as global commands.", services.state.state.pagedUsers);
+                logger.error(
+                    "Encountered an error while trying to register all slash commands as global commands.\n",
+                    error,
+                    "\n",
+                    error.stack,
+                );
+                await services.pager.sendError(
+                    error,
+                    "Trying to register all slash commands as global commands.",
+                    services.state.state.pagedUsers,
+                );
             }
         }
     }
@@ -227,33 +341,62 @@ export default class CommandPreprocessor {
 
         if (!message.content.startsWith(process.env.PREFIX)) return;
         let content = message.content.replace(process.env.PREFIX, "");
-        let commandName = [...this.textCommands.keys()].find(key => content.startsWith(key));
+        let commandName = [...this.textCommands.keys()].find((key) =>
+            content.startsWith(key),
+        );
 
         if (commandName === undefined) return; // The above find function didn't find a command.
         let command = this.textCommands.get(commandName);
 
         let rawArgs = content.replace(commandName, "").trim(); // Args splitting while respecting both prefix and command length.
-        let args = {}
+        let args = {};
 
         try {
-            if (!command) throw new ReferenceError(`Text command ${commandName} does not exist.`);
+            if (!command)
+                throw new ReferenceError(
+                    `Text command ${commandName} does not exist.`,
+                );
 
             // TODO: Do permission and environment checks.
             // Environment checks
-            if (!command.data.allowedInDMs && [ChannelType.DM, ChannelType.GroupDM].includes(message.channel.type)) return;
+            if (
+                !command.data.allowedInDMs &&
+                [ChannelType.DM, ChannelType.GroupDM].includes(
+                    message.channel.type,
+                )
+            )
+                return;
 
             try {
-                args = parseTextArgs(command.data.arguments, rawArgs)
+                args = parseTextArgs(command.data.arguments, rawArgs);
             } catch (e) {
-                await message.reply(`${e}`)
-                return
+                await message.reply(`${e}`);
+                return;
             }
 
-            if (canExecuteCommand(command, message.member)) command.execute(message, args, services);
+            if (canExecuteCommand(command, message.member))
+                command.execute(message, args, services);
         } catch (error) {
-            logger.error("Encountered an error while trying to execute the", commandName, "text command.\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to execute the " + commandName + " text command. See message " + message.url, services.state.state.pagedUsers, { message, args });
-            await message.reply("Whoops! Seems like something went wrong while processing your request. Please try again.");
+            logger.error(
+                "Encountered an error while trying to execute the",
+                commandName,
+                "text command.\n",
+                error,
+                "\n",
+                error.stack,
+            );
+            await services.pager.sendError(
+                error,
+                "Trying to execute the " +
+                    commandName +
+                    " text command. See message " +
+                    message.url,
+                services.state.state.pagedUsers,
+                { message, args },
+            );
+            await message.reply(
+                "Whoops! Seems like something went wrong while processing your request. Please try again.",
+            );
         }
     }
 
@@ -261,44 +404,81 @@ export default class CommandPreprocessor {
      * Handles processing of slash commands.
      * @param interaction The BaseInteraction received from Discord.
      */
-    async onSlashCommandPreprocess(interaction: BaseInteraction, services: Services) {
+    async onSlashCommandPreprocess(
+        interaction: BaseInteraction,
+        services: Services,
+    ) {
         if (!interaction.isChatInputCommand()) return;
         if (!isTHHorDevServer(interaction.guildId)) {
             await interaction.reply({
-                content: "Hello. If you are seeing this message, then you probably have invited this bot to your private server to try and use it. While we don't have any rules about this, we also do not recommend this, as the bot was designed to work for The Heeler House Discord Server. Because of that, all functionality of the bot will not work outside of THH.\n\nThis is **not an error**. **Do not** contact the bot developers or THH staff about this.",
-                ephemeral: false
-            })
+                content:
+                    "Hello. If you are seeing this message, then you probably have invited this bot to your private server to try and use it. While we don't have any rules about this, we also do not recommend this, as the bot was designed to work for The Heeler House Discord Server. Because of that, all functionality of the bot will not work outside of THH.\n\nThis is **not an error**. **Do not** contact the bot developers or THH staff about this.",
+                ephemeral: false,
+            });
             return;
         }
 
-        const blacklist = await services.database.collections.commandBlacklist.findOne({ user: interaction.user.id })
+        const blacklist =
+            await services.database.collections.commandBlacklist.findOne({
+                user: interaction.user.id,
+            });
 
-        if (blacklist && blacklist["command"].includes(interaction.commandName)) {
+        if (
+            blacklist &&
+            blacklist["command"].includes(interaction.commandName)
+        ) {
             await interaction.reply({
-                content: "Sorry, but you have been blocked from running this command.",
-                ephemeral: true
-            })
+                content:
+                    "Sorry, but you have been blocked from running this command.",
+                ephemeral: true,
+            });
             return;
         }
 
-        const command = this.slashCommands.get(interaction.commandName)
+        const command = this.slashCommands.get(interaction.commandName);
 
         try {
-            if (!command) throw new ReferenceError(`Slash command ${interaction.commandName} does not exist.`);
+            if (!command)
+                throw new ReferenceError(
+                    `Slash command ${interaction.commandName} does not exist.`,
+                );
 
             await command.execute(interaction, services);
         } catch (error) {
-            logger.error("Encountered an error while trying to execute the", interaction.commandName, "slash command.\n", error.stack);
-            await services.pager.sendError(error, "Trying to execute the " + interaction.commandName + " slash command.", services.state.state.pagedUsers, { interaction });
+            logger.error(
+                "Encountered an error while trying to execute the",
+                interaction.commandName,
+                "slash command.\n",
+                error.stack,
+            );
+            await services.pager.sendError(
+                error,
+                "Trying to execute the " +
+                    interaction.commandName +
+                    " slash command.",
+                services.state.state.pagedUsers,
+                { interaction },
+            );
 
             try {
                 if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
+                    await interaction.followUp({
+                        content:
+                            "Whoops! Seems like something went wrong while processing your request. Please try again.",
+                        ephemeral: true,
+                    });
                 } else {
-                    await interaction.reply({ content: "Whoops! Seems like something went wrong while processing your request. Please try again.", ephemeral: true });
+                    await interaction.reply({
+                        content:
+                            "Whoops! Seems like something went wrong while processing your request. Please try again.",
+                        ephemeral: true,
+                    });
                 }
             } catch (innerError) {
-                logger.error("Failure in sending \"something gone wrong\" message.", innerError)
+                logger.error(
+                    'Failure in sending "something gone wrong" message.',
+                    innerError,
+                );
             }
         }
     }
@@ -307,19 +487,34 @@ export default class CommandPreprocessor {
      * Handles processing of slash command autocomplete.
      * @param interaction The BaseInteraction received from Discord.
      */
-    async onSlashAutocompletePreprocess(interaction: BaseInteraction, services: Services) {
+    async onSlashAutocompletePreprocess(
+        interaction: BaseInteraction,
+        services: Services,
+    ) {
         if (!interaction.isAutocomplete()) return;
 
-        const command = this.slashCommands.get(interaction.commandName)
+        const command = this.slashCommands.get(interaction.commandName);
 
         try {
-            if (!command) throw new ReferenceError(`Slash command ${interaction.commandName} does not exist.`);
+            if (!command)
+                throw new ReferenceError(
+                    `Slash command ${interaction.commandName} does not exist.`,
+                );
 
             await command.autocomplete(interaction, services);
         } catch (error) {
-            logger.error("Encountered an error while trying to autocomplete the", interaction.commandName, "slash command.\n", error, "\n", error.stack);
+            logger.error(
+                "Encountered an error while trying to autocomplete the",
+                interaction.commandName,
+                "slash command.\n",
+                error,
+                "\n",
+                error.stack,
+            );
             // FIXME: Due to spamming concerns, we don't page errors here. Potential solution is to generate a hash based on the error's message and stack trace, as well as "whileDoing" in order to get a unique id for an error so we don't repeat ourselves.
-            await interaction.respond([].map(choice => ({ name: choice, value: choice })));
+            await interaction.respond(
+                [].map((choice) => ({ name: choice, value: choice })),
+            );
         }
     }
 }
