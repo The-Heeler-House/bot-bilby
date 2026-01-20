@@ -14,19 +14,26 @@ export default class UnignoreChannelComamnd extends TextCommand {
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
-    async execute(message: Message, args: { [key: string]: string }, services: Services) {
-        let channel = String(args["channel"])
+    async execute(
+        message: Message,
+        args: { [key: string]: string },
+        services: Services,
+    ) {
+        let channel = String(args["channel"]);
         if (message.mentions.channels.size !== 0)
             channel = message.mentions.channels.first().id;
 
         if (!services.state.state.ignoredChannels.includes(channel)) {
-            message.reply("I'm already listening to that channel.");
+            message.reply("Error! This channel is not in ignore list.");
             return;
         }
 
-        services.state.state.ignoredChannels = services.state.state.ignoredChannels.filter(item => item != channel);
+        services.state.state.ignoredChannels =
+            services.state.state.ignoredChannels.filter(
+                (item) => item != channel,
+            );
         services.state.save();
 
-        await message.reply("Got it, I'll listen to the <#" + channel + "> channel from now on");
+        await message.reply("Removed <#" + channel + "> from ignore list.");
     }
 }

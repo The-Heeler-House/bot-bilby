@@ -14,36 +14,68 @@ export default class AddCharacterCommand extends TextCommand {
         .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
-    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+    async execute(
+        message: Message,
+        args: { [key: string]: string },
+        services: Services,
+    ) {
         let name = args["name"];
-        let avatar: Response | null = null
-        try {
-            avatar = await fetch(args["avatar"])
-        } catch (e) {
-            await message.reply(`No character image URL or invalid URL specified! Please refer to the help page for more information`)
-            return
+
+        if (!/^[\w\s]+$/.test(name)) {
+            await message.reply(
+                "Error! Invalid name for character. Only A-Z, a-z, 0-9, and whitespaces are allowed.",
+            );
+            return;
         }
 
-        let avatarData = Buffer.from(await avatar.arrayBuffer())
+        let avatar: Response | null = null;
+        try {
+            avatar = await fetch(args["avatar"]);
+        } catch (e) {
+            await message.reply(
+                `Error! No character image URL or invalid URL specified. Please refer to the help page for more information.`,
+            );
+            return;
+        }
 
-        const character = await services.database.collections.botCharacters.findOne({ name: name }) as unknown as BotCharacter;
+        let avatarData = Buffer.from(await avatar.arrayBuffer());
+
+        const character =
+            (await services.database.collections.botCharacters.findOne({
+                name: name,
+            })) as unknown as BotCharacter;
         if (character) {
-            await message.reply(`I seem to already know of this character.`);
+            await message.reply(
+                `Error! Name for this character already exists.`,
+            );
             return;
         }
 
         try {
-
             await services.database.collections.botCharacters.insertOne({
                 name,
-                avatarImage: avatarData
+                avatarImage: avatarData,
             });
 
-            await message.reply(`Successfully created character \`${name}\`.`);
+            await message.reply(`Created character \`${name}\`.`);
         } catch (error) {
-            logger.error("Encountered error while trying to create character", name, "\n", error, "\n", error.stack);
-            await services.pager.sendError(error, "Trying to create character " + name, services.state.state.pagedUsers, { message, args, character });
-            await message.reply(`That's awkward. I encountered an error while creating the character \`${name}\`. Please try again.`);
+            logger.error(
+                "Encountered error while trying to create character",
+                name,
+                "\n",
+                error,
+                "\n",
+                error.stack,
+            );
+            await services.pager.sendError(
+                error,
+                "Trying to create character " + name,
+                services.state.state.pagedUsers,
+                { message, args, character },
+            );
+            await message.reply(
+                `Error! Problem while creating the character \`${name}\`. Please try again.`,
+            );
         }
     }
 }

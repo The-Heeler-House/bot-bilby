@@ -8,18 +8,28 @@ export default class SayCommand extends TextCommand {
         .setName("say")
         .setDescription("Sends a message into off-topic as Bot Bilby.")
         .addAllowedRoles(roleIds.mod)
-        .addImplicitStringArgument("message", "The message to send into off-topic")
+        .addImplicitStringArgument(
+            "message",
+            "The message to send into off-topic",
+        )
         .allowInDMs(false);
 
-    async execute(message: Message, args: { [key: string]: string }, services: Services) {
-        let channel = await message.guild.channels.fetch(channelIds.offTopic) as TextChannel;
+    async execute(
+        message: Message,
+        args: { [key: string]: string },
+        services: Services,
+    ) {
+        let channel = (await message.guild.channels.fetch(
+            channelIds.offTopic,
+        )) as TextChannel;
         if (args["message"].trim().length == 0) {
-            await message.reply("Cannot send an empty message!")
-            return
+            await message.reply("Error! Cannot send an empty message!");
+            return;
         }
         await channel.send({
             content: args["message"],
-            files: message.attachments.map(v => v)
+            files: message.attachments.map((v) => v),
         });
+        await message.react("✅");
     }
 }

@@ -9,30 +9,46 @@ export default class PreviewCharacterCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("preview character")
         .setDescription("Preview what a character looks like.")
-        .addImplicitStringArgument("character", "The character preset to preview.")
+        .addImplicitStringArgument(
+            "character",
+            "The character preset to preview.",
+        )
         .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
-    async execute(message: Message, args: { [key: string]: string }, services: Services) {
-        const character = await services.database.collections.botCharacters.findOne({ name: args["character"] }) as WithId<BotCharacter>;
+    async execute(
+        message: Message,
+        args: { [key: string]: string },
+        services: Services,
+    ) {
+        const character =
+            (await services.database.collections.botCharacters.findOne({
+                name: args["character"],
+            })) as WithId<BotCharacter>;
         if (!character) {
-            await message.reply(`I don't recognise the character named ${args["character"]}. Please say \`${process.env.PREFIX}list characters\` to see the character list.`);
+            await message.reply(
+                `Error! No character with name ${args["character"]} found. Please use \`${process.env.PREFIX}list characters\` to see the character list.`,
+            );
             return;
         }
 
-        const icon = new AttachmentBuilder(Buffer.from(character.avatarImage.buffer), { name: "data.png" })
+        const icon = new AttachmentBuilder(
+            Buffer.from(character.avatarImage.buffer),
+            { name: "data.png" },
+        );
         const embed = new EmbedBuilder()
             .setAuthor({
                 name: character.name,
-                iconURL: "attachment://data.png"
+                iconURL: "attachment://data.png",
             })
             .setFooter({
-                text: `ID: ${character._id}`
+                text: `ID: ${character._id}`,
             });
 
         await message.reply({
-            content: `This is what the character \`${character.name}\` looks like. To set, say \`${process.env.PREFIX}set character ${character.name}\`. To remove, say \`${process.env.PREFIX}remove character ${character.name}\``,
-            files: [ icon ], embeds: [ embed ]
+            content: `Preview for character \`${character.name}\`. To set the character, use \`${process.env.PREFIX}set character ${character.name}\`. To remove the character, use \`${process.env.PREFIX}remove character ${character.name}\``,
+            files: [icon],
+            embeds: [embed],
         });
     }
 }

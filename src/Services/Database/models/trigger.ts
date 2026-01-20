@@ -1,8 +1,9 @@
 export default interface Trigger {
-    trigger: string,
-    response: string,
-    cooldown: number,
+    trigger: string;
+    response: string;
+    cooldown: number;
     meta: {
-        uses: number
-    }
+        uses: number;
+    };
+    tid: string;
 }

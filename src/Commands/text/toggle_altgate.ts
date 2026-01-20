@@ -10,12 +10,16 @@ export default class ToggleGateCommand extends TextCommand {
         .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
-    async execute(message: Message, args: { [key: string]: string }, services: Services) {
+    async execute(
+        message: Message,
+        args: { [key: string]: string },
+        services: Services,
+    ) {
         let altGate = !services.state.state.altGate;
 
         services.state.state.altGate = altGate;
         services.state.save();
 
-        await message.reply(`Successfully **${altGate ? "enabled" : "disabled"}** the altgate.`);
+        await message.reply(`Altgate **${altGate ? "enabled" : "disabled"}**.`);
     }
 }
