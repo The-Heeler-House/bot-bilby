@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/The-Heeler-House/bot=bilby.git"
+    "url": "git+https://github.com/The-Heeler-House/bot-bilby.git"
   },
   "author": "Bot Bilby Contributors",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/The-Heeler-House/bot=bilby/issues"
+    "url": "https://github.com/The-Heeler-House/bot-bilby/issues"
   },
-  "homepage": "https://github.com/The-Heeler-House/bot=bilby#readme",
+  "homepage": "https://github.com/The-Heeler-House/bot-bilby#readme",
   "dependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^20.12.12",
