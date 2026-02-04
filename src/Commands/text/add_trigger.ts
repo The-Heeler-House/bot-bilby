@@ -38,7 +38,7 @@ export default class AddTriggerCommand extends TextCommand {
             );
             if (!/^[\w]+$/.test(triggerID.content)) {
                 await message.reply(
-                    "Invalid message ID specified. Type the command again to try again.",
+                    "Invalid trigger ID specified. Type the command again to try again.",
                 );
                 return;
             }

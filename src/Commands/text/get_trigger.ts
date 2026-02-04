@@ -9,8 +9,8 @@ export default class GetTriggerCommand extends TextCommand {
         .setName("get trigger")
         .setDescription("Gets information about a trigger.")
         .addImplicitStringArgument(
-            "trigger",
-            "The trigger to get information for.",
+            "trigger_id",
+            "The trigger ID to get information for.",
         )
         .addAllowedRoles(roleIds.mod)
         .addAllowedUsers(...devIds)
@@ -22,7 +22,7 @@ export default class GetTriggerCommand extends TextCommand {
         services: Services,
     ) {
         const trigger = (await services.database.collections.triggers.findOne({
-            trigger: args["trigger"],
+            tid: args["trigger_id"],
         })) as unknown as Triggers;
         if (!trigger) {
             await message.reply(
