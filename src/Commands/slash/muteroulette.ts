@@ -1,7 +1,9 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, UserSelectMenuBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, User, ButtonBuilder, ButtonStyle } from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import * as logger from "../../logger";
+import { WithId } from "mongodb";
+import MuterouletteUser from "../../Services/Database/models/muteroulette";
 
 export default class MuterouletteCommand extends SlashCommand {
     public disabledTime = new Date(0);
@@ -319,6 +321,7 @@ export default class MuterouletteCommand extends SlashCommand {
 
             // get a random number between 1 and 100
             const randomNumber = Math.floor(Math.random() * 100) + 1;
+            // const randomNumber = 47
 
             logger.bilby(randomNumber.toString());
 
@@ -643,106 +646,132 @@ export default class MuterouletteCommand extends SlashCommand {
             // 46-50: Gift a friend
             if (randomNumber <= 50) {
                 const giftMessage = [
-                    "You get to gift a friend a powerup! Who do you want to gift?",
+                    "You get to gift a friend a powerup! Who and what would you like to gift?",
                 ];
+                const selectUserDropdown = new UserSelectMenuBuilder()
+                    .setCustomId("user_id")
+                    .setRequired(true)
+                    .setPlaceholder("Select user to gift!")
+                    .setMaxValues(1)
+                const selectGiftDropdown = new StringSelectMenuBuilder()
+                    .setCustomId("gift")
+                    .setRequired(true)
+                    .setPlaceholder("Select powerup to gift!")
+                    .addOptions(
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Shield")
+                            .setValue("Shield"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Double Trouble")
+                            .setValue("Double Trouble"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Raise the Stakes")
+                            .setValue("Raise the Stakes"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Fifty-Fifty")
+                            .setValue("Fifty-Fifty")
+                    )
+                    .setMaxValues(1)
+                const confirm = new ButtonBuilder()
+                    .setCustomId("confirm")
+                    .setStyle(ButtonStyle.Primary)
+                    .setLabel("Confirm")
+                const cancel = new ButtonBuilder()
+                    .setCustomId("cancel")
+                    .setStyle(ButtonStyle.Danger)
+                    .setLabel("Cancel")
+                const row1 = new ActionRowBuilder<UserSelectMenuBuilder>()
+                    .addComponents(selectUserDropdown)
+                const row2 = new ActionRowBuilder<StringSelectMenuBuilder>()
+                    .addComponents(selectGiftDropdown)
+                const row3 = new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(confirm, cancel)
+
                 // prompt user for a user to gift
-                await interaction.reply({
+                const message = await interaction.reply({
                     content: `You landed on ${randomNumber}. ${
                         giftMessage[
                             Math.floor(Math.random() * giftMessage.length)
                         ]
                     }${muteRouletteWarning}`,
+                    components: [row1, row2, row3]
                 });
                 await avoidedMute();
                 const filter = (m: { author: { id: string; }; }) => m.author.id === interaction.user.id;
-                const selectedUserMessages =
-                    await interaction.channel.awaitMessages({
-                        filter,
-                        max: 1,
-                        time: 120000,
-                    });
-                if (selectedUserMessages.size === 0) {
-                    await interaction.channel.send(
-                        "You did not select a user! Gift wasted."
-                    );
-                    return;
-                }
-                const user = selectedUserMessages
-                    .first()
-                    .content.split(" ")[0]
-                    .slice(2, -1);
+                const collector = message.createMessageComponentCollector({
+                    filter: i => i.user.id == interaction.user.id,
+                    time: 60 * 1000
+                })
 
-                var discordUser = null;
-                try {
-                    discordUser = await interaction.guild.members.fetch(user);
-                } catch (error) {
-                    await interaction.channel.send(
-                        "You must mention a user! Gift wasted."
-                    );
-                    return;
-                }
-
-                const giftedUser = await users.findOne({ user: user });
-                if (giftedUser == null) {
-                    await interaction.channel.send(
-                        "That user has not run the muteroulette yet! Gift wasted."
-                    );
-                    return;
-                }
-                if (giftedUser.user === interaction.user.id) {
-                    await interaction.channel.send(
-                        "You cannot gift yourself! Gift wasted."
-                    );
-                    return;
-                }
-                await interaction.channel.send(
-                    `You have selected ${
-                        discordUser.nickname ||
-                        discordUser.user.globalName ||
-                        discordUser.user.username
-                    }! What powerup do you want to gift them? You can choose from \`Shield\`, \`Double Trouble\`, \`Raise the Stakes\`, and \`Fifty-Fifty\`.`
-                );
-                const powerupMessages = await interaction.channel.awaitMessages(
-                    {
-                        filter,
-                        max: 1,
-                        time: 120000,
+                let discordUser: string | null = null;
+                let giftedUser: WithId<MuterouletteUser> | null = null
+                let powerup: string | null = null
+                let willGift = false
+                collector.on("collect", async (e) => {
+                    if (e.customId == "user_id" && e.isUserSelectMenu()) {
+                        discordUser = e.values[0]
+                        giftedUser = await users.findOne({ user: discordUser })
                     }
-                );
-                if (powerupMessages.size === 0) {
-                    await interaction.channel.send(
-                        "You did not select a powerup! Gift wasted."
+                    if (e.customId == "gift" && e.isStringSelectMenu()) {
+                        powerup = e.values[0]
+                    }
+                    if (e.isButton()) {
+                        switch (e.customId) {
+                            case "confirm":
+                                willGift = true
+                            case "cancel":
+                            default:
+                                break;
+                        }
+                        collector.stop()
+                    }
+                    await e.deferUpdate()
+                })
+                collector.on("end", async _ => {
+                    if (!willGift) {
+                        await message.edit({
+                            content: "Gift wasted. Took too long to gift, or you have chosen to not gift.",
+                            components: []
+                        })
+                        return
+                    }
+                    if (discordUser == null) {
+                        await message.edit({
+                            content: "No user selected! Gift wasted.",
+                            components: []
+                        })
+                        return
+                    }
+                    if (giftedUser == null) {
+                        await message.edit({
+                            content: "That user has not run the muteroulette yet! Gift wasted.",
+                            components: []
+                        })
+                        return
+                    }
+                    if (giftedUser.user === interaction.user.id) {
+                        await message.edit({
+                            content: "You cannot gift yourself! Gift wasted.",
+                            components: []
+                        })
+                        return;
+                    }
+                    if (powerup == null) {
+                        await message.edit({
+                            content: "No powerup selected! Gift wasted.",
+                            components: []
+                        })
+                        return;
+                    }
+                    await users.updateOne(
+                        { user: discordUser },
+                        { $set: { powerUps: [...giftedUser.powerUps, powerup] } }
                     );
-                    return;
-                }
-                var powerup = powerupMessages.first().content.toLowerCase();
-                if (
-                    powerup !== "shield" &&
-                    powerup !== "double trouble" &&
-                    powerup !== "raise the stakes" &&
-                    powerup !== "fifty-fifty"
-                ) {
-                    await interaction.channel.send(
-                        "You must choose a valid powerup! Gift wasted."
-                    );
-                    return;
-                }
-                if (powerup.toLowerCase() === "shield") {
-                    powerup = "Shield";
-                } else if (powerup.toLowerCase() === "double trouble") {
-                    powerup = "Double Trouble";
-                } else if (powerup.toLowerCase() === "raise the stakes") {
-                    powerup = "Raise the Stakes";
-                } else if (powerup.toLowerCase() === "fifty-fifty") {
-                    powerup = "Fifty-Fifty";
-                }
-                await interaction.channel.send(
-                    `You have selected ${powerup}! Powerup gifted!`
-                );
-                await users.updateOne(
-                    { user: user },
-                    { $set: { powerUps: [...giftedUser.powerUps, powerup] } }
-                );
+                    await message.edit({
+                        content: `Your gift of ${powerup} has been sent to <@${discordUser}>! The gift is immediately redeemed upon arrival.`,
+                        components: []
+                    })
+                })
                 return;
             }
 
