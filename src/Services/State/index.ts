@@ -1,5 +1,12 @@
 import Denque from "denque";
-import { GuildEmoji, Message, PrivateThreadChannel, PublicThreadChannel, ReactionEmoji, Snowflake } from "discord.js";
+import {
+    GuildEmoji,
+    Message,
+    PrivateThreadChannel,
+    PublicThreadChannel,
+    ReactionEmoji,
+    Snowflake,
+} from "discord.js";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
@@ -11,8 +18,8 @@ const defaultState: State = {
     trackedMessages: new Map<string, TrackedMessage>(),
     ignoredChannels: [],
     pagedUsers: [],
-    useS3: false
-}
+    useS3: false,
+};
 
 export default class StateService {
     /**
@@ -28,25 +35,28 @@ export default class StateService {
     public volatileState: VolatileState = {
         trackedReactions: new Map(),
         slashCommandData: {
-            guessWhoSessions: new Map()
+            guessWhoSessions: new Map(),
         },
         spamDetection: {
             shouldLog: {},
             log: {},
 
-            sentAlert: {}
-        }
+            sentAlert: {},
+        },
     };
 
     constructor() {
         if (existsSync(STATE_PATH)) {
-            this.state = JSON.parse(readFileSync(STATE_PATH).toString(), this.reviver) as State;
+            this.state = JSON.parse(
+                readFileSync(STATE_PATH).toString(),
+                this.reviver,
+            ) as State;
 
             this.setDefaultState(defaultState, this.state);
             this.save();
         } else {
             // Default values for the state are defined here.
-            this.state = defaultState
+            this.state = defaultState;
 
             this.save();
         }
@@ -70,9 +80,9 @@ export default class StateService {
 
     // Used in JSON.stringify to handle conversion of certain types.
     private replacer(key: string, value: any) {
-        if(value instanceof Map) {
+        if (value instanceof Map) {
             return {
-                dataType: 'Map',
+                dataType: "Map",
                 value: Array.from(value.entries()), // or with spread: value: [...value]
             };
         } else {
@@ -82,8 +92,8 @@ export default class StateService {
 
     // Used in JSON.parse to handle conversion to certain types.
     private reviver(key: string, value: any) {
-        if(typeof value === 'object' && value !== null) {
-            if (value.dataType === 'Map') {
+        if (typeof value === "object" && value !== null) {
+            if (value.dataType === "Map") {
                 return new Map(value.value);
             }
         }
@@ -92,46 +102,52 @@ export default class StateService {
 }
 
 export interface State {
-    joinGate: number,
-    altGate: boolean,
-    trackedMessages: Map<string, TrackedMessage>,
+    joinGate: number;
+    altGate: boolean;
+    trackedMessages: Map<string, TrackedMessage>;
     ignoredChannels: Snowflake[];
     pagedUsers: Snowflake[];
-    useS3: boolean
+    useS3: boolean;
 }
 
 export interface TrackedMessage {
-    originalMessage: Message,
-    originalLink: string,
-    guildId: string,
-    channelId: string,
-    messageId: string,
-    content: string,
-    author: string,
-    timestamp: number, // Add timestamp to track when the message was linked
-};
+    originalMessage: Message;
+    originalLink: string;
+    guildId: string;
+    channelId: string;
+    messageId: string;
+    content: string;
+    author: string;
+    timestamp: number; // Add timestamp to track when the message was linked
+}
 
 export interface GuessWhoSession {
-    thread: PrivateThreadChannel | PublicThreadChannel,
-    channel: string,
-    score: number
+    thread: PrivateThreadChannel | PublicThreadChannel;
+    channel: string;
+    score: number;
 }
 
 export interface VolatileState {
-    trackedReactions: Map<string, TrackedReaction>,
+    trackedReactions: Map<string, TrackedReaction>;
     slashCommandData: {
-        guessWhoSessions: Map<string, GuessWhoSession>
-    },
+        guessWhoSessions: Map<string, GuessWhoSession>;
+    };
     spamDetection: {
-        shouldLog: { [id: string]: boolean }
-        log: { [id: string]: {timestamp: number, flags: number, wscore: number}[] }
+        shouldLog: { [id: string]: boolean };
+        log: {
+            [id: string]: {
+                timestamp: number;
+                flags: number;
+                wscore: number;
+            }[];
+        };
 
-        sentAlert: { [id: string]: boolean }
-    }
+        sentAlert: { [id: string]: boolean };
+    };
 }
 
 export interface TrackedReaction {
-    authorId: Snowflake,
-    emote: ReactionEmoji | GuildEmoji,
-    timestamp: number
+    authorId: Snowflake;
+    emote: ReactionEmoji | GuildEmoji;
+    timestamp: number;
 }
