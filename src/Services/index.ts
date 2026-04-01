@@ -13,25 +13,29 @@ import BilbyAPIService from "./BilbyAPI";
 import PagerService from "./Pager";
 import S3Service from "./S3";
 
-
-export default function getServices(client: Client, commands: CommandPreprocessor): Services {
+export default function getServices(
+    client: Client,
+    commands: CommandPreprocessor,
+): Services & { waitForDatabase: () => Promise<void> } {
     // Services not accessable, but need either the Client or CommandPreprocessor.
     new BilbyAPIService(client);
 
     // Services accessable to commands and events
+    const database = new DatabaseService();
     return {
         commands,
-        database: new DatabaseService(),
+        database,
         s3: new S3Service(),
         state: new StateService(),
-        pager: new PagerService(client)
-    }
+        pager: new PagerService(client),
+        waitForDatabase: () => database.waitForConnection(),
+    };
 }
 
 export interface Services {
-    commands: CommandPreprocessor,
-    database: DatabaseService,
-    s3: S3Service,
-    state: StateService,
-    pager: PagerService
+    commands: CommandPreprocessor;
+    database: DatabaseService;
+    s3: S3Service;
+    state: StateService;
+    pager: PagerService;
 }

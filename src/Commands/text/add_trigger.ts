@@ -112,6 +112,21 @@ export default class AddTriggerCommand extends TextCommand {
             );
             let response: string = triggerResponse.content;
 
+            // Schema validation before insert
+            if (
+                typeof triggerID.content !== "string" ||
+                triggerID.content.length === 0 ||
+                typeof trigger !== "string" ||
+                trigger.length === 0 ||
+                typeof response !== "string" ||
+                response.length === 0
+            ) {
+                await triggerResponse.reply(
+                    "Invalid trigger data. Please ensure all fields are non-empty strings.",
+                );
+                return;
+            }
+
             await services.database.collections.triggers.insertOne({
                 tid: triggerID.content,
                 trigger,

@@ -6,59 +6,78 @@ import * as mongoDB from "mongodb";
 import * as logger from "../../logger";
 import * as dotenv from "dotenv";
 import KeepyUppyData from "./models/keepyUppy";
-import Trigger from "./models/trigger"
-import MuteRoulette from "./models/muteroulette"
+import Trigger from "./models/trigger";
+import MuteRoulette from "./models/muteroulette";
 import SpamDetection from "./models/spamDetection";
-import GuessLeaderboard from "./models/guess"
+import GuessLeaderboard from "./models/guess";
 dotenv.config();
+
+// Add missing types for collections
+import BotCharacter from "./models/botCharacter";
 
 export default class DatabaseService {
     public collections: DatabaseCollections = {};
-    
+    private _connectPromise: Promise<void>;
+
     constructor() {
-        this.connect();
+        this._connectPromise = this.connect();
+    }
+
+    public async waitForConnection(): Promise<void> {
+        return this._connectPromise;
     }
 
     private async connect() {
-        const client: mongoDB.MongoClient = new mongoDB.MongoClient(process.env.MONGO_URL);
+        try {
+            const client: mongoDB.MongoClient = new mongoDB.MongoClient(
+                process.env.MONGO_URL,
+            );
 
-        await client.connect();
+            await client.connect();
 
-        logger.command("Connected to MongoDB database.");
+            logger.command("Connected to MongoDB database.");
 
-        const databases = {
-            bilby: client.db("bilby")
-        }
+            const databases = {
+                bilby: client.db("bilby"),
+            };
 
-        const collections: (keyof DatabaseCollections)[] = [
-            "botCharacters",
-            "muteroulette",
-            "guess",
-            "triggers",
-            "guessWho",
-            "oldGuessWho",
-            "mutemeData",
-            "commandBlacklist",
-            "keepyUppy",
-            "spamDetection",
-        ]
-
-        for (const collection of collections) {
-            //? yes, i know there's an `any` there. fuck it lol.
-            this.collections[collection] = databases.bilby.collection<any>(collection)
+            // Use explicit types for each collection
+            this.collections.botCharacters =
+                databases.bilby.collection<BotCharacter>("botCharacters");
+            this.collections.muteroulette =
+                databases.bilby.collection<MuteRoulette>("muteroulette");
+            this.collections.guess =
+                databases.bilby.collection<GuessLeaderboard>("guess");
+            this.collections.triggers =
+                databases.bilby.collection<Trigger>("triggers");
+            this.collections.guessWho =
+                databases.bilby.collection<any>("guessWho");
+            this.collections.oldGuessWho =
+                databases.bilby.collection<any>("oldGuessWho");
+            this.collections.mutemeData =
+                databases.bilby.collection<any>("mutemeData");
+            this.collections.commandBlacklist =
+                databases.bilby.collection<any>("commandBlacklist");
+            this.collections.keepyUppy =
+                databases.bilby.collection<KeepyUppyData>("keepyUppy");
+            this.collections.spamDetection =
+                databases.bilby.collection<SpamDetection>("spamDetection");
+        } catch (error) {
+            logger.error("Failed to connect to MongoDB database.", error);
+            throw error;
         }
     }
 }
 
 export interface DatabaseCollections {
-    botCharacters?: mongoDB.Collection,
-    muteroulette?: mongoDB.Collection<MuteRoulette>,
-    guess?: mongoDB.Collection<GuessLeaderboard>,
-    triggers?: mongoDB.Collection<Trigger>,
-    guessWho?: mongoDB.Collection,
-    oldGuessWho?: mongoDB.Collection,
-    mutemeData?: mongoDB.Collection,
-    commandBlacklist?: mongoDB.Collection,
-    keepyUppy?: mongoDB.Collection<KeepyUppyData>,
-    spamDetection?: mongoDB.Collection<SpamDetection>,
+    botCharacters?: mongoDB.Collection<import("./models/botCharacter").default>;
+    muteroulette?: mongoDB.Collection<MuteRoulette>;
+    guess?: mongoDB.Collection<GuessLeaderboard>;
+    triggers?: mongoDB.Collection<Trigger>;
+    guessWho?: mongoDB.Collection<any>;
+    oldGuessWho?: mongoDB.Collection<any>;
+    mutemeData?: mongoDB.Collection<any>;
+    commandBlacklist?: mongoDB.Collection<any>;
+    keepyUppy?: mongoDB.Collection<KeepyUppyData>;
+    spamDetection?: mongoDB.Collection<SpamDetection>;
 }

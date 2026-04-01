@@ -4,6 +4,7 @@ import TextCommand, { TextCommandBuilder } from "../TextCommand";
 import { roleIds } from "../../constants";
 import BotCharacter from "../../Services/Database/models/botCharacter";
 import * as logger from "../../logger";
+import { Binary } from "mongodb";
 
 export default class AddCharacterCommand extends TextCommand {
     public data = new TextCommandBuilder()
@@ -54,7 +55,7 @@ export default class AddCharacterCommand extends TextCommand {
         try {
             await services.database.collections.botCharacters.insertOne({
                 name,
-                avatarImage: avatarData,
+                avatarImage: new Binary(avatarData),
             });
 
             await message.reply(`Created character \`${name}\`.`);

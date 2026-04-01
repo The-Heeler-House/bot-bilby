@@ -357,7 +357,7 @@ export default class CommandPreprocessor {
                     `Text command ${commandName} does not exist.`,
                 );
 
-            // TODO: Do permission and environment checks.
+            // Permission and environment checks
             // Environment checks
             if (
                 !command.data.allowedInDMs &&
@@ -367,6 +367,14 @@ export default class CommandPreprocessor {
             )
                 return;
 
+            // Explicitly check for member null (e.g., in DMs)
+            if (!message.member) {
+                await message.reply(
+                    "This command cannot be used in DMs or without a valid member context.",
+                );
+                return;
+            }
+
             try {
                 args = parseTextArgs(command.data.arguments, rawArgs);
             } catch (e) {
@@ -375,7 +383,7 @@ export default class CommandPreprocessor {
             }
 
             if (canExecuteCommand(command, message.member))
-                command.execute(message, args, services);
+                await command.execute(message, args, services);
         } catch (error) {
             logger.error(
                 "Encountered an error while trying to execute the",
@@ -425,6 +433,7 @@ export default class CommandPreprocessor {
 
         if (
             blacklist &&
+            Array.isArray(blacklist["command"]) &&
             blacklist["command"].includes(interaction.commandName)
         ) {
             await interaction.reply({
@@ -511,7 +520,14 @@ export default class CommandPreprocessor {
                 "\n",
                 error.stack,
             );
-            // FIXME: Due to spamming concerns, we don't page errors here. Potential solution is to generate a hash based on the error's message and stack trace, as well as "whileDoing" in order to get a unique id for an error so we don't repeat ourselves.
+            // Log the error for developer visibility, but avoid spamming users.
+            logger.error(
+                "Autocomplete error for command:",
+                interaction.commandName,
+                error,
+                error.stack,
+            );
+            // Optionally, you could implement a deduplication mechanism here.
             await interaction.respond(
                 [].map((choice) => ({ name: choice, value: choice })),
             );

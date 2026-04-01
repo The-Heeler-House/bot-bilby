@@ -31,8 +31,8 @@ export default class CommandBlacklistCommand extends TextCommand {
         const commandList = new Set(services.commands.slashCommands.keys());
 
         let newList = new Set<string>();
-        if (foundData["commands"]?.length > 0) {
-            for (let i of foundData["commands"]) newList.add(i);
+        if (foundData && foundData["command"]?.length > 0) {
+            for (let i of foundData["command"]) newList.add(i);
         }
 
         if (args["command"]) {
