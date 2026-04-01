@@ -883,11 +883,18 @@ export default class MinigameManager {
     private async refreshAllianceMessage(game: WaffleMinigame): Promise<void> {
         const butter = (game.data.teams.butter as string[]).map(id => `<@${id}>`).join(", ") || "None";
         const syrup = (game.data.teams.syrup as string[]).map(id => `<@${id}>`).join(", ") || "None";
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setCustomId("waffle_minigame_alliance_join")
+                .setLabel("Join a Team!")
+                .setStyle(ButtonStyle.Primary)
+        );
         await this.editMinigameMessage(
             game.messageId,
             baseEmbed().setTitle("⚔️ Waffle Alliance!").setDescription(
                 `**Team Butter 🧈** (${game.data.scores.butter} WP): ${butter}\n\n**Team Syrup 🍁** (${game.data.scores.syrup} WP): ${syrup}\n\n*Click Join to be assigned a team!*`
-            )
+            ),
+            [row]
         );
     }
 

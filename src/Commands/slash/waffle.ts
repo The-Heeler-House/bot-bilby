@@ -100,7 +100,7 @@ export default class WaffleCommand extends SlashCommand {
                             { name: "Cards", value: `${cards}/${WAFFLE_CARD_CAP}`, inline: true },
                             { name: "Active Glazes/Burns", value: `${glazes}`, inline: true },
                         )],
-                    ephemeral: true,
+                    ephemeral: false,
                 });
                 return;
             }
