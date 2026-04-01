@@ -12,19 +12,23 @@ import StateService from "./State";
 import BilbyAPIService from "./BilbyAPI";
 import PagerService from "./Pager";
 import S3Service from "./S3";
+import WaffleHouseService from "./WaffleHouse";
 
 
 export default function getServices(client: Client, commands: CommandPreprocessor): Services {
     // Services not accessable, but need either the Client or CommandPreprocessor.
     new BilbyAPIService(client);
+    const database = new DatabaseService();
+    const waffleHouse = new WaffleHouseService(client);
 
     // Services accessable to commands and events
     return {
         commands,
-        database: new DatabaseService(),
+        database,
         s3: new S3Service(),
         state: new StateService(),
-        pager: new PagerService(client)
+        pager: new PagerService(client),
+        waffleHouse,
     }
 }
 
@@ -33,5 +37,6 @@ export interface Services {
     database: DatabaseService,
     s3: S3Service,
     state: StateService,
-    pager: PagerService
+    pager: PagerService,
+    waffleHouse: WaffleHouseService,
 }

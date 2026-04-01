@@ -10,6 +10,15 @@ import Trigger from "./models/trigger"
 import MuteRoulette from "./models/muteroulette"
 import SpamDetection from "./models/spamDetection";
 import GuessLeaderboard from "./models/guess"
+import { WaffleUser } from "../WaffleHouse/models/waffleUser";
+import { WaffleCard } from "../WaffleHouse/models/waffleCard";
+import { WaffleGlaze } from "../WaffleHouse/models/waffleGlaze";
+import { WaffleAuction } from "../WaffleHouse/models/waffleAuction";
+import { WaffleMinigame } from "../WaffleHouse/models/waffleMinigame";
+import { WafflePrompt } from "../WaffleHouse/models/waffleMinigame";
+import { WaffleFrenchToast, WaffleTuning, WaffleEventState } from "../WaffleHouse/models/waffleEventState";
+import { WaffleSpawn } from "../WaffleHouse/models/waffleSpawn";
+import { WaffleTestRun } from "../WaffleHouse/models/waffleTestRun";
 dotenv.config();
 
 export default class DatabaseService {
@@ -41,6 +50,17 @@ export default class DatabaseService {
             "commandBlacklist",
             "keepyUppy",
             "spamDetection",
+            "waffleUsers",
+            "waffleCards",
+            "waffleGlazes",
+            "waffleAuctions",
+            "waffleMinigames",
+            "wafflePromptQueue",
+            "waffleFrenchToast",
+            "waffleTuning",
+            "waffleEventState",
+            "waffleSpawns",
+            "waffleTestRuns",
         ]
 
         for (const collection of collections) {
@@ -61,4 +81,15 @@ export interface DatabaseCollections {
     commandBlacklist?: mongoDB.Collection,
     keepyUppy?: mongoDB.Collection<KeepyUppyData>,
     spamDetection?: mongoDB.Collection<SpamDetection>,
+    waffleUsers?: mongoDB.Collection<WaffleUser>,
+    waffleCards?: mongoDB.Collection<WaffleCard>,
+    waffleGlazes?: mongoDB.Collection<WaffleGlaze>,
+    waffleAuctions?: mongoDB.Collection<WaffleAuction>,
+    waffleMinigames?: mongoDB.Collection<WaffleMinigame>,
+    wafflePromptQueue?: mongoDB.Collection<WafflePrompt>,
+    waffleFrenchToast?: mongoDB.Collection<WaffleFrenchToast>,
+    waffleTuning?: mongoDB.Collection<WaffleTuning>,
+    waffleEventState?: mongoDB.Collection<WaffleEventState>,
+    waffleSpawns?: mongoDB.Collection<WaffleSpawn>,
+    waffleTestRuns?: mongoDB.Collection<WaffleTestRun>,
 }

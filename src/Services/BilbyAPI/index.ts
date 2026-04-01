@@ -1,4 +1,4 @@
-import { Client, Guild, GuildScheduledEventPrivacyLevel, Snowflake, Status } from "discord.js";
+import { Client, Events, Guild, GuildScheduledEventPrivacyLevel, Snowflake, Status } from "discord.js";
 import express, { Request, Response } from "express";
 import { THH_SERVER_ID, roleIds } from "../../constants";
 import * as logger from "../../logger";
@@ -21,7 +21,7 @@ export default class BilbyAPIService {
             next();
         });
 
-        client.on("ready", async () => {
+        client.on(Events.ClientReady, async () => {
             this.client = client;
 
             // DEVELOPMENT_GUILD is only set in a development environment, so by default we assume The Heeler House as target guild

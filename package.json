@@ -4,7 +4,10 @@
   "description": "Bot Bilby is a Discord Bot for The Heeler House Discord server, providing moderation tools, gambling, and more!",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:waffle",
+    "test:waffle": "npx tsc -p tsconfig.test.json && node -r dotenv/config --test dist-test/test/waffle/*.test.js",
+    "test:waffle:watch": "npx tsc -p tsconfig.test.json && node -r dotenv/config --test --watch dist-test/test/waffle/*.test.js",
+    "test:typecheck": "npx tsc --noEmit",
     "bot-unix": "./build.sh && node dist/index.js",
     "bot-windows": "build.bat && node dist/index.js"
   },

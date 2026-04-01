@@ -1,4 +1,4 @@
-import { AttachmentBuilder, Client, Message, Snowflake, TextChannel } from "discord.js";
+import { AttachmentBuilder, Client, Events, Message, Snowflake, TextChannel } from "discord.js";
 import { channelIds } from "../../constants";
 
 /**
@@ -53,7 +53,7 @@ export default class PagerService {
     ];
 
     constructor(client: Client) {
-        client.on("ready", async () => {
+        client.on(Events.ClientReady, async () => {
             this.client = client;
 
             this.loggingChannel = await client.channels.fetch(channelIds.bilby) as TextChannel;

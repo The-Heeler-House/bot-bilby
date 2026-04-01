@@ -2,23 +2,27 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
+import { ActivityType, Client, Events, GatewayIntentBits, Partials } from "discord.js";
 import CommandPreprocessor from "./Commands";
 import * as logger from "./logger";
 import getServices from "./Services";
 import EventManager from "./Events";
 import { customEvents } from "./Events/BotEvent";
 
-const client = new Client({ intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.GuildMessageTyping,
-    GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMembers
-] });
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildMessageTyping,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.DirectMessages
+    ],
+    partials: [Partials.Channel, Partials.Message, Partials.Reaction]
+});
 
 const commands = new CommandPreprocessor();
 const events = new EventManager();
@@ -45,6 +49,7 @@ client.on(Events.ClientReady, async () => {
     commands.getTextCommands(services);
     await commands.registerSlashCommands(client, services);
     await events.registerEvents(client, services);
+    await services.waffleHouse.initialize(services);
 
     logger.command("Online!");
 
