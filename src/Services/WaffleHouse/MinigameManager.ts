@@ -30,6 +30,19 @@ const POLL_VOTING_MS = 25 * 60 * 1000;
 const ENTRY_SUBMISSION_MS = 10 * 60 * 1000;
 const ENTRY_VOTING_MS = 15 * 60 * 1000;
 const ALLIANCE_MS = 27 * 60 * 1000;
+type MinigameWpConfig = {
+    chefBattle: { winner: number; loser: number; tie: number };
+    poll: { winner: number; loser: number; tie: number };
+    promptEntry: { winner: number; submitter: number };
+    alliance: { winner: number; loser: number; tie: number };
+};
+
+const MINIGAME_WP: MinigameWpConfig = {
+    chefBattle: { winner: 200, loser: 75, tie: 150 },
+    poll: { winner: 50, loser: 15, tie: 35 },
+    promptEntry: { winner: 200, submitter: 50 },
+    alliance: { winner: 100, loser: 35, tie: 70 },
+};
 
 export default class MinigameManager {
     private waffle: WaffleHouseService;
@@ -467,6 +480,7 @@ export default class MinigameManager {
     private async resolveChefBattle(game: WaffleMinigame, services: Services): Promise<void> {
         const refreshed = await services.database.collections.waffleMinigames!.findOne({ _id: game._id });
         if (!refreshed || refreshed.status === "resolved") return;
+        const minigameWp = await this.getMinigameWpConfig(services);
 
         const channel = await this.getCounterChannel();
         const msg = channel && refreshed.messageId ? await channel.messages.fetch(refreshed.messageId).catch(() => null) : null;
@@ -504,7 +518,9 @@ export default class MinigameManager {
         if (aCount === bCount) {
             await this.waffle.glazeManager.applyMinigameGlaze(chefA, "blueberry_glaze", services);
             await this.waffle.glazeManager.applyMinigameGlaze(chefB, "blueberry_glaze", services);
-            description += `\n\n🤝 Tie! **${chefAUser?.tag ?? chefA}** and **${chefBUser?.tag ?? chefB}** both get Blueberry Glaze.`;
+            await this.awardWp(chefA, minigameWp.chefBattle.tie, services);
+            await this.awardWp(chefB, minigameWp.chefBattle.tie, services);
+            description += `\n\n🤝 Tie! **${chefAUser?.tag ?? chefA}** and **${chefBUser?.tag ?? chefB}** both get Blueberry Glaze and **${minigameWp.chefBattle.tie} WP**.`;
         } else {
             const winner = aCount > bCount ? chefA : chefB;
             const loser = winner === chefA ? chefB : chefA;
@@ -512,7 +528,9 @@ export default class MinigameManager {
             const loserUser = loser === chefA ? chefAUser : chefBUser;
             await this.waffle.glazeManager.applyMinigameGlaze(winner, "peanut_butter_glaze", services);
             await this.waffle.glazeManager.applyMinigameBurn(loser, "cold_waffle", services);
-            description += `\n\n🥇 Winner: **${winnerUser?.tag ?? winner}** — Peanut Butter Glaze!\n💀 Loser: **${loserUser?.tag ?? loser}** — Cold Waffle!`;
+            await this.awardWp(winner, minigameWp.chefBattle.winner, services);
+            await this.awardWp(loser, minigameWp.chefBattle.loser, services);
+            description += `\n\n🥇 Winner: **${winnerUser?.tag ?? winner}** — Peanut Butter Glaze and **${minigameWp.chefBattle.winner} WP**!\n💀 Loser: **${loserUser?.tag ?? loser}** — Cold Waffle and **${minigameWp.chefBattle.loser} WP**.`;
         }
 
         await this.editMinigameMessage(
@@ -572,6 +590,7 @@ export default class MinigameManager {
     private async resolvePoll(game: WaffleMinigame, services: Services): Promise<void> {
         const refreshed = await services.database.collections.waffleMinigames!.findOne({ _id: game._id });
         if (!refreshed || refreshed.status === "resolved") return;
+        const minigameWp = await this.getMinigameWpConfig(services);
 
         const votes = refreshed.data.votes as Record<string, string[]>;
         const voteEntries = Object.entries(votes);
@@ -585,12 +604,14 @@ export default class MinigameManager {
         for (const entry of winningOptions) {
             for (const userId of entry.voters) {
                 await this.waffle.glazeManager.applyMinigameGlaze(userId, "maple_glaze", services);
+                await this.awardWp(userId, tied ? minigameWp.poll.tie : minigameWp.poll.winner, services);
             }
         }
         if (!tied) {
             for (const entry of losingOptions) {
                 for (const userId of entry.voters) {
                     await this.waffle.glazeManager.applyMinigameBurn(userId, "soggy_bottom", services);
+                    await this.awardWp(userId, minigameWp.poll.loser, services);
                 }
             }
         }
@@ -602,8 +623,8 @@ export default class MinigameManager {
                 .setTitle("📊 Poll Results!")
                 .setDescription(
                     tied
-                        ? `**Question:** ${refreshed.prompt}\n\n${breakdown}\n\nIt's a tie across all options. Tied-option voters receive Maple Glaze.`
-                        : `**Question:** ${refreshed.prompt}\n\n${breakdown}\n\nWinning option${winningOptions.length === 1 ? "" : "s"}: ${winningOptions.map(entry => entry.option).join(", ")}\nLosing option${losingOptions.length === 1 ? "" : "s"}: ${losingOptions.map(entry => entry.option).join(", ")}`
+                        ? `**Question:** ${refreshed.prompt}\n\n${breakdown}\n\nIt's a tie across all options. Tied-option voters receive Maple Glaze and **${minigameWp.poll.tie} WP**.`
+                        : `**Question:** ${refreshed.prompt}\n\n${breakdown}\n\nWinning option${winningOptions.length === 1 ? "" : "s"}: ${winningOptions.map(entry => entry.option).join(", ")}\nLosing option${losingOptions.length === 1 ? "" : "s"}: ${losingOptions.map(entry => entry.option).join(", ")}\n\nWinning voters receive **${minigameWp.poll.winner} WP**. Losing voters receive **${minigameWp.poll.loser} WP**.`
                 ),
             []
         );
@@ -696,6 +717,7 @@ export default class MinigameManager {
     private async resolvePromptEntry(game: WaffleMinigame, services: Services): Promise<void> {
         const refreshed = await services.database.collections.waffleMinigames!.findOne({ _id: game._id });
         if (!refreshed || refreshed.status === "resolved") return;
+        const minigameWp = await this.getMinigameWpConfig(services);
 
         const entries: { userId: string; text: string }[] = refreshed.data.entries;
         const votes = refreshed.data.votes as Record<string, string[]>;
@@ -705,10 +727,12 @@ export default class MinigameManager {
 
         if (winner) {
             await this.waffle.glazeManager.applyMinigameGlaze(winner, "peanut_butter_glaze", services);
+            await this.awardWp(winner, minigameWp.promptEntry.winner, services);
         }
         for (const entry of entries) {
             if (entry.userId !== winner) {
                 await this.waffle.glazeManager.applyMinigameBurn(entry.userId, "soggy_bottom", services);
+                await this.awardWp(entry.userId, minigameWp.promptEntry.submitter, services);
             }
         }
 
@@ -717,7 +741,7 @@ export default class MinigameManager {
             refreshed.messageId,
             baseEmbed()
                 .setTitle("🏆 Prompt & Entry Results!")
-                .setDescription(`**Prompt:** ${refreshed.prompt}\n\nWinner: **${winnerUser?.tag ?? winner ?? "Nobody"}** with entry #${winnerIndex + 1}!\n\n${sorted.map(([index, voters]) => `#${index}: ${voters.length} vote${voters.length === 1 ? "" : "s"}`).join("\n")}`),
+                .setDescription(`**Prompt:** ${refreshed.prompt}\n\nWinner: **${winnerUser?.tag ?? winner ?? "Nobody"}** with entry #${winnerIndex + 1} and **${minigameWp.promptEntry.winner} WP**!\nAll other submitters receive **${minigameWp.promptEntry.submitter} WP**.\n\n${sorted.map(([index, voters]) => `#${index}: ${voters.length} vote${voters.length === 1 ? "" : "s"}`).join("\n")}`),
             []
         );
 
@@ -761,6 +785,7 @@ export default class MinigameManager {
     private async resolveAlliance(game: WaffleMinigame, services: Services): Promise<void> {
         const refreshed = await services.database.collections.waffleMinigames!.findOne({ _id: game._id });
         if (!refreshed || refreshed.status === "resolved") return;
+        const minigameWp = await this.getMinigameWpConfig(services);
 
         const teams = refreshed.data.teams as { butter: string[]; syrup: string[] };
         const scores = refreshed.data.scores as { butter: number; syrup: number };
@@ -769,21 +794,24 @@ export default class MinigameManager {
         if (tied) {
             for (const userId of [...teams.butter, ...teams.syrup]) {
                 await this.waffle.glazeManager.applyMinigameGlaze(userId, "strawberry_glaze", services);
+                await this.awardWp(userId, minigameWp.alliance.tie, services);
             }
         } else {
             const winningTeam = scores.butter > scores.syrup ? "butter" : "syrup";
             const losingTeam = winningTeam === "butter" ? "syrup" : "butter";
             for (const userId of teams[winningTeam]) {
                 await this.waffle.glazeManager.applyMinigameGlaze(userId, "chocolate_glaze", services);
+                await this.awardWp(userId, minigameWp.alliance.winner, services);
             }
             for (const userId of teams[losingTeam]) {
                 await this.waffle.glazeManager.applyMinigameBurn(userId, "cold_waffle", services);
+                await this.awardWp(userId, minigameWp.alliance.loser, services);
             }
         }
 
         const description = tied
-            ? `It's a **TIE**! (${scores.butter} WP each) — Everyone gets Strawberry Glaze!`
-            : `**Team ${scores.butter > scores.syrup ? "Butter 🧈" : "Syrup 🍁"} wins!** (${Math.max(scores.butter, scores.syrup)} vs ${Math.min(scores.butter, scores.syrup)} WP)\n\nWinners: Chocolate Glaze 🍫\nLosers: Cold Waffle ❄️`;
+            ? `It's a **TIE**! (${scores.butter} WP each) — Everyone gets Strawberry Glaze and **${minigameWp.alliance.tie} WP**!`
+            : `**Team ${scores.butter > scores.syrup ? "Butter 🧈" : "Syrup 🍁"} wins!** (${Math.max(scores.butter, scores.syrup)} vs ${Math.min(scores.butter, scores.syrup)} WP)\n\nWinners: Chocolate Glaze 🍫 and **${minigameWp.alliance.winner} WP**\nLosers: Cold Waffle ❄️ and **${minigameWp.alliance.loser} WP**`;
         await this.editMinigameMessage(refreshed.messageId, baseEmbed().setTitle("⚔️ Waffle Alliance — Results!").setDescription(description), []);
 
         await services.database.collections.waffleMinigames!.updateOne(
@@ -861,6 +889,65 @@ export default class MinigameManager {
                 `**Team Butter 🧈** (${game.data.scores.butter} WP): ${butter}\n\n**Team Syrup 🍁** (${game.data.scores.syrup} WP): ${syrup}\n\n*Click Join to be assigned a team!*`
             )
         );
+    }
+
+    private async awardWp(userId: string, amount: number, services: Services): Promise<void> {
+        if (amount <= 0) return;
+        await services.database.collections.waffleUsers!.updateOne(
+            { userId },
+            {
+                $inc: {
+                    current_wp: amount,
+                    total_wp_earned: amount,
+                },
+                $setOnInsert: {
+                    userId,
+                    reserved_wp: 0,
+                    active_bids: {},
+                    discovered_methods: [],
+                    milestones_hit: [],
+                    hungry_count: 0,
+                    hungry_awarded: false,
+                    first_waffle_awarded: false,
+                    cooldowns: {},
+                },
+            },
+            { upsert: true }
+        );
+
+        if (this.waffle.eventState) {
+            this.waffle.eventState.totalWpEarnedServerWide += amount;
+        }
+
+        await services.database.collections.waffleEventState!.updateOne(
+            { _id: "event_state" },
+            { $inc: { totalWpEarnedServerWide: amount } }
+        );
+    }
+
+    private async getMinigameWpConfig(services: Services): Promise<MinigameWpConfig> {
+        const tuning = await services.database.collections.waffleTuning!.findOne({ _id: "tuning" });
+        return {
+            chefBattle: {
+                winner: tuning?.minigameWp?.chefBattle?.winner ?? MINIGAME_WP.chefBattle.winner,
+                loser: tuning?.minigameWp?.chefBattle?.loser ?? MINIGAME_WP.chefBattle.loser,
+                tie: tuning?.minigameWp?.chefBattle?.tie ?? MINIGAME_WP.chefBattle.tie,
+            },
+            poll: {
+                winner: tuning?.minigameWp?.poll?.winner ?? MINIGAME_WP.poll.winner,
+                loser: tuning?.minigameWp?.poll?.loser ?? MINIGAME_WP.poll.loser,
+                tie: tuning?.minigameWp?.poll?.tie ?? MINIGAME_WP.poll.tie,
+            },
+            promptEntry: {
+                winner: tuning?.minigameWp?.promptEntry?.winner ?? MINIGAME_WP.promptEntry.winner,
+                submitter: tuning?.minigameWp?.promptEntry?.submitter ?? MINIGAME_WP.promptEntry.submitter,
+            },
+            alliance: {
+                winner: tuning?.minigameWp?.alliance?.winner ?? MINIGAME_WP.alliance.winner,
+                loser: tuning?.minigameWp?.alliance?.loser ?? MINIGAME_WP.alliance.loser,
+                tie: tuning?.minigameWp?.alliance?.tie ?? MINIGAME_WP.alliance.tie,
+            },
+        };
     }
 
     private parsePollPrompt(prompt: string): { question: string; options: string[] } {

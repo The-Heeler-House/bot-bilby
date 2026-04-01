@@ -57,4 +57,10 @@ export interface WaffleTuning {
     spawnThresholdRange?: [number, number];
     auctionRefreshMs?: number;
     minigameIntervalMs?: number;
+    minigameWp?: {
+        chefBattle?: { winner?: number; loser?: number; tie?: number };
+        poll?: { winner?: number; loser?: number; tie?: number };
+        promptEntry?: { winner?: number; submitter?: number };
+        alliance?: { winner?: number; loser?: number; tie?: number };
+    };
 }
