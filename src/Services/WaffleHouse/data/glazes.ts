@@ -26,20 +26,20 @@ export interface PancakeBurnDefinition {
 }
 
 export const GLAZES: GlazeDefinition[] = [
-    { id: "strawberry_glaze",    name: "Strawberry Glaze",    type: "glaze", multiplier: 2,   durationMs: 60 * 60 * 1000,      triggerRange: [200, 300],   final24hOnly: false },
-    { id: "blueberry_glaze",     name: "Blueberry Glaze",     type: "glaze", multiplier: 2,   durationMs: 2 * 60 * 60 * 1000,  triggerRange: [280, 420],   final24hOnly: false },
-    { id: "maple_glaze",         name: "Maple Glaze",         type: "glaze", multiplier: 3,   durationMs: 60 * 60 * 1000,      triggerRange: [350, 550],   final24hOnly: false },
-    { id: "banana_glaze",        name: "Banana Glaze",        type: "glaze", multiplier: 2.5, durationMs: 90 * 60 * 1000,      triggerRange: [450, 650],   final24hOnly: false },
-    { id: "chocolate_glaze",     name: "Chocolate Glaze",     type: "glaze", multiplier: 3,   durationMs: 45 * 60 * 1000,      triggerRange: [550, 800],   final24hOnly: false },
-    { id: "peanut_butter_glaze", name: "Peanut Butter Glaze", type: "glaze", multiplier: 4,   durationMs: 30 * 60 * 1000,      triggerRange: [700, 1000],  final24hOnly: false },
-    { id: "cherry_glaze",        name: "Cherry Glaze",        type: "glaze", multiplier: 5,   durationMs: 20 * 60 * 1000,      triggerRange: [1000, 1400], final24hOnly: false },
-    { id: "golden_glaze",        name: "Golden Glaze",        type: "glaze", multiplier: 10,  durationMs: 10 * 60 * 1000,      triggerRange: [400, 700],   final24hOnly: true  },
+    { id: "strawberry_glaze",    name: "Strawberry Glaze",    type: "glaze", multiplier: 2,   durationMs: 60 * 60 * 1000,      triggerRange: [80, 145],    final24hOnly: false },
+    { id: "blueberry_glaze",     name: "Blueberry Glaze",     type: "glaze", multiplier: 2,   durationMs: 2 * 60 * 60 * 1000,  triggerRange: [115, 195],   final24hOnly: false },
+    { id: "maple_glaze",         name: "Maple Glaze",         type: "glaze", multiplier: 3,   durationMs: 60 * 60 * 1000,      triggerRange: [145, 250],   final24hOnly: false },
+    { id: "banana_glaze",        name: "Banana Glaze",        type: "glaze", multiplier: 2.5, durationMs: 90 * 60 * 1000,      triggerRange: [190, 305],   final24hOnly: false },
+    { id: "chocolate_glaze",     name: "Chocolate Glaze",     type: "glaze", multiplier: 3,   durationMs: 45 * 60 * 1000,      triggerRange: [235, 365],   final24hOnly: false },
+    { id: "peanut_butter_glaze", name: "Peanut Butter Glaze", type: "glaze", multiplier: 4,   durationMs: 30 * 60 * 1000,      triggerRange: [305, 465],   final24hOnly: false },
+    { id: "cherry_glaze",        name: "Cherry Glaze",        type: "glaze", multiplier: 5,   durationMs: 20 * 60 * 1000,      triggerRange: [455, 650],   final24hOnly: false },
+    { id: "golden_glaze",        name: "Golden Glaze",        type: "glaze", multiplier: 10,  durationMs: 10 * 60 * 1000,      triggerRange: [155, 280],   final24hOnly: true  },
 ];
 
 export const BURNS: BurnDefinition[] = [
-    { id: "soggy_bottom", name: "Soggy Bottom", type: "burn", penalty: 0.5,  durationMs: 45 * 60 * 1000,     triggerRange: [300, 500], final24hOnly: false },
-    { id: "cold_waffle",  name: "Cold Waffle",  type: "burn", penalty: 0.75, durationMs: 60 * 60 * 1000,     triggerRange: [500, 800], final24hOnly: false },
-    { id: "waffle_bug",   name: "Waffle Bug",   type: "burn", penalty: 1,    durationMs: 2 * 60 * 60 * 1000, triggerRange: [350, 600], final24hOnly: true  },
+    { id: "soggy_bottom", name: "Soggy Bottom", type: "burn", penalty: 0.5,  durationMs: 45 * 60 * 1000,     triggerRange: [120, 210], final24hOnly: false },
+    { id: "cold_waffle",  name: "Cold Waffle",  type: "burn", penalty: 0.75, durationMs: 60 * 60 * 1000,     triggerRange: [195, 335], final24hOnly: false },
+    { id: "waffle_bug",   name: "Waffle Bug",   type: "burn", penalty: 1,    durationMs: 2 * 60 * 60 * 1000, triggerRange: [150, 255], final24hOnly: true  },
 ];
 
 export const PANCAKE_BURN: PancakeBurnDefinition = {

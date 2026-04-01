@@ -25,21 +25,21 @@ export interface CombinationRecipe {
 export const CARD_TEMPLATES: CardTemplate[] = [
     // Base cards
     { id: "muffins_leftover_waffle", name: "Muffin's Leftover Waffle", emoji: "🧇", rarity: "common", category: "base", valueRange: [50, 150] },
-    { id: "sunday_morning_waffle", name: "Sunday Morning Waffle", emoji: "🌅", rarity: "uncommon", category: "base", valueRange: [200, 500] },
-    { id: "bandits_special", name: "Bandit's Special", emoji: "🎩", rarity: "rare", category: "base", valueRange: [600, 1200] },
-    { id: "chillis_disaster_waffle", name: "Chilli's Disaster Waffle", emoji: "🔥", rarity: "epic", category: "base", valueRange: [1500, 3000] },
-    { id: "the_bluey_golden_waffle", name: "The Bluey Golden Waffle", emoji: "💎", rarity: "legendary", category: "base", valueRange: [5000, 10000] },
+    { id: "sunday_morning_waffle", name: "Sunday Morning Waffle", emoji: "🌅", rarity: "uncommon", category: "base", valueRange: [180, 420] },
+    { id: "bandits_special", name: "Bandit's Special", emoji: "🎩", rarity: "rare", category: "base", valueRange: [500, 1000] },
+    { id: "chillis_disaster_waffle", name: "Chilli's Disaster Waffle", emoji: "🔥", rarity: "epic", category: "base", valueRange: [1100, 2200] },
+    { id: "the_bluey_golden_waffle", name: "The Bluey Golden Waffle", emoji: "💎", rarity: "legendary", category: "base", valueRange: [3200, 6000] },
 
     // Topping cards
     { id: "drizzle_of_honey", name: "Drizzle of Honey", emoji: "🍯", rarity: "common", category: "topping", valueRange: [30, 100] },
     { id: "whipped_cream_cloud", name: "Whipped Cream Cloud", emoji: "☁️", rarity: "common", category: "topping", valueRange: [30, 100] },
-    { id: "berry_avalanche", name: "Berry Avalanche", emoji: "🫐", rarity: "uncommon", category: "topping", valueRange: [100, 300] },
-    { id: "maple_monsoon", name: "Maple Monsoon", emoji: "🍁", rarity: "rare", category: "topping", valueRange: [300, 700] },
-    { id: "choc_hazelnut_lava", name: "Choc-Hazelnut Lava", emoji: "🍫", rarity: "epic", category: "topping", valueRange: [500, 1200] },
+    { id: "berry_avalanche", name: "Berry Avalanche", emoji: "🫐", rarity: "uncommon", category: "topping", valueRange: [90, 240] },
+    { id: "maple_monsoon", name: "Maple Monsoon", emoji: "🍁", rarity: "rare", category: "topping", valueRange: [250, 600] },
+    { id: "choc_hazelnut_lava", name: "Choc-Hazelnut Lava", emoji: "🍫", rarity: "epic", category: "topping", valueRange: [450, 1000] },
 
     // Special cards
-    { id: "tripzs_pancake", name: "Tripz's Pancake", emoji: "🥞", rarity: "rare", category: "special", valueRange: [-500, -200], reducedDropRate: true, negativeValue: true },
-    { id: "bingos_redemption_bite", name: "Bingo's Redemption Bite", emoji: "🌟", rarity: "rare", category: "special", valueRange: [50, 200], reducedDropRate: true, flavour: "She saved one waffle from the chaos." },
+    { id: "tripzs_pancake", name: "Tripz's Pancake", emoji: "🥞", rarity: "rare", category: "special", valueRange: [-400, -175], reducedDropRate: true, negativeValue: true },
+    { id: "bingos_redemption_bite", name: "Bingo's Redemption Bite", emoji: "🌟", rarity: "rare", category: "special", valueRange: [100, 275], reducedDropRate: true, flavour: "She saved one waffle from the chaos." },
     { id: "jalens_67_eternal_waffle", name: "Jalen's 67 Eternal Waffle", emoji: "👑", rarity: "legendary", category: "special", valueRange: [15000, 25000], comboOnly: true },
 
     // Combo-produced cards

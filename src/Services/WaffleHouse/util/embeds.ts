@@ -61,28 +61,38 @@ export function spawnEmbed(cardName: string, cardEmoji: string, rarity: string, 
         .setFooter({ text: `${WAFFLE_FOOTER} • 5 minutes to claim` });
 }
 
-export function spawnTimeoutEmbed(cardName: string): EmbedBuilder {
+export function spawnTimeoutEmbed(cardName: string, rarity: string): EmbedBuilder {
     return new EmbedBuilder()
         .setColor(0x95A5A6)
         .setTitle("Card unclaimed!")
-        .setDescription(`**${cardName}** went unclaimed and has expired.`)
+        .setDescription(`**${cardName}** (${rarity}) went unclaimed and has expired.`)
         .setFooter({ text: WAFFLE_FOOTER });
 }
 
-export function spawnWinnerEmbed(cardName: string, cardEmoji: string, winnerTag: string): EmbedBuilder {
+export function spawnWinnerEmbed(cardName: string, cardEmoji: string, rarity: string, winnerTag: string): EmbedBuilder {
     return new EmbedBuilder()
         .setColor(WAFFLE_COLOR_GREEN)
         .setTitle(`${cardEmoji} Card claimed!`)
-        .setDescription(`**${cardName}** has been claimed by **${winnerTag}**!`)
+        .setDescription(`**${cardName}** (${rarity}) has been claimed by **${winnerTag}**!`)
         .setFooter({ text: WAFFLE_FOOTER });
 }
 
 export function leaderboardEmbed(entries: { rank: number; tag: string; score: number }[]): EmbedBuilder {
-    const lines = entries.map(e => `**${e.rank}.** ${e.tag} — ${e.score.toLocaleString()} WP`).join("\n");
+    const lines: string[] = [];
+    let totalLength = 0;
+
+    for (const entry of entries) {
+        const line = `**${entry.rank}.** ${entry.tag} — ${entry.score.toLocaleString()} WP`;
+        const addedLength = line.length + (lines.length > 0 ? 1 : 0);
+        if (totalLength + addedLength > 4000) break;
+        lines.push(line);
+        totalLength += addedLength;
+    }
+
     return new EmbedBuilder()
         .setColor(WAFFLE_COLOR)
         .setTitle("🧇 Waffle House Leaderboard")
-        .setDescription(lines || "No one on the leaderboard yet!")
+        .setDescription(lines.join("\n") || "No one on the leaderboard yet!")
         .setFooter({ text: WAFFLE_FOOTER });
 }
 

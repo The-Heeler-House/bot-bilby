@@ -12,6 +12,7 @@ import SlashCommand from "../SlashCommand";
 import { Services } from "../../Services";
 import { CARD_TEMPLATE_MAP } from "../../Services/WaffleHouse/data/cards";
 import { leaderboardEmbed, baseEmbed } from "../../Services/WaffleHouse/util/embeds";
+import { WAFFLE_CARD_CAP } from "../../Services/WaffleHouse/CardManager";
 
 export default class WaffleCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -39,6 +40,10 @@ export default class WaffleCommand extends SlashCommand {
             sub.setName("decompose")
                 .setDescription("Split a combined card back into its original components")
                 .addStringOption(option => option.setName("card").setDescription("Combined card").setRequired(true).setAutocomplete(true)))
+        .addSubcommand(sub =>
+            sub.setName("discard")
+                .setDescription("Permanently discard a card")
+                .addStringOption(option => option.setName("card").setDescription("Card").setRequired(true).setAutocomplete(true)))
         .addSubcommandGroup(group =>
             group.setName("auction")
                 .setDescription("Auction house commands")
@@ -71,12 +76,13 @@ export default class WaffleCommand extends SlashCommand {
 
         switch (sub) {
             case "leaderboard": {
+                await interaction.deferReply({ ephemeral: false });
                 const entries = await services.waffleHouse.leaderboardManager.getTopN(20, services);
-                await interaction.reply({ embeds: [leaderboardEmbed(entries.map((entry, index) => ({
+                await interaction.editReply({ embeds: [leaderboardEmbed(entries.map((entry, index) => ({
                     rank: index + 1,
                     tag: entry.tag,
                     score: entry.score,
-                })))], ephemeral: false });
+                }))) ] });
                 return;
             }
             case "stats": {
@@ -91,7 +97,7 @@ export default class WaffleCommand extends SlashCommand {
                             { name: "Current WP", value: `${user?.current_wp ?? 0}`, inline: true },
                             { name: "Total Earned", value: `${user?.total_wp_earned ?? 0}`, inline: true },
                             { name: "Leaderboard Score", value: `${score}`, inline: true },
-                            { name: "Cards", value: `${cards}`, inline: true },
+                            { name: "Cards", value: `${cards}/${WAFFLE_CARD_CAP}`, inline: true },
                             { name: "Active Glazes/Burns", value: `${glazes}`, inline: true },
                         )],
                     ephemeral: true,
@@ -105,7 +111,7 @@ export default class WaffleCommand extends SlashCommand {
                     return `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** | ${card.rolledValue} WP | Lv.${card.level}${card.burnt && card.burntUntil && card.burntUntil > Date.now() ? " | burnt" : ""}`;
                 }).join("\n");
                 await interaction.reply({
-                    embeds: [baseEmbed().setTitle("🃏 Your Collection").setDescription(lines || "No cards yet.")],
+                    embeds: [baseEmbed().setTitle(`🃏 Your Collection (${cards.length}/${WAFFLE_CARD_CAP})`).setDescription(lines || "No cards yet.")],
                     ephemeral: true,
                 });
                 return;
@@ -141,6 +147,12 @@ export default class WaffleCommand extends SlashCommand {
             case "decompose": {
                 const cardId = new ObjectId(interaction.options.getString("card", true));
                 const result = await services.waffleHouse.cardManager.decomposeCard(cardId, interaction.user.id, services);
+                await interaction.reply({ content: result.message, ephemeral: true });
+                return;
+            }
+            case "discard": {
+                const cardId = new ObjectId(interaction.options.getString("card", true));
+                const result = await services.waffleHouse.cardManager.discardCard(cardId, interaction.user.id, services);
                 await interaction.reply({ content: result.message, ephemeral: true });
                 return;
             }

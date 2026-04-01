@@ -35,6 +35,8 @@ import type WaffleHouseService from "./index";
 import { WaffleCard } from "./models/waffleCard";
 import { WaffleSpawn } from "./models/waffleSpawn";
 
+export const WAFFLE_CARD_CAP = 25;
+
 export default class CardManager {
     private waffle: WaffleHouseService;
 
@@ -126,6 +128,20 @@ export default class CardManager {
     getEffectiveValue(card: WaffleCard): number {
         const isBurnt = card.burnt && card.burntUntil != null && card.burntUntil > Date.now();
         return Math.round(card.rolledValue * card.infusionMultiplier * (isBurnt ? 0.5 : 1));
+    }
+
+    async getOwnedCardCount(userId: string, services: Services): Promise<number> {
+        return services.database.collections.waffleCards!.countDocuments({ ownerId: userId });
+    }
+
+    async canReceiveCards(userId: string, amount: number, services: Services): Promise<boolean> {
+        const currentCount = await this.getOwnedCardCount(userId, services);
+        return currentCount + amount <= WAFFLE_CARD_CAP;
+    }
+
+    inventoryCapMessage(extraCards = 1): string {
+        const plural = extraCards === 1 ? "" : "s";
+        return `You are at the card cap of ${WAFFLE_CARD_CAP}. Use \`/waffle discard\` before trying to gain ${extraCards} more card${plural}.`;
     }
 
     async sweep(services: Services): Promise<void> {
@@ -308,6 +324,9 @@ export default class CardManager {
         if (!card) return { success: false, message: "Card not found in your collection." };
         if (!card.combinedFrom) return { success: false, message: "This card was not produced by a combination." };
         if (card.auctionStatus !== "none") return { success: false, message: "You can't decompose a listed card." };
+        if (!await this.canReceiveCards(userId, 1, services)) {
+            return { success: false, message: this.inventoryCapMessage(1) };
+        }
 
         const now = Date.now();
         const restoredA = CARD_TEMPLATE_MAP.get(card.combinedFrom.inputACardId);
@@ -349,6 +368,16 @@ export default class CardManager {
             success: true,
             message: `Decomposed into **${restoredA?.name ?? card.combinedFrom.inputACardId}** (${card.combinedFrom.inputARolledValue} WP) and **${restoredB?.name ?? card.combinedFrom.inputBCardId}** (${card.combinedFrom.inputBRolledValue} WP).`,
         };
+    }
+
+    async discardCard(cardId: ObjectId, userId: string, services: Services): Promise<{ success: boolean; message: string }> {
+        const card = await services.database.collections.waffleCards!.findOne({ _id: cardId, ownerId: userId });
+        if (!card) return { success: false, message: "Card not found in your collection." };
+        if (card.auctionStatus !== "none") return { success: false, message: "You can't discard a card that is listed for auction." };
+
+        await services.database.collections.waffleCards!.deleteOne({ _id: cardId, ownerId: userId });
+        const template = CARD_TEMPLATE_MAP.get(card.cardId);
+        return { success: true, message: `Discarded **${template?.name ?? card.cardId}**.` };
     }
 
     async infuseCard(cardId: ObjectId, userId: string, services: Services): Promise<{ success: boolean; message: string }> {
@@ -454,11 +483,11 @@ export default class CardManager {
                 ? [Math.ceil(overrideRange[0] * 0.5), Math.ceil(overrideRange[1] * 0.5)]
                 : overrideRange;
         } else if (final24h || day >= 7) {
-            range = [120, 220];
+            range = [65, 120];
         } else if (day <= 3) {
-            range = [250, 450];
+            range = [145, 255];
         } else {
-            range = [180, 320];
+            range = [100, 185];
         }
         return Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
     }
@@ -574,6 +603,12 @@ export default class CardManager {
     }
 
     private async claimSpawn(spawn: WaffleSpawn, winnerId: string, winnerTag: string, services: Services): Promise<void> {
+        if (!await this.canReceiveCards(winnerId, 1, services)) {
+            const winner = await this.waffle.client.users.fetch(winnerId).catch(() => null);
+            await winner?.send(this.inventoryCapMessage(1)).catch(() => null);
+            return;
+        }
+
         const updateResult = await services.database.collections.waffleSpawns!.updateOne(
             { _id: spawn._id, status: "active" },
             { $set: { status: "claiming", winnerId } }
@@ -604,7 +639,7 @@ export default class CardManager {
                     .setStyle(ButtonStyle.Secondary)
             );
             await message.edit({
-                embeds: [spawnWinnerEmbed(template.name, template.emoji, winnerTag)],
+                embeds: [spawnWinnerEmbed(template.name, template.emoji, template.rarity, winnerTag)],
                 components: [row],
             }).catch(() => null);
         }
@@ -638,7 +673,7 @@ export default class CardManager {
         const message = channel ? await channel.messages.fetch(spawn.messageId).catch(() => null) : null;
         const template = CARD_TEMPLATE_MAP.get(spawn.cardTemplateId);
         if (message && template) {
-            await message.edit({ embeds: [spawnTimeoutEmbed(template.name)], components: [] }).catch(() => null);
+            await message.edit({ embeds: [spawnTimeoutEmbed(template.name, template.rarity)], components: [] }).catch(() => null);
         }
     }
 

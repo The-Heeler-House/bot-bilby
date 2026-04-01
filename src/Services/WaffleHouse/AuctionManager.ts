@@ -18,8 +18,10 @@ import { waffleChannelIds } from "../../constants";
 import { WaffleAuction } from "./models/waffleAuction";
 import { WaffleCard } from "./models/waffleCard";
 import type WaffleHouseService from "./index";
+import { WAFFLE_CARD_CAP } from "./CardManager";
 
 const AUCTION_BATCH_SIZE = 5;
+const USER_AUCTION_LISTING_CAP = 5;
 
 export default class AuctionManager {
     private waffle: WaffleHouseService;
@@ -116,6 +118,10 @@ export default class AuctionManager {
         }
 
         const user = await services.database.collections.waffleUsers!.findOne({ userId: interaction.user.id });
+        if (!await this.waffle.cardManager.canReceiveCards(interaction.user.id, 1, services)) {
+            await interaction.reply({ content: this.waffle.cardManager.inventoryCapMessage(1), ephemeral: true });
+            return;
+        }
         const reservationKey = auction._id!.toString();
         const existingReservation = user?.active_bids?.[reservationKey] ?? 0;
         const availableWp = (user?.current_wp ?? 0) - (user?.reserved_wp ?? 0) + existingReservation;
@@ -169,6 +175,17 @@ export default class AuctionManager {
         const card = await services.database.collections.waffleCards!.findOne({ _id: cardId, ownerId: userId });
         if (!card) return { success: false, message: "Card not found in your collection." };
         if (card.auctionStatus !== "none") return { success: false, message: "Card is already listed." };
+
+        const activeListings = await services.database.collections.waffleAuctions!.countDocuments({
+            sellerId: userId,
+            status: { $in: ["pooled", "live", "resolving"] },
+        });
+        if (activeListings >= USER_AUCTION_LISTING_CAP) {
+            return {
+                success: false,
+                message: `You can only have ${USER_AUCTION_LISTING_CAP} cards listed in the auction house at once.`,
+            };
+        }
 
         await services.database.collections.waffleCards!.updateOne(
             { _id: cardId },
@@ -301,6 +318,30 @@ export default class AuctionManager {
         if (auction.status !== "resolving") return;
 
         if (auction.currentHighBidderId && auction.currentHighBid) {
+            if (!await this.waffle.cardManager.canReceiveCards(auction.currentHighBidderId, 1, services)) {
+                await services.database.collections.waffleUsers!.updateOne(
+                    { userId: auction.currentHighBidderId },
+                    {
+                        $inc: { reserved_wp: -auction.currentHighBid },
+                        $unset: { [`active_bids.${auction._id!.toString()}`]: "" },
+                    }
+                );
+                await services.database.collections.waffleAuctions!.updateOne(
+                    { _id: auction._id, status: "resolving" },
+                    { $set: { status: "pooled", batchId: null, messageId: null, liveAt: null, resolvesAt: null, currentHighBid: null, currentHighBidderId: null } }
+                );
+
+                if (channel && card) {
+                    await channel.send({
+                        embeds: [
+                            baseEmbed()
+                                .setTitle("🧇 Auction Blocked")
+                                .setDescription(`${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** could not be awarded because the highest bidder hit the ${WAFFLE_CARD_CAP}-card cap. The card returned to the pool.`),
+                        ],
+                    }).catch(() => null);
+                }
+                return;
+            }
             await services.database.collections.waffleCards!.updateOne(
                 { _id: auction.cardInstanceId },
                 { $set: { ownerId: auction.currentHighBidderId, auctionStatus: "none", auctionMinBid: null } }

@@ -12,9 +12,9 @@ import { baseEmbed, leaderboardEmbed } from "../../Services/WaffleHouse/util/emb
 import { GLAZES, BURNS } from "../../Services/WaffleHouse/data/glazes";
 import { CardRarity, DEFAULT_DROP_WEIGHTS, INFUSION_LEVELS } from "../../Services/WaffleHouse/data/cards";
 import { SCORING_METHODS } from "../../Services/WaffleHouse/data/methods";
-import TestHarness from "../../Services/WaffleHouse/testing/TestHarness";
 
 const STAFF_GAME_TYPES = ["chef_battle", "anonymous_poll", "prompt_entry", "waffle_alliance"] as const;
+const OWNER_USER_ID = "640921495245422632";
 
 export default class WaffleStaffCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -90,17 +90,6 @@ export default class WaffleStaffCommand extends SlashCommand {
                         .setDescription("Reset one tuning override")
                         .addStringOption(option => option.setName("parameter").setDescription("Dot path parameter").setRequired(true))))
         .addSubcommandGroup(group =>
-            group.setName("test")
-                .setDescription("Run Waffle House diagnostics")
-                .addSubcommand(sub => sub.setName("smoke").setDescription("Run a fast sandbox smoke test"))
-                .addSubcommand(sub => sub.setName("full").setDescription("Run the full sandbox diagnostic suite"))
-                .addSubcommand(sub =>
-                    sub.setName("cleanup")
-                        .setDescription("Cleanup sandbox test data")
-                        .addStringOption(option => option.setName("run_id").setDescription("Specific test run id"))
-                        .addIntegerOption(option => option.setName("older_than_hours").setDescription("Cleanup runs older than this many hours")))
-                .addSubcommand(sub => sub.setName("report").setDescription("Show recent Waffle test runs")))
-        .addSubcommandGroup(group =>
             group.setName("end")
                 .setDescription("Force-end active Waffle House systems")
                 .addSubcommand(sub => sub.setName("minigame").setDescription("Force-end the current minigame")))
@@ -125,10 +114,6 @@ export default class WaffleStaffCommand extends SlashCommand {
             await this.handleTune(interaction, sub, services);
             return;
         }
-        if (subGroup === "test") {
-            await this.handleTest(interaction, sub, services);
-            return;
-        }
         if (subGroup === "end") {
             await this.handleEnd(interaction, sub, services);
             return;
@@ -136,10 +121,11 @@ export default class WaffleStaffCommand extends SlashCommand {
 
         switch (sub) {
             case "stats": {
+                await interaction.deferReply({ ephemeral: false });
                 const top = await services.waffleHouse.leaderboardManager.getTopN(5, services);
                 const totalCards = await services.database.collections.waffleCards!.countDocuments();
                 const auctionPool = await services.database.collections.waffleAuctions!.countDocuments({ status: "pooled" });
-                await interaction.reply({
+                await interaction.editReply({
                     embeds: [
                         baseEmbed()
                             .setTitle("🧇 Waffle Staff Stats")
@@ -150,29 +136,29 @@ export default class WaffleStaffCommand extends SlashCommand {
                             ),
                         leaderboardEmbed(top.map((entry, index) => ({ rank: index + 1, tag: entry.tag, score: entry.score }))),
                     ],
-                    ephemeral: true,
                 });
                 return;
             }
             case "frenchtoast": {
+                await interaction.deferReply({ ephemeral: false });
                 const entries = await services.database.collections.waffleFrenchToast!.find({ count: { $gt: 0 } }).sort({ count: -1 }).limit(10).toArray();
                 const lines = entries.map((entry, index) => `**${index + 1}.** <@${entry.userId}> — ${entry.count}`).join("\n");
-                await interaction.reply({ embeds: [baseEmbed().setTitle("🍞 French Toast Offenders").setDescription(lines || "No offenders.")], ephemeral: true });
+                await interaction.editReply({ embeds: [baseEmbed().setTitle("🍞 French Toast Offenders").setDescription(lines || "No offenders.")] });
                 return;
             }
             case "spawn": {
                 if (!services.waffleHouse.configIsReady()) {
-                    await interaction.reply({ content: "Waffle House config still has placeholder IDs.", ephemeral: true });
+                    await interaction.reply({ content: "Waffle House config still has placeholder IDs.", ephemeral: false });
                     return;
                 }
                 const rarity = interaction.options.getString("rarity", false) as CardRarity | null;
                 const type = interaction.options.getString("type", false) as "base" | "topping" | "special" | null;
                 try {
                     await services.waffleHouse.cardManager.triggerManualSpawn(services, rarity ?? undefined, type ?? undefined);
-                    await interaction.reply({ content: "Manual spawn triggered.", ephemeral: true });
+                    await interaction.reply({ content: "Manual spawn triggered.", ephemeral: false });
                 } catch (error) {
                     const message = error instanceof Error ? error.message : "Couldn't trigger a manual spawn.";
-                    await interaction.reply({ content: message, ephemeral: true });
+                    await interaction.reply({ content: message, ephemeral: false });
                 }
                 return;
             }
@@ -180,10 +166,10 @@ export default class WaffleStaffCommand extends SlashCommand {
                 const type = interaction.options.getString("type", true) as typeof STAFF_GAME_TYPES[number];
                 try {
                     await services.waffleHouse.minigameManager.triggerManual(type, services);
-                    await interaction.reply({ content: `Triggered ${type}.`, ephemeral: true });
+                    await interaction.reply({ content: `Triggered ${type}.`, ephemeral: false });
                 } catch (error) {
                     const message = error instanceof Error ? error.message : "Couldn't trigger that minigame.";
-                    await interaction.reply({ content: message, ephemeral: true });
+                    await interaction.reply({ content: message, ephemeral: false });
                 }
                 return;
             }
@@ -196,30 +182,43 @@ export default class WaffleStaffCommand extends SlashCommand {
                 } else {
                     await services.waffleHouse.glazeManager.applyBurn(user.id, effect, services);
                 }
-                await interaction.reply({ content: `Applied ${effectSummary} to ${user.tag}.`, ephemeral: true });
+                await interaction.reply({ content: `Applied ${effectSummary} to ${user.tag}.`, ephemeral: false });
                 return;
             }
             case "final24h": {
+                if (!this.isOwner(interaction.user.id)) {
+                    await interaction.reply({ content: "Only Jalen can use that command.", ephemeral: false });
+                    return;
+                }
                 const nextValue = !(services.waffleHouse.eventState?.final24h ?? false);
                 await services.waffleHouse.setFinal24h(nextValue, services);
-                await interaction.reply({ content: `Final 24h mode ${nextValue ? "enabled" : "disabled"}.`, ephemeral: true });
+                await interaction.reply({ content: `Final 24h mode ${nextValue ? "enabled" : "disabled"}.`, ephemeral: false });
                 return;
             }
             case "eventactive": {
+                if (!this.isOwner(interaction.user.id)) {
+                    await interaction.reply({ content: "Only Jalen can use that command.", ephemeral: false });
+                    return;
+                }
                 const nextValue = !(services.waffleHouse.eventState?.eventActive ?? false);
                 if (nextValue && !services.waffleHouse.configIsReady()) {
-                    await interaction.reply({ content: "Waffle House config still has placeholder IDs.", ephemeral: true });
+                    await interaction.reply({ content: "Waffle House config still has placeholder IDs.", ephemeral: false });
                     return;
                 }
                 await services.waffleHouse.setEventActive(nextValue, services);
-                await interaction.reply({ content: `Waffle House event ${nextValue ? "enabled" : "disabled"}.`, ephemeral: true });
+                await interaction.reply({ content: `Waffle House event ${nextValue ? "enabled" : "disabled"}.`, ephemeral: false });
                 return;
             }
             case "endevent": {
+                if (!this.isOwner(interaction.user.id)) {
+                    await interaction.reply({ content: "Only Jalen can use that command.", ephemeral: false });
+                    return;
+                }
+                await interaction.deferReply({ ephemeral: false });
                 const top = await services.waffleHouse.leaderboardManager.getTopN(5, services);
                 const totalCards = await services.database.collections.waffleCards!.countDocuments();
                 const auctionPool = await services.database.collections.waffleAuctions!.countDocuments({ status: "pooled" });
-                await interaction.reply({
+                await interaction.editReply({
                     embeds: [
                         baseEmbed()
                             .setTitle("🧇 Final Event Summary")
@@ -230,7 +229,6 @@ export default class WaffleStaffCommand extends SlashCommand {
                             ),
                         leaderboardEmbed(top.map((entry, index) => ({ rank: index + 1, tag: entry.tag, score: entry.score }))),
                     ],
-                    ephemeral: true,
                 });
                 return;
             }
@@ -261,7 +259,7 @@ export default class WaffleStaffCommand extends SlashCommand {
                     ? optionsRaw.split("|").map(option => option.trim()).filter(Boolean)
                     : undefined;
                 if (gameType === "anonymous_poll" && options && (options.length < 2 || options.length > 5)) {
-                    await interaction.reply({ content: "Anonymous polls need between 2 and 5 options.", ephemeral: true });
+                await interaction.reply({ content: "Anonymous polls need between 2 and 5 options.", ephemeral: false });
                     return;
                 }
                 const result = await services.database.collections.wafflePromptQueue!.insertOne({
@@ -271,23 +269,24 @@ export default class WaffleStaffCommand extends SlashCommand {
                     addedBy: interaction.user.id,
                     addedAt: Date.now(),
                 } as any);
-                await interaction.reply({ content: `Queued prompt ${result.insertedId.toString()}.`, ephemeral: true });
+                await interaction.reply({ content: `Queued prompt ${result.insertedId.toString()}.`, ephemeral: false });
                 return;
             }
             case "remove": {
                 const id = interaction.options.getString("id", true);
                 await services.database.collections.wafflePromptQueue!.deleteOne({ _id: new ObjectId(id) });
-                await interaction.reply({ content: "Prompt removed.", ephemeral: true });
+                await interaction.reply({ content: "Prompt removed.", ephemeral: false });
                 return;
             }
             case "list": {
+                await interaction.deferReply({ ephemeral: false });
                 const gameType = interaction.options.getString("game_type", false) as "chef_battle" | "anonymous_poll" | "prompt_entry" | null;
                 const prompts = await services.database.collections.wafflePromptQueue!.find(gameType ? { gameType } : {}).sort({ addedAt: 1 }).toArray();
                 const lines = prompts.map(prompt => {
                     const options = prompt.options?.length ? ` | ${prompt.options.join(" / ")}` : "";
                     return `**${prompt._id?.toString()}** [${prompt.gameType}] ${prompt.prompt}${options}`;
                 }).join("\n");
-                await interaction.reply({ embeds: [baseEmbed().setTitle("📋 Prompt Queue").setDescription(lines || "Queue is empty.")], ephemeral: true });
+                await interaction.editReply({ embeds: [baseEmbed().setTitle("📋 Prompt Queue").setDescription(lines || "Queue is empty.")] });
                 return;
             }
         }
@@ -305,10 +304,11 @@ export default class WaffleStaffCommand extends SlashCommand {
                     { $set: { [parameter]: parsed } },
                     { upsert: true }
                 );
-                await interaction.reply({ content: `Set tuning override \`${parameter}\`.`, ephemeral: true });
+                await interaction.reply({ content: `Set tuning override \`${parameter}\`.`, ephemeral: false });
                 return;
             }
             case "list": {
+                await interaction.deferReply({ ephemeral: false });
                 const tuning = await services.database.collections.waffleTuning!.findOne({ _id: "tuning" });
                 const defaults = {
                     methodPoints: Object.fromEntries(SCORING_METHODS.map(method => [method.id, method.points])),
@@ -334,9 +334,8 @@ export default class WaffleStaffCommand extends SlashCommand {
                     minigameIntervalMs: 30 * 60 * 1000,
                 };
                 const embeds = this.buildTuneEmbeds(defaults, tuning);
-                await interaction.reply({
+                await interaction.editReply({
                     embeds,
-                    ephemeral: true,
                 });
                 return;
             }
@@ -347,47 +346,7 @@ export default class WaffleStaffCommand extends SlashCommand {
                     { $unset: { [parameter]: "" } },
                     { upsert: true }
                 );
-                await interaction.reply({ content: `Reset tuning override \`${parameter}\`.`, ephemeral: true });
-                return;
-            }
-        }
-    }
-
-    private async handleTest(interaction: ChatInputCommandInteraction, sub: string, services: Services) {
-        switch (sub) {
-            case "smoke":
-            case "full": {
-                await interaction.reply({
-                    embeds: [TestHarness.progressEmbed(sub, [], "Booting sandbox test run...")],
-                    ephemeral: false,
-                });
-                try {
-                    await TestHarness.run(sub, services, interaction.user.id, interaction.channelId, async embed => {
-                        await interaction.editReply({ embeds: [embed] });
-                    });
-                } catch (error) {
-                    const message = error instanceof Error ? error.message : "Waffle diagnostics failed to start.";
-                    await interaction.editReply({ embeds: [baseEmbed().setTitle("🧪 Waffle Test Failed").setDescription(message)] });
-                }
-                return;
-            }
-            case "cleanup": {
-                const runId = interaction.options.getString("run_id", false) ?? undefined;
-                const olderThanHours = interaction.options.getInteger("older_than_hours", false) ?? undefined;
-                const cleaned = await TestHarness.cleanup(services, runId, olderThanHours);
-                await interaction.reply({ content: `Cleaned ${cleaned} Waffle House test run(s).`, ephemeral: true });
-                return;
-            }
-            case "report": {
-                const runs = await TestHarness.recentRuns(services);
-                const lines = runs.map(run => {
-                    const failureCount = run.failures.length;
-                    return `**${run.testRunId}** | ${run.mode} | ${run.status} | failures: ${failureCount} | cleanup: ${run.cleanupStatus}`;
-                }).join("\n");
-                await interaction.reply({
-                    embeds: [baseEmbed().setTitle("🧪 Recent Waffle Test Runs").setDescription(lines || "No test runs recorded.")],
-                    ephemeral: true,
-                });
+                await interaction.reply({ content: `Reset tuning override \`${parameter}\`.`, ephemeral: false });
                 return;
             }
         }
@@ -397,7 +356,7 @@ export default class WaffleStaffCommand extends SlashCommand {
         switch (sub) {
             case "minigame": {
                 const result = await services.waffleHouse.minigameManager.forceEndCurrent(services);
-                await interaction.reply({ content: result.message, ephemeral: true });
+                await interaction.reply({ content: result.message, ephemeral: false });
                 return;
             }
         }
@@ -527,5 +486,9 @@ export default class WaffleStaffCommand extends SlashCommand {
             ? member.permissions.has("Administrator")
             : false;
         return hasRole || hasAdmin;
+    }
+
+    private isOwner(userId: string): boolean {
+        return userId === OWNER_USER_ID;
     }
 }
