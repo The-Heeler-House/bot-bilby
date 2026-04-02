@@ -680,7 +680,7 @@ export default class CardManager {
 
         return {
             success: true,
-            message: `✨ Infusion succeeded. Card is now level ${card.level + 1} with a **${multiplier}x** multiplier. (**${cost} WP** spent)`,
+            message: `✨ Infusion succeeded. Card is now level ${card.level + 1}. (**${cost} WP** spent)`,
         };
     }
 
@@ -795,8 +795,9 @@ export default class CardManager {
         }
 
         const template = CARD_TEMPLATE_MAP.get(card.cardId);
+        const effectiveValue = this.getEffectiveValue(card);
         await interaction.reply({
-            content: `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP**.`,
+            content: `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP** | multiplier **${card.infusionMultiplier}x** | effective **${effectiveValue} WP**${card.burnt && card.burntUntil && card.burntUntil > Date.now() ? " | burnt" : ""}.`,
             ephemeral: true,
         });
     }
@@ -828,8 +829,9 @@ export default class CardManager {
         }
 
         const template = CARD_TEMPLATE_MAP.get(card.cardId);
+        const effectiveValue = this.getEffectiveValue(card);
         await interaction.reply({
-            content: `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP**.`,
+            content: `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP** | multiplier **${card.infusionMultiplier}x** | effective **${effectiveValue} WP**${card.burnt && card.burntUntil && card.burntUntil > Date.now() ? " | burnt" : ""}.`,
             ephemeral: true,
         });
     }
@@ -869,7 +871,8 @@ export default class CardManager {
 
         const lines = cards.map((card) => {
             const template = CARD_TEMPLATE_MAP.get(card.cardId);
-            return `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP**.`;
+            const effectiveValue = this.getEffectiveValue(card);
+            return `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP** | multiplier **${card.infusionMultiplier}x** | effective **${effectiveValue} WP**${card.burnt && card.burntUntil && card.burntUntil > Date.now() ? " | burnt" : ""}.`;
         });
         await interaction.reply({ content: lines.join("\n"), ephemeral: true });
     }

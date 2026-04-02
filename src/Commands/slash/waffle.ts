@@ -108,7 +108,8 @@ export default class WaffleCommand extends SlashCommand {
                 const cards = await services.database.collections.waffleCards!.find({ ownerId: interaction.user.id }).toArray();
                 const lines = cards.map(card => {
                     const template = CARD_TEMPLATE_MAP.get(card.cardId);
-                    return `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** | ${card.rolledValue} WP | Lv.${card.level}${card.burnt && card.burntUntil && card.burntUntil > Date.now() ? " | burnt" : ""}`;
+                    const effectiveValue = services.waffleHouse.cardManager.getEffectiveValue(card);
+                    return `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** | ${card.rolledValue} WP | ${card.infusionMultiplier}x | effective ${effectiveValue} WP | Lv.${card.level}${card.burnt && card.burntUntil && card.burntUntil > Date.now() ? " | burnt" : ""}`;
                 }).join("\n");
                 await interaction.reply({
                     embeds: [baseEmbed().setTitle(`🃏 Your Collection (${cards.length}/${WAFFLE_CARD_CAP})`).setDescription(lines || "No cards yet.")],
@@ -191,7 +192,7 @@ export default class WaffleCommand extends SlashCommand {
             .map(card => {
                 const template = CARD_TEMPLATE_MAP.get(card.cardId);
                 return {
-                    name: `${template?.name ?? card.cardId} (${card.rolledValue} WP, Lv.${card.level})`.slice(0, 100),
+                    name: `${template?.name ?? card.cardId} (${card.rolledValue} WP, ${card.infusionMultiplier}x, Lv.${card.level})`.slice(0, 100),
                     value: card._id!.toString(),
                 };
             })
