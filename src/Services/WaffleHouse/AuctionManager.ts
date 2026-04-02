@@ -390,6 +390,8 @@ export default class AuctionManager {
                 { _id: auction._id },
                 { $set: { status: "resolved" } }
             );
+            await this.waffle.bumpRuntimeCounter("auctionSales", 1, services);
+            await this.waffle.bumpRuntimeCounter("auctionSaleWp", auction.currentHighBid, services);
 
             if (channel && card) {
                 await channel.send({

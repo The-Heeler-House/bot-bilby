@@ -377,6 +377,7 @@ export default class CardManager {
         if (card.auctionStatus !== "none") return { success: false, message: "You can't discard a card that is listed for auction." };
 
         await services.database.collections.waffleCards!.deleteOne({ _id: cardId, ownerId: userId });
+        await this.waffle.bumpRuntimeCounter("discardedCards", 1, services);
         const template = CARD_TEMPLATE_MAP.get(card.cardId);
         return { success: true, message: `Discarded **${template?.name ?? card.cardId}**.` };
     }
@@ -602,6 +603,7 @@ export default class CardManager {
         if (this.waffle.eventState) {
             this.waffle.eventState.currentSpawnId = result.insertedId;
         }
+        await this.waffle.bumpRuntimeCounter("spawnedCards", 1, services);
         await services.database.collections.waffleEventState!.updateOne(
             { _id: "event_state" },
             { $set: { currentSpawnId: result.insertedId } }
@@ -669,6 +671,7 @@ export default class CardManager {
             { _id: spawn.cardInstanceId },
             { $set: { ownerId: winnerId, auctionStatus: "none", auctionMinBid: null } }
         );
+        await this.waffle.bumpRuntimeCounter("claimedSpawns", 1, services);
 
         if (this.waffle.eventState) {
             this.waffle.eventState.currentSpawnId = null;
@@ -710,6 +713,7 @@ export default class CardManager {
             { _id: spawn._id, status: "expiring" },
             { $set: { status: "expired" } }
         );
+        await this.waffle.bumpRuntimeCounter("expiredSpawns", 1, services);
 
         if (this.waffle.eventState?.currentSpawnId?.equals(spawn._id!)) {
             this.waffle.eventState.currentSpawnId = null;

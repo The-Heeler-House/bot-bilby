@@ -7,6 +7,7 @@ import MinigameManager from "./MinigameManager";
 import AuctionManager from "./AuctionManager";
 import LeaderboardManager from "./LeaderboardManager";
 import { WaffleEventState } from "./models/waffleEventState";
+import { defaultWaffleRuntimeStats, WaffleRuntimeCounterSet } from "./models/waffleRuntimeStats";
 import { THH_SERVER_ID, waffleChannelIds, waffleRoleIds } from "../../constants";
 
 export default class WaffleHouseService {
@@ -27,6 +28,7 @@ export default class WaffleHouseService {
     public recentWaffleMessages: Record<string, number[]> = {};
     private heartbeat: NodeJS.Timeout | null = null;
     private lastCleanupAt = 0;
+    private lastRuntimeStatsAt = 0;
     private heartbeatRunning = false;
 
     constructor(client: Client) {
@@ -50,6 +52,7 @@ export default class WaffleHouseService {
         }
         this.eventState = state;
         await this.ensureIndexes(services);
+        await this.ensureRuntimeStats(services);
 
         if (!state.eventActive) {
             return;
@@ -143,6 +146,10 @@ export default class WaffleHouseService {
                 this.lastCleanupAt = now;
                 await this.glazeManager.cleanExpired(services);
             }
+            if (now - this.lastRuntimeStatsAt >= 60_000) {
+                this.lastRuntimeStatsAt = now;
+                await this.refreshRuntimeStats(services);
+            }
         } finally {
             this.heartbeatRunning = false;
         }
@@ -176,5 +183,96 @@ export default class WaffleHouseService {
         await services.database.collections.waffleSpawns?.createIndex({ messageId: 1 });
         await services.database.collections.waffleTestRuns?.createIndex({ testRunId: 1 }, { unique: true });
         await services.database.collections.waffleTestRuns?.createIndex({ status: 1, startedAt: -1 });
+        await services.database.collections.waffleRuntimeStats?.createIndex({ updatedAt: -1 });
+    }
+
+    async bumpRuntimeCounter(
+        key: keyof WaffleRuntimeCounterSet,
+        amount: number,
+        services: Services,
+    ): Promise<void> {
+        if (amount === 0) return;
+        await services.database.collections.waffleRuntimeStats?.updateOne(
+            { _id: "runtime_stats" },
+            {
+                $inc: { [`counters.${key}`]: amount },
+                $set: { updatedAt: Date.now() },
+            },
+            { upsert: true }
+        );
+    }
+
+    private async ensureRuntimeStats(services: Services): Promise<void> {
+        const existing = await services.database.collections.waffleRuntimeStats?.findOne({ _id: "runtime_stats" });
+        if (!existing) {
+            await services.database.collections.waffleRuntimeStats?.insertOne(defaultWaffleRuntimeStats() as any);
+        }
+    }
+
+    private async refreshRuntimeStats(services: Services): Promise<void> {
+        const collection = services.database.collections.waffleRuntimeStats;
+        if (!collection) return;
+
+        const stats = await collection.findOne({ _id: "runtime_stats" }) ?? defaultWaffleRuntimeStats();
+        const counters = stats.counters ?? defaultWaffleRuntimeStats().counters;
+        const now = Date.now();
+
+        const [totalCards, totalOwnedCards, pooledAuctions, liveAuctions, totalUsers] = await Promise.all([
+            services.database.collections.waffleCards!.countDocuments(),
+            services.database.collections.waffleCards!.countDocuments({ ownerId: { $ne: null } }),
+            services.database.collections.waffleAuctions!.countDocuments({ status: "pooled" }),
+            services.database.collections.waffleAuctions!.countDocuments({ status: "live" }),
+            services.database.collections.waffleUsers!.countDocuments(),
+        ]);
+
+        const snapshot = {
+            at: now,
+            ...counters,
+            totalCards,
+            totalOwnedCards,
+            pooledAuctions,
+            liveAuctions,
+            totalUsers,
+            totalWpEarnedServerWide: this.eventState?.totalWpEarnedServerWide ?? 0,
+        };
+
+        const snapshots = [...(stats.snapshots ?? []), snapshot].slice(-1440);
+        const oneHourAgo = now - 60 * 60 * 1000;
+        const baseline = [...snapshots].reverse().find(entry => entry.at <= oneHourAgo) ?? snapshots[0];
+
+        const ratesLastHour = baseline ? {
+            manualWpPerHour: snapshot.manualWpEarned - baseline.manualWpEarned,
+            minigameWpPerHour: snapshot.minigameWpEarned - baseline.minigameWpEarned,
+            spawnsPerHour: snapshot.spawnedCards - baseline.spawnedCards,
+            claimsPerHour: snapshot.claimedSpawns - baseline.claimedSpawns,
+            expirationsPerHour: snapshot.expiredSpawns - baseline.expiredSpawns,
+            discardsPerHour: snapshot.discardedCards - baseline.discardedCards,
+            auctionSalesPerHour: snapshot.auctionSales - baseline.auctionSales,
+            auctionSaleWpPerHour: snapshot.auctionSaleWp - baseline.auctionSaleWp,
+        } : defaultWaffleRuntimeStats().ratesLastHour;
+
+        await collection.updateOne(
+            { _id: "runtime_stats" },
+            {
+                $set: {
+                    updatedAt: now,
+                    current: {
+                        ...counters,
+                        totalCards,
+                        totalOwnedCards,
+                        pooledAuctions,
+                        liveAuctions,
+                        totalUsers,
+                        totalWpEarnedServerWide: this.eventState?.totalWpEarnedServerWide ?? 0,
+                    },
+                    ratesLastHour,
+                    snapshots,
+                },
+                $setOnInsert: {
+                    counters,
+                },
+            },
+            { upsert: true }
+        );
     }
 }

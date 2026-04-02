@@ -900,6 +900,7 @@ export default class MinigameManager {
 
     private async awardWp(userId: string, amount: number, services: Services): Promise<void> {
         if (amount <= 0) return;
+        await this.waffle.bumpRuntimeCounter("minigameWpEarned", amount, services);
         await services.database.collections.waffleUsers!.updateOne(
             { userId },
             {

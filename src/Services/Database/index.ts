@@ -19,6 +19,7 @@ import { WafflePrompt } from "../WaffleHouse/models/waffleMinigame";
 import { WaffleFrenchToast, WaffleTuning, WaffleEventState } from "../WaffleHouse/models/waffleEventState";
 import { WaffleSpawn } from "../WaffleHouse/models/waffleSpawn";
 import { WaffleTestRun } from "../WaffleHouse/models/waffleTestRun";
+import { WaffleRuntimeStats } from "../WaffleHouse/models/waffleRuntimeStats";
 dotenv.config();
 
 export default class DatabaseService {
@@ -61,6 +62,7 @@ export default class DatabaseService {
             "waffleEventState",
             "waffleSpawns",
             "waffleTestRuns",
+            "waffleRuntimeStats",
         ]
 
         for (const collection of collections) {
@@ -92,4 +94,5 @@ export interface DatabaseCollections {
     waffleEventState?: mongoDB.Collection<WaffleEventState>,
     waffleSpawns?: mongoDB.Collection<WaffleSpawn>,
     waffleTestRuns?: mongoDB.Collection<WaffleTestRun>,
+    waffleRuntimeStats?: mongoDB.Collection<WaffleRuntimeStats>,
 }

@@ -220,6 +220,7 @@ export default class ScoringEngine {
 
         // Step 12: Card spawn check
         if (finalWP > 0) {
+            await this.waffle.bumpRuntimeCounter("manualWpEarned", finalWP, services);
             await this.waffle.cardManager.tickWpCounter(finalWP, message, services);
         }
 
