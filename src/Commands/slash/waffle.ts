@@ -120,14 +120,22 @@ export default class WaffleCommand extends SlashCommand {
                 const cardA = new ObjectId(interaction.options.getString("card_a", true));
                 const cardB = new ObjectId(interaction.options.getString("card_b", true));
                 const result = await services.waffleHouse.cardManager.combineCards(cardA, cardB, interaction.user.id, services);
-                await interaction.reply({ content: result.message, ephemeral: true });
+                const components = result.success && result.newCardId
+                    ? [new ActionRowBuilder<ButtonBuilder>().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(`waffle_card_view_value_${result.newCardId.toString()}:${interaction.user.id}`)
+                            .setLabel("View Card Value")
+                            .setStyle(ButtonStyle.Secondary)
+                    )]
+                    : [];
+                await interaction.reply({ content: result.message, components, ephemeral: false });
                 return;
             }
             case "infuse": {
                 const cardId = new ObjectId(interaction.options.getString("card", true));
                 const preview = await services.waffleHouse.cardManager.getInfusionPreview(cardId, interaction.user.id, services);
                 if (!preview.success) {
-                    await interaction.reply({ content: preview.message, ephemeral: true });
+                    await interaction.reply({ content: preview.message, ephemeral: false });
                     return;
                 }
 
@@ -135,25 +143,37 @@ export default class WaffleCommand extends SlashCommand {
                     new ButtonBuilder()
                         .setCustomId(`waffle_card_infuse_confirm_${cardId.toString()}:${interaction.user.id}`)
                         .setLabel("Confirm Infusion")
-                        .setStyle(ButtonStyle.Danger)
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId(`waffle_card_view_value_${cardId.toString()}:${interaction.user.id}`)
+                        .setLabel("View Card Value")
+                        .setStyle(ButtonStyle.Secondary)
                 );
                 await interaction.reply({
                     embeds: [baseEmbed().setTitle("✨ Confirm Infusion").setDescription(preview.message)],
                     components: [row],
-                    ephemeral: true,
+                    ephemeral: false,
                 });
                 return;
             }
             case "decompose": {
                 const cardId = new ObjectId(interaction.options.getString("card", true));
                 const result = await services.waffleHouse.cardManager.decomposeCard(cardId, interaction.user.id, services);
-                await interaction.reply({ content: result.message, ephemeral: true });
+                const components = result.success && result.restoredCardIds?.length === 2
+                    ? [new ActionRowBuilder<ButtonBuilder>().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(`waffle_card_view_pair_values_${result.restoredCardIds[0].toString()}:${result.restoredCardIds[1].toString()}:${interaction.user.id}`)
+                            .setLabel("View Cards' Values")
+                            .setStyle(ButtonStyle.Secondary)
+                    )]
+                    : [];
+                await interaction.reply({ content: result.message, components, ephemeral: false });
                 return;
             }
             case "discard": {
                 const cardId = new ObjectId(interaction.options.getString("card", true));
                 const result = await services.waffleHouse.cardManager.discardCard(cardId, interaction.user.id, services);
-                await interaction.reply({ content: result.message, ephemeral: true });
+                await interaction.reply({ content: result.message, ephemeral: false });
                 return;
             }
         }

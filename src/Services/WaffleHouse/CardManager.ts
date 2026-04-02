@@ -314,12 +314,12 @@ export default class CardManager {
 
         return {
             success: true,
-            message: `Combined into **${outputTemplate.name}** worth **${outputValue} WP**.`,
+            message: `Combined into **${outputTemplate.name}**.`,
             newCardId: result.insertedId,
         };
     }
 
-    async decomposeCard(cardId: ObjectId, userId: string, services: Services): Promise<{ success: boolean; message: string }> {
+    async decomposeCard(cardId: ObjectId, userId: string, services: Services): Promise<{ success: boolean; message: string; restoredCardIds?: ObjectId[] }> {
         const card = await services.database.collections.waffleCards!.findOne({ _id: cardId, ownerId: userId });
         if (!card) return { success: false, message: "Card not found in your collection." };
         if (!card.combinedFrom) return { success: false, message: "This card was not produced by a combination." };
@@ -332,7 +332,7 @@ export default class CardManager {
         const restoredA = CARD_TEMPLATE_MAP.get(card.combinedFrom.inputACardId);
         const restoredB = CARD_TEMPLATE_MAP.get(card.combinedFrom.inputBCardId);
 
-        await services.database.collections.waffleCards!.insertMany([
+        const insertResult = await services.database.collections.waffleCards!.insertMany([
             {
                 cardId: card.combinedFrom.inputACardId,
                 ownerId: userId,
@@ -366,7 +366,8 @@ export default class CardManager {
 
         return {
             success: true,
-            message: `Decomposed into **${restoredA?.name ?? card.combinedFrom.inputACardId}** (${card.combinedFrom.inputARolledValue} WP) and **${restoredB?.name ?? card.combinedFrom.inputBCardId}** (${card.combinedFrom.inputBRolledValue} WP).`,
+            message: `Decomposed into **${restoredA?.name ?? card.combinedFrom.inputACardId}** and **${restoredB?.name ?? card.combinedFrom.inputBCardId}**.`,
+            restoredCardIds: Object.values(insertResult.insertedIds),
         };
     }
 
@@ -453,7 +454,13 @@ export default class CardManager {
         }
 
         const result = await this.infuseCard(new ObjectId(cardId), interaction.user.id, services);
-        await interaction.update({ content: result.message, embeds: [], components: [] });
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`waffle_card_view_value_${cardId}:${interaction.user.id}`)
+                .setLabel("View Card Value")
+                .setStyle(ButtonStyle.Secondary)
+        );
+        await interaction.update({ content: result.message, embeds: [], components: [row] });
     }
 
     async handleViewSpawnValue(interaction: ButtonInteraction, services: Services): Promise<void> {
@@ -474,6 +481,49 @@ export default class CardManager {
             content: `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP**.`,
             ephemeral: true,
         });
+    }
+
+    async handleViewCardValue(interaction: ButtonInteraction, token: string, services: Services): Promise<void> {
+        const [cardId, ownerId] = token.split(":");
+        if (!cardId || !ownerId || ownerId !== interaction.user.id) {
+            await interaction.reply({ content: "That private card value isn't for you.", ephemeral: true });
+            return;
+        }
+
+        const card = await services.database.collections.waffleCards!.findOne({ _id: new ObjectId(cardId), ownerId });
+        if (!card) {
+            await interaction.reply({ content: "Card not found.", ephemeral: true });
+            return;
+        }
+
+        const template = CARD_TEMPLATE_MAP.get(card.cardId);
+        await interaction.reply({
+            content: `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP**.`,
+            ephemeral: true,
+        });
+    }
+
+    async handleViewCardPairValues(interaction: ButtonInteraction, token: string, services: Services): Promise<void> {
+        const [cardAId, cardBId, ownerId] = token.split(":");
+        if (!cardAId || !cardBId || !ownerId || ownerId !== interaction.user.id) {
+            await interaction.reply({ content: "Those private card values aren't for you.", ephemeral: true });
+            return;
+        }
+
+        const cards = await services.database.collections.waffleCards!.find({
+            _id: { $in: [new ObjectId(cardAId), new ObjectId(cardBId)] },
+            ownerId,
+        }).toArray();
+        if (cards.length === 0) {
+            await interaction.reply({ content: "Cards not found.", ephemeral: true });
+            return;
+        }
+
+        const lines = cards.map(card => {
+            const template = CARD_TEMPLATE_MAP.get(card.cardId);
+            return `${template?.emoji ?? "🧇"} **${template?.name ?? card.cardId}** rolled **${card.rolledValue} WP**.`;
+        });
+        await interaction.reply({ content: lines.join("\n"), ephemeral: true });
     }
 
     private rollSpawnThreshold(day: number, final24h: boolean, overrideRange?: [number, number]): number {

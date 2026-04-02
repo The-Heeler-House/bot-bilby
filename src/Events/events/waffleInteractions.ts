@@ -62,6 +62,22 @@ export default class WaffleInteractionsEvent extends BotEvent {
         }
         if (customId === "waffle_spawn_view_value") {
             await services.waffleHouse.cardManager.handleViewSpawnValue(interaction, services);
+            return;
+        }
+        if (customId.startsWith("waffle_card_view_value_")) {
+            await services.waffleHouse.cardManager.handleViewCardValue(
+                interaction,
+                customId.replace("waffle_card_view_value_", ""),
+                services
+            );
+            return;
+        }
+        if (customId.startsWith("waffle_card_view_pair_values_")) {
+            await services.waffleHouse.cardManager.handleViewCardPairValues(
+                interaction,
+                customId.replace("waffle_card_view_pair_values_", ""),
+                services
+            );
         }
     }
 
