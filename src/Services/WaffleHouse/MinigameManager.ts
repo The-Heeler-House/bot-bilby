@@ -326,6 +326,18 @@ export default class MinigameManager {
     }
 
     private async progressGame(game: WaffleMinigame, services: Services): Promise<void> {
+        const basePhase = this.getBasePhase(game.phase);
+
+        if (game.status === "transitioning") {
+            await services.database.collections.waffleMinigames!.updateOne(
+                { _id: game._id, status: "transitioning" },
+                { $set: { phase: `transitioning_${basePhase}` } }
+            );
+
+            await this.continueTransition({ ...game, phase: basePhase }, services);
+            return;
+        }
+
         const claimed = await services.database.collections.waffleMinigames!.updateOne(
             {
                 _id: game._id,
@@ -342,6 +354,10 @@ export default class MinigameManager {
         );
         if (claimed.modifiedCount === 0) return;
 
+        await this.continueTransition(game, services);
+    }
+
+    private async continueTransition(game: WaffleMinigame, services: Services): Promise<void> {
         switch (game.gameType) {
             case "chef_battle":
                 if (game.phase === "signup") {
@@ -372,6 +388,10 @@ export default class MinigameManager {
                 await this.resolveAlliance(game, services);
                 return;
         }
+    }
+
+    private getBasePhase(phase: string): string {
+        return phase.replace(/^(transitioning_)+/, "");
     }
 
     private async startChefBattle(prompt: string, services: Services): Promise<ObjectId> {
