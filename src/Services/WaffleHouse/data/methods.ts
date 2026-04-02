@@ -23,14 +23,14 @@ export const SCORING_METHODS: ScoringMethod[] = [
     { id: "blueys_brekkie",         name: "Bluey's Brekkie",        points: 15,   cooldownMs: 300 * 1000 },
     { id: "bingos_brunch",          name: "Bingo's Brunch",         points: 15,   cooldownMs: 300 * 1000 },
     { id: "change_of_topic",        name: "Change of Topic",        points: 50,   cooldownMs: 10 * 60 * 1000 },
-    { id: "betrayal",               name: "Betrayal",                points: -2,   cooldownMs: 60 * 1000 },
-    { id: "sneaky_betrayal",        name: "Sneaky Betrayal",         points: -40,  cooldownMs: 300 * 1000 },
-    { id: "heartbreaker",           name: "Heartbreaker",            points: -10,  cooldownMs: 90 * 1000 },
-    { id: "waffle_hater",           name: "Waffle Hater",            points: -40,  cooldownMs: 60 * 1000 },
-    { id: "heretic",                name: "Heretic",                 points: -100, cooldownMs: 10 * 60 * 1000 },
-    { id: "too_cheeky",             name: "Too Cheeky",              points: -10,  cooldownMs: 60 * 1000 },
-    { id: "you_think_youre_cute",   name: "You Think You're Cute",   points: -60,  cooldownMs: 300 * 1000 },
-    { id: "you_take_that_back",     name: "You Take That Back",      points: -200, cooldownMs: 15 * 60 * 1000 },
+    { id: "betrayal",               name: "Betrayal",                points: -1,   cooldownMs: 60 * 1000 },
+    { id: "sneaky_betrayal",        name: "Sneaky Betrayal",         points: -20,  cooldownMs: 300 * 1000 },
+    { id: "heartbreaker",           name: "Heartbreaker",            points: -5,   cooldownMs: 90 * 1000 },
+    { id: "waffle_hater",           name: "Waffle Hater",            points: -20,  cooldownMs: 60 * 1000 },
+    { id: "heretic",                name: "Heretic",                 points: -50,  cooldownMs: 10 * 60 * 1000 },
+    { id: "too_cheeky",             name: "Too Cheeky",              points: -5,   cooldownMs: 60 * 1000 },
+    { id: "you_think_youre_cute",   name: "You Think You're Cute",   points: -30,  cooldownMs: 300 * 1000 },
+    { id: "you_take_that_back",     name: "You Take That Back",      points: -100, cooldownMs: 15 * 60 * 1000 },
 ];
 
 export const METHOD_MAP = new Map<string, ScoringMethod>(
