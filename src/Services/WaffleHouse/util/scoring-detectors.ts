@@ -7,6 +7,10 @@ import { Collection, Attachment, Embed } from "discord.js";
 
 const CONTIGUOUS_WAFFLE = /waffles?/i;
 
+function extractWordTokens(content: string): string[] {
+    return content.toLowerCase().match(/[a-z0-9']+/g) ?? [];
+}
+
 export function detectLonelyWaffle(content: string): boolean {
     return /^waffles?$/i.test(content.trim());
 }
@@ -17,6 +21,18 @@ export function detectJustSayin(content: string): boolean {
 
 export function detectLazyWaffle(content: string): boolean {
     return /\bwfl\b/i.test(content);
+}
+
+export function detectW4ff13sp34k(content: string): boolean {
+    return /\bw4ff(?:13|l3)\b/i.test(content);
+}
+
+export function detectEatingBackwards(content: string): boolean {
+    return /\belffaw\b/i.test(content);
+}
+
+export function detectWaffleFan(content: string): boolean {
+    return /\bwaffles?\b/i.test(content) && /\b(best|peak|based|fire|lit|delicious|yummy)\b/i.test(content);
 }
 
 export function detectWaffleScramble(content: string): boolean {
@@ -101,7 +117,7 @@ export function detectWaffleGif(
 }
 
 export function detectWaffleAcronym(content: string): boolean {
-    const words = content.split(/\s+/).filter(w => w.length > 0);
+    const words = extractWordTokens(content);
     const target = ["w", "a", "f", "f", "l", "e"];
     for (let i = 0; i <= words.length - 6; i++) {
         const window = words.slice(i, i + 6);
@@ -152,6 +168,36 @@ export function detectHeartbreaker(content: string): boolean {
     );
 }
 
+export function detectWaffleHater(content: string): boolean {
+    const lower = content.toLowerCase();
+    if (!/\bwaffles?\b/.test(lower)) return false;
+    return (
+        lower.includes("hate waffles") ||
+        lower.includes("don't like waffles") ||
+        lower.includes("dont like waffles") ||
+        lower.includes("waffles bad") ||
+        lower.includes("waffles are bad") ||
+        lower.includes("waffles are gross") ||
+        lower.includes("waffles suck") ||
+        lower.includes("waffles are awful") ||
+        lower.includes("waffles are terrible")
+    );
+}
+
+export function detectHeretic(content: string): boolean {
+    const lower = content.toLowerCase();
+    return (
+        lower.includes("pancakes are delicious") ||
+        lower.includes("pancakes are the best") ||
+        lower.includes("pancakes great") ||
+        lower.includes("pancakes are great") ||
+        lower.includes("pancakes best") ||
+        lower.includes("pancakes are amazing") ||
+        lower.includes("pancakes are incredible") ||
+        lower.includes("i love pancakes")
+    );
+}
+
 const POSITIVE_HOTCAKE_QUALIFIER = POSITIVE_PANCAKE_QUALIFIER;
 const NEGATIVE_HOTCAKE_QUALIFIER = NEGATIVE_PANCAKE_QUALIFIER;
 
@@ -163,6 +209,10 @@ export function detectTooCheeky(content: string): boolean {
 export function detectYouThinkYoureCute(content: string): boolean {
     if (!/\b(hotcakes|flapjacks)\b/i.test(content)) return false;
     return POSITIVE_HOTCAKE_QUALIFIER.test(content);
+}
+
+export function detectYouTakeThatBack(content: string): boolean {
+    return /pancakes?\s+are\s+better/i.test(content);
 }
 
 export function detectFrenchToast(content: string): boolean {
@@ -179,7 +229,7 @@ export function containsWaffle(content: string): boolean {
 
 /** Validate a WAFFLE acronym where all 6 words are 5+ letters (for Rare spawn challenge). */
 export function detectLongWaffleAcronym(content: string): boolean {
-    const words = content.split(/\s+/).filter(w => w.length > 0);
+    const words = extractWordTokens(content);
     const target = ["w", "a", "f", "f", "l", "e"];
     for (let i = 0; i <= words.length - 6; i++) {
         const window = words.slice(i, i + 6);
@@ -193,7 +243,7 @@ export function detectLongWaffleAcronym(content: string): boolean {
 
 /** Check if a message satisfies the Uncommon spawn challenge (words starting with W/A/F/F/L/E in order). */
 export function detectWaffleWordStarts(content: string): boolean {
-    const words = content.split(/\s+/).filter(w => w.length > 0);
+    const words = extractWordTokens(content);
     if (words.length < 6) return false;
     const allowed = new Set(["w", "a", "f", "l", "e"]);
     return words.every(word => allowed.has(word[0]?.toLowerCase() ?? ""));

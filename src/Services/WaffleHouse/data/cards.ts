@@ -104,10 +104,10 @@ export const INFUSION_LEVELS: {
     burnRisk: number;
     multiplierRange: [number, number];
 }[] = [
-    { cost: 150,  burnRisk: 0.05, multiplierRange: [1.3, 1.7] }, // 1→2
-    { cost: 400,  burnRisk: 0.15, multiplierRange: [1.8, 2.3] }, // 2→3
-    { cost: 1000, burnRisk: 0.30, multiplierRange: [2.5, 3.5] }, // 3→4
-    { cost: 3000, burnRisk: 0.50, multiplierRange: [4.0, 6.0] }, // 4→5
+    { cost: 300,  burnRisk: 0.05, multiplierRange: [1.3, 1.7] }, // 1→2
+    { cost: 800,  burnRisk: 0.15, multiplierRange: [1.8, 2.3] }, // 2→3
+    { cost: 2000, burnRisk: 0.30, multiplierRange: [2.5, 3.5] }, // 3→4
+    { cost: 6000, burnRisk: 0.50, multiplierRange: [4.0, 6.0] }, // 4→5
 ];
 
 /** Find a recipe matching two card template IDs (order-insensitive). */

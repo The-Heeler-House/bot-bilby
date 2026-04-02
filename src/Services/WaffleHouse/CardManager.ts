@@ -216,6 +216,11 @@ export default class CardManager {
         const spawn = await this.getActiveSpawn(services);
         if (!spawn || spawn.channelId !== message.channelId) return;
         if (spawn.data.triggerMessageId && spawn.data.triggerMessageId === message.id) return;
+        const claimRestriction = await this.getSpawnClaimRestriction(message.author.id, spawn, services);
+        if (claimRestriction) {
+            await message.author.send(claimRestriction).catch(() => null);
+            return;
+        }
 
         let valid = false;
         switch (spawn.challengeType) {
@@ -254,6 +259,12 @@ export default class CardManager {
 
         const spawn = await this.getActiveSpawn(services);
         if (!spawn || spawn.challengeType !== "emoji_sequence" || spawn.messageId !== reaction.message.id) return;
+        const claimRestriction = await this.getSpawnClaimRestriction(user.id, spawn, services);
+        if (claimRestriction) {
+            const resolvedUser = await this.waffle.client.users.fetch(user.id).catch(() => null);
+            await resolvedUser?.send(claimRestriction).catch(() => null);
+            return;
+        }
 
         const emojiName = reaction.emoji.name ?? "";
         const sequence = Array.isArray(spawn.data.sequence) ? spawn.data.sequence as string[] : [];
@@ -577,6 +588,7 @@ export default class CardManager {
         const rolledValue = this.rollValue(template);
         const challengeType = this.getChallengeType(template.rarity);
         const spawnData: Record<string, any> = {};
+        const nextSpawnSerial = (this.waffle.eventState?.spawnSerial ?? 0) + 1;
 
         let description = this.getChallengeDescription(template.rarity);
         if (challengeType === "emoji_sequence") {
@@ -605,16 +617,17 @@ export default class CardManager {
             startedAt: Date.now(),
             expiresAt: Date.now() + 5 * 60 * 1000,
             winnerId: null,
-            data: spawnData,
+            data: { ...spawnData, spawnSerial: nextSpawnSerial },
         } as any);
 
         if (this.waffle.eventState) {
             this.waffle.eventState.currentSpawnId = result.insertedId;
+            this.waffle.eventState.spawnSerial = nextSpawnSerial;
         }
         await this.waffle.bumpRuntimeCounter("spawnedCards", 1, services);
         await services.database.collections.waffleEventState!.updateOne(
             { _id: "event_state" },
-            { $set: { currentSpawnId: result.insertedId } }
+            { $set: { currentSpawnId: result.insertedId, spawnSerial: nextSpawnSerial } }
         );
     }
 
@@ -664,6 +677,8 @@ export default class CardManager {
     private async tryReserveAcronymResponse(userId: string, content: string, services: Services): Promise<boolean> {
         const normalized = this.normalizeAcronymResponse(content);
         if (!normalized) return false;
+        const baseUser = defaultWaffleUser(userId);
+        const { used_acronym_responses: _unusedResponses, ...insertUser } = baseUser;
 
         const result = await services.database.collections.waffleUsers!.updateOne(
             {
@@ -673,7 +688,7 @@ export default class CardManager {
             {
                 $addToSet: { used_acronym_responses: normalized },
                 $setOnInsert: {
-                    ...defaultWaffleUser(userId),
+                    ...insertUser,
                 },
             },
             { upsert: true }
@@ -689,6 +704,18 @@ export default class CardManager {
             if (current) return current;
         }
         return services.database.collections.waffleSpawns!.findOne({ status: "active" }, { sort: { startedAt: -1 } });
+    }
+
+    private async getSpawnClaimRestriction(userId: string, spawn: WaffleSpawn, services: Services): Promise<string | null> {
+        const user = await services.database.collections.waffleUsers!.findOne({ userId });
+        const blockedUntilSerial = user?.spawn_claim_blocked_until_serial ?? 0;
+        const spawnSerial = Number(spawn.data?.spawnSerial ?? 0);
+        if (spawnSerial > 0 && blockedUntilSerial >= spawnSerial) {
+            const remaining = blockedUntilSerial - spawnSerial + 1;
+            const nextWord = remaining === 1 ? "spawn" : "spawns";
+            return `You claimed a recent card and can't claim the next two spawns. You must wait ${remaining} more ${nextWord}.`;
+        }
+        return null;
     }
 
     private async claimSpawn(spawn: WaffleSpawn, winnerId: string, winnerTag: string, services: Services): Promise<void> {
@@ -708,6 +735,19 @@ export default class CardManager {
             { _id: spawn.cardInstanceId },
             { $set: { ownerId: winnerId, auctionStatus: "none", auctionMinBid: null } }
         );
+        const spawnSerial = Number(spawn.data?.spawnSerial ?? 0);
+        if (spawnSerial > 0) {
+            const baseUser = defaultWaffleUser(winnerId);
+            const { spawn_claim_blocked_until_serial: _unusedBlockedSerial, ...insertUser } = baseUser;
+            await services.database.collections.waffleUsers!.updateOne(
+                { userId: winnerId },
+                {
+                    $set: { spawn_claim_blocked_until_serial: spawnSerial + 2 },
+                    $setOnInsert: insertUser,
+                },
+                { upsert: true }
+            );
+        }
         await this.waffle.bumpRuntimeCounter("claimedSpawns", 1, services);
 
         if (this.waffle.eventState) {

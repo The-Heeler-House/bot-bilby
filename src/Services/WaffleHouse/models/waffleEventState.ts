@@ -8,6 +8,7 @@ export interface WaffleEventState {
     totalWpEarnedServerWide: number;
     waffleWpCounter: number;
     spawnThreshold: number;
+    spawnSerial: number;
 
     glazeBurnCounters: {
         [glazeOrBurnId: string]: {

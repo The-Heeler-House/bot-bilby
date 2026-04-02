@@ -3,10 +3,12 @@ import { Services } from "../index";
 import { METHOD_MAP } from "./data/methods";
 import {
     detectLonelyWaffle, detectJustSayin, detectLazyWaffle, detectWaffleScramble,
+    detectW4ff13sp34k, detectEatingBackwards, detectWaffleFan,
     detectTheBasics, detectFeelingVeryWaffle, detectSoWaffley, detectBecomeWaffle,
     detectGetWaffled, detectWaffleGif, detectWaffleAcronym, detectBlueysBrekkie,
     detectBingosBrunch, detectChangeOfTopic, detectBetrayal, detectSneakyBetrayal,
-    detectHeartbreaker, detectTooCheeky, detectYouThinkYoureCute,
+    detectHeartbreaker, detectWaffleHater, detectHeretic, detectTooCheeky, detectYouThinkYoureCute,
+    detectYouTakeThatBack,
     detectFrenchToast, detectPancakeMention, containsWaffle,
 } from "./util/scoring-detectors";
 import { discoveryEmbed, milestoneEmbed } from "./util/embeds";
@@ -19,8 +21,11 @@ const NEGATIVE_METHOD_IDS = new Set([
     "betrayal",
     "sneaky_betrayal",
     "heartbreaker",
+    "waffle_hater",
+    "heretic",
     "too_cheeky",
     "you_think_youre_cute",
+    "you_take_that_back",
 ]);
 
 export default class ScoringEngine {
@@ -42,7 +47,7 @@ export default class ScoringEngine {
 
         // Step 1: Spam check (Tummy Ache)
         const waffleMatches = (content.match(/\bwaffles?\b/gi) || []).length;
-        if (waffleMatches > 4) {
+        if (waffleMatches >= 8) {
             await this.applyTummyAche(message, services);
             return;
         }
@@ -170,8 +175,9 @@ export default class ScoringEngine {
         if (hungerIncrement > 0 && updatedUser && updatedUser.hungry_count >= 200 && !updatedUser.hungry_awarded) {
             await database.collections.waffleUsers!.updateOne(
                 { userId },
-                { $set: { hungry_awarded: true }, $inc: { current_wp: 50, total_wp_earned: 50 } }
+                { $set: { hungry_awarded: true }, $inc: { current_wp: 100, total_wp_earned: 100 } }
             );
+            await this.waffle.bumpRuntimeCounter("manualWpEarned", 100, services);
         }
 
         // Milestone check
@@ -258,6 +264,9 @@ export default class ScoringEngine {
         if (detectLonelyWaffle(content)) triggered.push("lonely_waffle");
         if (detectJustSayin(content)) triggered.push("just_sayin");
         if (detectLazyWaffle(content)) triggered.push("lazy_waffle");
+        if (detectW4ff13sp34k(content)) triggered.push("w4ff13sp34k");
+        if (detectEatingBackwards(content)) triggered.push("eating_backwards");
+        if (detectWaffleFan(content)) triggered.push("waffle_fan");
         if (detectWaffleScramble(content)) triggered.push("waffle_scramble");
         if (detectTheBasics(content)) triggered.push("the_basics");
         if (detectFeelingVeryWaffle(content)) triggered.push("feeling_very_waffle");
@@ -272,8 +281,11 @@ export default class ScoringEngine {
         if (detectBetrayal(content)) triggered.push("betrayal");
         if (detectSneakyBetrayal(content)) triggered.push("sneaky_betrayal");
         if (detectHeartbreaker(content)) triggered.push("heartbreaker");
+        if (detectWaffleHater(content)) triggered.push("waffle_hater");
+        if (detectHeretic(content)) triggered.push("heretic");
         if (detectTooCheeky(content)) triggered.push("too_cheeky");
         if (detectYouThinkYoureCute(content)) triggered.push("you_think_youre_cute");
+        if (detectYouTakeThatBack(content)) triggered.push("you_take_that_back");
 
         return triggered;
     }
@@ -288,6 +300,11 @@ export default class ScoringEngine {
         if (has("lonely_waffle")) remove("just_sayin");
         if (has("sneaky_betrayal")) remove("betrayal");
         if (has("you_think_youre_cute")) remove("too_cheeky");
+        if (has("waffle_hater")) {
+            remove("just_sayin");
+            remove("lonely_waffle");
+            remove("waffle_fan");
+        }
         if (has("get_waffled") || has("so_waffley") || has("become_waffle")) remove("just_sayin");
 
         // The Basics and Waffle Scramble only fire when "waffle" is NOT contiguous

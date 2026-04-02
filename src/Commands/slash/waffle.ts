@@ -128,7 +128,7 @@ export default class WaffleCommand extends SlashCommand {
                             .setStyle(ButtonStyle.Secondary)
                     )]
                     : [];
-                await interaction.reply({ content: result.message, components, ephemeral: false });
+                await interaction.reply({ content: result.message, components, ephemeral: !result.success });
                 return;
             }
             case "infuse": {
