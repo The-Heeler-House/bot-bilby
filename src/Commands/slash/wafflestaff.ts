@@ -324,12 +324,12 @@ export default class WaffleStaffCommand extends SlashCommand {
                     infusionCosts: Object.fromEntries(INFUSION_LEVELS.map((level, index) => [`${index + 1}`, level.cost])),
                     infusionBurnRisks: Object.fromEntries(INFUSION_LEVELS.map((level, index) => [`${index + 1}`, level.burnRisk])),
                     minigameWp: {
-                        chefBattle: { winner: 400, loser: 150, tie: 300 },
-                        poll: { winner: 100, loser: 30, tie: 70 },
-                        promptEntry: { winner: 400, submitter: 100 },
-                        alliance: { winner: 200, loser: 70, tie: 140 },
+                        chefBattle: { winner: 200, loser: 75, tie: 150 },
+                        poll: { winner: 50, loser: 15, tie: 35 },
+                        promptEntry: { winner: 200, submitter: 50 },
+                        alliance: { winner: 100, loser: 35, tie: 70 },
                     },
-                    spawnThresholdRange: "day-based: early 440-760, mid 340-600, late/final 240-440",
+                    spawnThresholdRange: "day-based: early 220-380, mid 170-300, late/final 120-220",
                     auctionRefreshMs: 30 * 60 * 1000,
                     minigameIntervalMs: 30 * 60 * 1000,
                 };

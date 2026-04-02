@@ -175,9 +175,9 @@ export default class ScoringEngine {
         if (hungerIncrement > 0 && updatedUser && updatedUser.hungry_count >= 200 && !updatedUser.hungry_awarded) {
             await database.collections.waffleUsers!.updateOne(
                 { userId },
-                { $set: { hungry_awarded: true }, $inc: { current_wp: 100, total_wp_earned: 100 } }
+                { $set: { hungry_awarded: true }, $inc: { current_wp: 50, total_wp_earned: 50 } }
             );
-            await this.waffle.bumpRuntimeCounter("manualWpEarned", 100, services);
+            await this.waffle.bumpRuntimeCounter("manualWpEarned", 50, services);
         }
 
         // Milestone check
