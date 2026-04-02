@@ -11,6 +11,7 @@ export interface WaffleUser {
     hungry_count: number;
     hungry_awarded: boolean;
     first_waffle_awarded: boolean;
+    used_acronym_responses: string[];
     cooldowns: {
         [methodId: string]: number; // epoch ms of last trigger
     };
@@ -28,6 +29,7 @@ export function defaultWaffleUser(userId: string): WaffleUser {
         hungry_count: 0,
         hungry_awarded: false,
         first_waffle_awarded: false,
+        used_acronym_responses: [],
         cooldowns: {},
     };
 }

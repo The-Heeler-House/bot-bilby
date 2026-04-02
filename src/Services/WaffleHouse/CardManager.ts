@@ -34,6 +34,7 @@ import { waffleChannelIds } from "../../constants";
 import type WaffleHouseService from "./index";
 import { WaffleCard } from "./models/waffleCard";
 import { WaffleSpawn } from "./models/waffleSpawn";
+import { defaultWaffleUser } from "./models/waffleUser";
 
 export const WAFFLE_CARD_CAP = 25;
 
@@ -235,6 +236,13 @@ export default class CardManager {
         }
 
         if (!valid) return;
+        if (spawn.challengeType === "long_acronym" || spawn.challengeType === "epic_combo") {
+            const allowed = await this.tryReserveAcronymResponse(message.author.id, message.content, services);
+            if (!allowed) {
+                await message.author.send("That acronym response has already been used by you before. Try a new one.").catch(() => null);
+                return;
+            }
+        }
         await this.claimSpawn(spawn, message.author.id, message.author.tag, services);
     }
 
@@ -643,6 +651,35 @@ export default class CardManager {
     private buildEmojiSequence(): string[] {
         const pool = ["🧇", "⭐", "🍯", "🍁", "🫐", "☁️", "🍫", "🎩"];
         return [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
+    }
+
+    private normalizeAcronymResponse(content: string): string {
+        return content
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, " ")
+            .trim()
+            .replace(/\s+/g, " ");
+    }
+
+    private async tryReserveAcronymResponse(userId: string, content: string, services: Services): Promise<boolean> {
+        const normalized = this.normalizeAcronymResponse(content);
+        if (!normalized) return false;
+
+        const result = await services.database.collections.waffleUsers!.updateOne(
+            {
+                userId,
+                used_acronym_responses: { $ne: normalized },
+            },
+            {
+                $addToSet: { used_acronym_responses: normalized },
+                $setOnInsert: {
+                    ...defaultWaffleUser(userId),
+                },
+            },
+            { upsert: true }
+        );
+
+        return result.modifiedCount > 0 || result.upsertedCount > 0;
     }
 
     private async getActiveSpawn(services: Services): Promise<WaffleSpawn | null> {
