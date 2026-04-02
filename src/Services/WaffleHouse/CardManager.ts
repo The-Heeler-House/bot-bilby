@@ -553,11 +553,11 @@ export default class CardManager {
                 ? [Math.ceil(overrideRange[0] * 0.5), Math.ceil(overrideRange[1] * 0.5)]
                 : overrideRange;
         } else if (final24h || day >= 7) {
-            range = [120, 220];
+            range = [240, 440];
         } else if (day <= 3) {
-            range = [220, 380];
+            range = [440, 760];
         } else {
-            range = [170, 300];
+            range = [340, 600];
         }
         return Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
     }

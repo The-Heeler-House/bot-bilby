@@ -76,7 +76,7 @@ export default class WaffleHouseService {
             eventActive: false,
             totalWpEarnedServerWide: 0,
             waffleWpCounter: 0,
-            spawnThreshold: 350,
+            spawnThreshold: 700,
             spawnSerial: 0,
             glazeBurnCounters: {},
             nextMinigameAt: now + 30 * 60 * 1000,

@@ -329,7 +329,7 @@ export default class WaffleStaffCommand extends SlashCommand {
                         promptEntry: { winner: 400, submitter: 100 },
                         alliance: { winner: 200, loser: 70, tie: 140 },
                     },
-                    spawnThresholdRange: "day-based: early 220-380, mid 170-300, late/final 120-220",
+                    spawnThresholdRange: "day-based: early 440-760, mid 340-600, late/final 240-440",
                     auctionRefreshMs: 30 * 60 * 1000,
                     minigameIntervalMs: 30 * 60 * 1000,
                 };
