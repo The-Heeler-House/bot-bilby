@@ -291,7 +291,7 @@ export default class CardManager {
             services,
         );
         if (claimRestriction) {
-            await message.author.send(claimRestriction).catch(() => null);
+            await this.notifyBlockedClaimOnce(spawn, message.author.id, claimRestriction, services);
             return;
         }
 
@@ -370,10 +370,12 @@ export default class CardManager {
             services,
         );
         if (claimRestriction) {
-            const resolvedUser = await this.waffle.client.users
-                .fetch(user.id)
-                .catch(() => null);
-            await resolvedUser?.send(claimRestriction).catch(() => null);
+            await this.notifyBlockedClaimOnce(
+                spawn,
+                user.id,
+                claimRestriction,
+                services,
+            );
             return;
         }
 
@@ -1043,37 +1045,25 @@ export default class CardManager {
         const { used_acronym_responses: _unusedResponses, ...insertUser } =
             baseUser;
 
-        // 1. Try to update existing user
+        await services.database.collections.waffleUsers!.updateOne(
+            { userId },
+            { $setOnInsert: { ...insertUser } },
+            { upsert: true },
+        );
+
         const result =
             await services.database.collections.waffleUsers!.updateOne(
-                { userId },
-                {
-                    $addToSet: { used_acronym_responses: normalized },
-                },
-            );
+            {
+                userId,
+                used_acronym_responses: { $ne: normalized },
+            },
+            {
+                $addToSet: { used_acronym_responses: normalized },
+            },
+            { upsert: false },
+        );
 
-        // 2. If no document found, insert the new user
-        if (result.matchedCount === 0) {
-            try {
-                await services.database.collections.waffleUsers!.insertOne({
-                    ...insertUser,
-                    used_acronym_responses: [normalized],
-                });
-            } catch (err: any) {
-                // Another process inserted the user between our update and insert
-                if (err.code === 11000) {
-                    // Safe to ignore — retry the update if needed
-                    await services.database.collections.waffleUsers!.updateOne(
-                        { userId },
-                        { $addToSet: { used_acronym_responses: normalized } },
-                    );
-                } else {
-                    throw err;
-                }
-            }
-        }
-
-        return result.modifiedCount > 0 || result.upsertedCount > 0;
+        return result.modifiedCount > 0;
     }
 
     private async getActiveSpawn(
@@ -1110,6 +1100,30 @@ export default class CardManager {
             return `You claimed a recent card and can't claim the next two spawns. You must wait ${remaining} more ${nextWord}.`;
         }
         return null;
+    }
+
+    private async notifyBlockedClaimOnce(
+        spawn: WaffleSpawn,
+        userId: string,
+        message: string,
+        services: Services,
+    ): Promise<void> {
+        const result =
+            await services.database.collections.waffleSpawns!.updateOne(
+            {
+                _id: spawn._id,
+                [`data.blockedClaimNoticeSent.${userId}`]: { $ne: true },
+            },
+            {
+                $set: { [`data.blockedClaimNoticeSent.${userId}`]: true },
+            },
+        );
+        if (result.modifiedCount === 0) return;
+
+        const user = await this.waffle.client.users.fetch(userId).catch(
+            () => null,
+        );
+        await user?.send(message).catch(() => null);
     }
 
     private async claimSpawn(
