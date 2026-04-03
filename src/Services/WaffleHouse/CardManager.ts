@@ -577,11 +577,25 @@ export default class CardManager {
                 success: false,
                 message: "Card not found in your collection.",
             };
-        if (card.auctionStatus !== "none")
-            return {
-                success: false,
-                message: "You can't discard a card that is listed for auction.",
-            };
+        if (card.auctionStatus !== "none") {
+            const activeAuction =
+                await services.database.collections.waffleAuctions!.findOne({
+                    cardInstanceId: cardId,
+                    status: { $in: ["pooled", "live", "resolving"] },
+                });
+            if (activeAuction)
+                return {
+                    success: false,
+                    message: "You can't discard a card that is listed for auction.",
+                };
+
+            await services.database.collections.waffleCards!.updateOne(
+                { _id: cardId, ownerId: userId },
+                { $set: { auctionStatus: "none", auctionMinBid: null } },
+            );
+            card.auctionStatus = "none";
+            card.auctionMinBid = null;
+        }
 
         await services.database.collections.waffleCards!.deleteOne({
             _id: cardId,
