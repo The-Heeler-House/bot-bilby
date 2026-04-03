@@ -171,6 +171,63 @@ export default class CardManager {
         return `You are at the card cap of ${WAFFLE_CARD_CAP}. Use \`/waffle discard\` before trying to gain ${extraCards} more card${plural}.`;
     }
 
+    private buildRecursiveRestoreMetadata(
+        parentCardId: string,
+        restoredCardId: string,
+        restoredRolledValue: number,
+    ): WaffleCard["combinedFrom"] {
+        if (
+            parentCardId !== "jalens_67_eternal_waffle" ||
+            restoredCardId !== "the_heeler_family_breakfast"
+        ) {
+            return null;
+        }
+
+        const recipe = findRecipe(
+            "chillis_disaster_waffle",
+            "maple_monsoon",
+        );
+        const inputA = CARD_TEMPLATE_MAP.get("chillis_disaster_waffle");
+        const inputB = CARD_TEMPLATE_MAP.get("maple_monsoon");
+        if (!recipe || !inputA || !inputB) return null;
+
+        const minTotal = inputA.valueRange[0] + inputB.valueRange[0];
+        const maxTotal = inputA.valueRange[1] + inputB.valueRange[1];
+        const inferredTotal = Math.max(
+            minTotal,
+            Math.min(
+                maxTotal,
+                Math.round((restoredRolledValue - recipe.bonus) / recipe.multiplier),
+            ),
+        );
+
+        const avgA = (inputA.valueRange[0] + inputA.valueRange[1]) / 2;
+        const avgB = (inputB.valueRange[0] + inputB.valueRange[1]) / 2;
+        let inputARolledValue = Math.round(
+            inferredTotal * (avgA / (avgA + avgB)),
+        );
+        inputARolledValue = Math.max(
+            inputA.valueRange[0],
+            Math.min(inputA.valueRange[1], inputARolledValue),
+        );
+        let inputBRolledValue = inferredTotal - inputARolledValue;
+        inputBRolledValue = Math.max(
+            inputB.valueRange[0],
+            Math.min(inputB.valueRange[1], inputBRolledValue),
+        );
+        inputARolledValue = Math.max(
+            inputA.valueRange[0],
+            Math.min(inputA.valueRange[1], inferredTotal - inputBRolledValue),
+        );
+
+        return {
+            inputACardId: "chillis_disaster_waffle",
+            inputARolledValue,
+            inputBCardId: "maple_monsoon",
+            inputBRolledValue,
+        };
+    }
+
     async sweep(services: Services): Promise<void> {
         const eventState = this.waffle.eventState;
         if (!eventState?.eventActive) return;
@@ -534,7 +591,11 @@ export default class CardManager {
                     burntUntil: null,
                     auctionStatus: "none",
                     auctionMinBid: null,
-                    combinedFrom: null,
+                    combinedFrom: this.buildRecursiveRestoreMetadata(
+                        card.cardId,
+                        card.combinedFrom.inputACardId,
+                        card.combinedFrom.inputARolledValue,
+                    ),
                     createdAt: now,
                 },
                 {
