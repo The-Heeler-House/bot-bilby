@@ -8,7 +8,7 @@ import {
 import { ObjectId } from "mongodb";
 import SlashCommand from "../SlashCommand";
 import { Services } from "../../Services";
-import { roleIds } from "../../constants";
+import { roleIds, waffleRoleIds } from "../../constants";
 import { baseEmbed, leaderboardEmbed } from "../../Services/WaffleHouse/util/embeds";
 import { GLAZES, BURNS } from "../../Services/WaffleHouse/data/glazes";
 import { CardRarity, DEFAULT_DROP_WEIGHTS, INFUSION_LEVELS } from "../../Services/WaffleHouse/data/cards";
@@ -230,10 +230,10 @@ export default class WaffleStaffCommand extends SlashCommand {
                 await guild.roles.fetch();
                 await guild.members.fetch();
 
-                const participantRole = this.findRoleByName(guild.roles.cache.toJSON(), ENDEVENT_ROLE_NAMES.participant);
-                const topWaffleRole = this.findRoleByName(guild.roles.cache.toJSON(), ENDEVENT_ROLE_NAMES.topWaffle);
-                const pancakeRebelRole = this.findRoleByName(guild.roles.cache.toJSON(), ENDEVENT_ROLE_NAMES.pancakeRebel);
-                const frenchToastRole = this.findRoleByName(guild.roles.cache.toJSON(), ENDEVENT_ROLE_NAMES.frenchToast);
+                const participantRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.aprilFools2026, ENDEVENT_ROLE_NAMES.participant);
+                const topWaffleRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.topWaffle, ENDEVENT_ROLE_NAMES.topWaffle);
+                const pancakeRebelRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.pancakeRebel, ENDEVENT_ROLE_NAMES.pancakeRebel);
+                const frenchToastRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.frenchToastNotWar, ENDEVENT_ROLE_NAMES.frenchToast);
 
                 const missingRoles = [
                     [ENDEVENT_ROLE_NAMES.participant, participantRole],
@@ -558,6 +558,14 @@ export default class WaffleStaffCommand extends SlashCommand {
 
     private findRoleByName(roles: Role[], roleName: string): Role | undefined {
         return roles.find(role => role.name === roleName);
+    }
+
+    private resolveEventRole(roles: Role[], roleId: string | undefined, fallbackName: string): Role | undefined {
+        if (roleId) {
+            const byId = roles.find(role => role.id === roleId);
+            if (byId) return byId;
+        }
+        return this.findRoleByName(roles, fallbackName);
     }
 
     private async syncRoleMembers(role: Role, targetUserIds: Set<string>, members: GuildMember[]) {

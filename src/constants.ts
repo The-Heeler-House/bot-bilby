@@ -41,6 +41,10 @@ export const waffleChannelIds = {
 
 export const waffleRoleIds = {
     waffleVeteran: config.get<string>("waffleHouse.roleIds.waffleVeteran"),
+    aprilFools2026: config.get<string>("waffleHouse.roleIds.aprilFools2026"),
+    topWaffle: config.get<string>("waffleHouse.roleIds.topWaffle"),
+    pancakeRebel: config.get<string>("waffleHouse.roleIds.pancakeRebel"),
+    frenchToastNotWar: config.get<string>("waffleHouse.roleIds.frenchToastNotWar"),
 }
 
 export const waffleEmojiIds = {
