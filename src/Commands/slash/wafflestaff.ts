@@ -28,6 +28,7 @@ export default class WaffleStaffCommand extends SlashCommand {
         .setName("wafflestaff")
         .setDescription("Staff Waffle House controls")
         .addSubcommand(sub => sub.setName("stats").setDescription("View event stats"))
+        .addSubcommand(sub => sub.setName("assign").setDescription("Assign final Waffle event roles"))
         .addSubcommand(sub => sub.setName("frenchtoast").setDescription("View the French Toast leaderboard"))
         .addSubcommand(sub =>
             sub.setName("spawn")
@@ -146,6 +147,20 @@ export default class WaffleStaffCommand extends SlashCommand {
                 });
                 return;
             }
+            case "assign": {
+                if (!this.isOwner(interaction.user.id)) {
+                    await interaction.reply({ content: "Only Jalen can use that command.", ephemeral: false });
+                    return;
+                }
+                await interaction.reply({ content: "Starting Waffle event role assignment...", ephemeral: false });
+                const assignment = await this.assignEventRoles(interaction, services);
+                if (!assignment.success) {
+                    await interaction.editReply(assignment.message);
+                    return;
+                }
+                await interaction.editReply(`Finished Waffle event role assignment. ${assignment.participantCount} participants, ${assignment.topCount} top waffles, ${assignment.bottomCount} pancake rebels, ${assignment.frenchToastCount} French Toast Not War.`);
+                return;
+            }
             case "frenchtoast": {
                 await interaction.deferReply({ ephemeral: false });
                 const entries = await services.database.collections.waffleFrenchToast!.find({ count: { $gt: 0 } }).sort({ count: -1 }).limit(10).toArray();
@@ -222,61 +237,22 @@ export default class WaffleStaffCommand extends SlashCommand {
                     return;
                 }
                 await interaction.deferReply({ ephemeral: false });
-                const guild = interaction.guild;
-                if (!guild) {
-                    await interaction.editReply({ content: "This command must be used in the server." });
+                const assignment = await this.assignEventRoles(interaction, services);
+                if (!assignment.success) {
+                    await interaction.editReply({ content: assignment.message });
                     return;
                 }
-                await guild.roles.fetch();
-                await guild.members.fetch();
-
-                const participantRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.aprilFools2026, ENDEVENT_ROLE_NAMES.participant);
-                const topWaffleRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.topWaffle, ENDEVENT_ROLE_NAMES.topWaffle);
-                const pancakeRebelRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.pancakeRebel, ENDEVENT_ROLE_NAMES.pancakeRebel);
-                const frenchToastRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.frenchToastNotWar, ENDEVENT_ROLE_NAMES.frenchToast);
-
-                const missingRoles = [
-                    [ENDEVENT_ROLE_NAMES.participant, participantRole],
-                    [ENDEVENT_ROLE_NAMES.topWaffle, topWaffleRole],
-                    [ENDEVENT_ROLE_NAMES.pancakeRebel, pancakeRebelRole],
-                    [ENDEVENT_ROLE_NAMES.frenchToast, frenchToastRole],
-                ].filter(([, role]) => !role).map(([name]) => name);
-                if (missingRoles.length > 0) {
-                    await interaction.editReply({ content: `Missing event roles: ${missingRoles.join(", ")}` });
-                    return;
-                }
-
-                const allEntries = (await services.waffleHouse.leaderboardManager.getAllEntries(services))
-                    .filter(entry => guild.members.cache.has(entry.userId));
-                const top = allEntries.slice(0, 10);
-                const bottom = [...allEntries].reverse().slice(0, 5);
                 const totalCards = await services.database.collections.waffleCards!.countDocuments();
                 const auctionPool = await services.database.collections.waffleAuctions!.countDocuments({ status: "pooled" });
-                const participantCardOwners = await services.database.collections.waffleCards!.distinct("ownerId", { ownerId: { $ne: null } }) as string[];
-                const negativePointUsers = (await services.database.collections.waffleUsers!.find({ current_wp: { $lte: -1 } }, { projection: { userId: 1 } }).toArray())
-                    .map(user => user.userId);
-                const participantUserIds = new Set(
-                    [...participantCardOwners, ...negativePointUsers].filter((userId): userId is string => !!userId && guild.members.cache.has(userId))
-                );
-                const frenchToastUserIds = new Set(
-                    (await services.database.collections.waffleFrenchToast!.find({ count: { $gt: 0 } }, { projection: { userId: 1 } }).toArray())
-                        .map(entry => entry.userId)
-                        .filter((userId): userId is string => guild.members.cache.has(userId))
-                );
-
-                await this.syncRoleMembers(participantRole!, participantUserIds, guild.members.cache.toJSON());
-                await this.syncRoleMembers(topWaffleRole!, new Set(top.map(entry => entry.userId)), guild.members.cache.toJSON());
-                await this.syncRoleMembers(pancakeRebelRole!, new Set(bottom.map(entry => entry.userId)), guild.members.cache.toJSON());
-                await this.syncRoleMembers(frenchToastRole!, frenchToastUserIds, guild.members.cache.toJSON());
                 await services.waffleHouse.setEventActive(false, services);
 
                 const privateSummaryEmbed = baseEmbed()
                     .setTitle("🧇 Final Event Summary")
                     .addFields(
-                        { name: ENDEVENT_ROLE_NAMES.participant, value: `${participantUserIds.size} members`, inline: true },
-                        { name: ENDEVENT_ROLE_NAMES.topWaffle, value: `${top.length} members`, inline: true },
-                        { name: ENDEVENT_ROLE_NAMES.pancakeRebel, value: `${bottom.length} members`, inline: true },
-                        { name: ENDEVENT_ROLE_NAMES.frenchToast, value: `${frenchToastUserIds.size} members`, inline: true },
+                        { name: ENDEVENT_ROLE_NAMES.participant, value: `${assignment.participantCount} members`, inline: true },
+                        { name: ENDEVENT_ROLE_NAMES.topWaffle, value: `${assignment.topCount} members`, inline: true },
+                        { name: ENDEVENT_ROLE_NAMES.pancakeRebel, value: `${assignment.bottomCount} members`, inline: true },
+                        { name: ENDEVENT_ROLE_NAMES.frenchToast, value: `${assignment.frenchToastCount} members`, inline: true },
                         { name: "Event Active", value: "false", inline: true },
                         { name: "Role Sync", value: "Completed", inline: true },
                     );
@@ -297,10 +273,10 @@ export default class WaffleStaffCommand extends SlashCommand {
                                 { name: "Cards in Existence", value: `${totalCards}`, inline: true },
                                 { name: "Auction Pool", value: `${auctionPool}`, inline: true },
                             ),
-                        leaderboardEmbed(top.map((entry, index) => ({ rank: index + 1, tag: entry.tag, score: entry.score }))),
+                        leaderboardEmbed(assignment.top.map((entry, index) => ({ rank: index + 1, tag: entry.tag, score: entry.score }))),
                         baseEmbed()
                             .setTitle("🥞 Bottom 5")
-                            .setDescription(bottom.map((entry, index) => `**${index + 1}.** ${entry.tag} — ${entry.score}`).join("\n") || "No entries."),
+                            .setDescription(assignment.bottom.map((entry, index) => `**${index + 1}.** ${entry.tag} — ${entry.score}`).join("\n") || "No entries."),
                     ],
                 });
                 return;
@@ -433,6 +409,90 @@ export default class WaffleStaffCommand extends SlashCommand {
                 return;
             }
         }
+    }
+
+    private async assignEventRoles(interaction: ChatInputCommandInteraction, services: Services): Promise<{
+        success: boolean;
+        message: string;
+        participantCount: number;
+        topCount: number;
+        bottomCount: number;
+        frenchToastCount: number;
+        top: Awaited<ReturnType<typeof services.waffleHouse.leaderboardManager.getAllEntries>>;
+        bottom: Awaited<ReturnType<typeof services.waffleHouse.leaderboardManager.getAllEntries>>;
+    }> {
+        const guild = interaction.guild;
+        if (!guild) {
+            return {
+                success: false,
+                message: "This command must be used in the server.",
+                participantCount: 0,
+                topCount: 0,
+                bottomCount: 0,
+                frenchToastCount: 0,
+                top: [],
+                bottom: [],
+            };
+        }
+
+        await guild.roles.fetch();
+        await guild.members.fetch();
+
+        const participantRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.aprilFools2026, ENDEVENT_ROLE_NAMES.participant);
+        const topWaffleRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.topWaffle, ENDEVENT_ROLE_NAMES.topWaffle);
+        const pancakeRebelRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.pancakeRebel, ENDEVENT_ROLE_NAMES.pancakeRebel);
+        const frenchToastRole = this.resolveEventRole(guild.roles.cache.toJSON(), waffleRoleIds.frenchToastNotWar, ENDEVENT_ROLE_NAMES.frenchToast);
+
+        const missingRoles = [
+            [ENDEVENT_ROLE_NAMES.participant, participantRole],
+            [ENDEVENT_ROLE_NAMES.topWaffle, topWaffleRole],
+            [ENDEVENT_ROLE_NAMES.pancakeRebel, pancakeRebelRole],
+            [ENDEVENT_ROLE_NAMES.frenchToast, frenchToastRole],
+        ].filter(([, role]) => !role).map(([name]) => name);
+        if (missingRoles.length > 0) {
+            return {
+                success: false,
+                message: `Missing event roles: ${missingRoles.join(", ")}`,
+                participantCount: 0,
+                topCount: 0,
+                bottomCount: 0,
+                frenchToastCount: 0,
+                top: [],
+                bottom: [],
+            };
+        }
+
+        const allEntries = (await services.waffleHouse.leaderboardManager.getAllEntries(services))
+            .filter(entry => guild.members.cache.has(entry.userId));
+        const top = allEntries.slice(0, 10);
+        const bottom = [...allEntries].reverse().slice(0, 5);
+        const participantCardOwners = await services.database.collections.waffleCards!.distinct("ownerId", { ownerId: { $ne: null } }) as string[];
+        const nonZeroPointUsers = (await services.database.collections.waffleUsers!.find({ current_wp: { $ne: 0 } }, { projection: { userId: 1 } }).toArray())
+            .map(user => user.userId);
+        const participantUserIds = new Set(
+            [...participantCardOwners, ...nonZeroPointUsers].filter((userId): userId is string => !!userId && guild.members.cache.has(userId))
+        );
+        const frenchToastUserIds = new Set(
+            (await services.database.collections.waffleFrenchToast!.find({ count: { $gt: 0 } }, { projection: { userId: 1 } }).toArray())
+                .map(entry => entry.userId)
+                .filter((userId): userId is string => guild.members.cache.has(userId))
+        );
+
+        await this.syncRoleMembers(participantRole!, participantUserIds, guild.members.cache.toJSON());
+        await this.syncRoleMembers(topWaffleRole!, new Set(top.map(entry => entry.userId)), guild.members.cache.toJSON());
+        await this.syncRoleMembers(pancakeRebelRole!, new Set(bottom.map(entry => entry.userId)), guild.members.cache.toJSON());
+        await this.syncRoleMembers(frenchToastRole!, frenchToastUserIds, guild.members.cache.toJSON());
+
+        return {
+            success: true,
+            message: "Role assignment complete.",
+            participantCount: participantUserIds.size,
+            topCount: top.length,
+            bottomCount: bottom.length,
+            frenchToastCount: frenchToastUserIds.size,
+            top,
+            bottom,
+        };
     }
 
     private buildTuneEmbeds(defaults: Record<string, unknown>, tuning: Record<string, unknown> | null) {

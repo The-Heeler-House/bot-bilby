@@ -66,13 +66,18 @@ export default class WaffleCommand extends SlashCommand {
                         .setDescription("View the current auction batch"))) as SlashCommandBuilder;
 
     async execute(interaction: ChatInputCommandInteraction, services: Services) {
-        if (!services.waffleHouse.eventState?.eventActive) {
+        const subGroup = interaction.options.getSubcommandGroup(false);
+        const sub = interaction.options.getSubcommand();
+        const isViewOnly =
+            sub === "leaderboard" ||
+            sub === "stats" ||
+            sub === "cards" ||
+            (subGroup === "auction" && sub === "view");
+
+        if (!services.waffleHouse.eventState?.eventActive && !isViewOnly) {
             await interaction.reply({ content: "The Waffle House isn't currently active.", ephemeral: true });
             return;
         }
-
-        const subGroup = interaction.options.getSubcommandGroup(false);
-        const sub = interaction.options.getSubcommand();
 
         if (subGroup === "auction") {
             await this.handleAuction(interaction, sub, services);
@@ -202,7 +207,15 @@ export default class WaffleCommand extends SlashCommand {
     }
 
     async autocomplete(interaction: AutocompleteInteraction, services: Services) {
-        if (!services.waffleHouse.eventState?.eventActive) {
+        const subGroup = interaction.options.getSubcommandGroup(false);
+        const sub = interaction.options.getSubcommand(false);
+        const needsActiveEvent = !(
+            sub === "leaderboard" ||
+            sub === "stats" ||
+            sub === "cards" ||
+            (subGroup === "auction" && sub === "view")
+        );
+        if (!services.waffleHouse.eventState?.eventActive && needsActiveEvent) {
             await interaction.respond([]);
             return;
         }
