@@ -2,6 +2,7 @@ import {
     AutocompleteInteraction,
     ChatInputCommandInteraction,
     GuildMember,
+    Role,
     SlashCommandBuilder,
 } from "discord.js";
 import { ObjectId } from "mongodb";
@@ -15,6 +16,12 @@ import { SCORING_METHODS } from "../../Services/WaffleHouse/data/methods";
 
 const STAFF_GAME_TYPES = ["chef_battle", "anonymous_poll", "prompt_entry", "waffle_alliance"] as const;
 const OWNER_USER_ID = "640921495245422632";
+const ENDEVENT_ROLE_NAMES = {
+    participant: "April Fool's 2026",
+    topWaffle: "Top Waffle",
+    pancakeRebel: "Pancake Rebel",
+    frenchToast: "French Toast Not War",
+} as const;
 
 export default class WaffleStaffCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
@@ -215,19 +222,85 @@ export default class WaffleStaffCommand extends SlashCommand {
                     return;
                 }
                 await interaction.deferReply({ ephemeral: false });
-                const top = await services.waffleHouse.leaderboardManager.getTopN(5, services);
+                const guild = interaction.guild;
+                if (!guild) {
+                    await interaction.editReply({ content: "This command must be used in the server." });
+                    return;
+                }
+                await guild.roles.fetch();
+                await guild.members.fetch();
+
+                const participantRole = this.findRoleByName(guild.roles.cache.toJSON(), ENDEVENT_ROLE_NAMES.participant);
+                const topWaffleRole = this.findRoleByName(guild.roles.cache.toJSON(), ENDEVENT_ROLE_NAMES.topWaffle);
+                const pancakeRebelRole = this.findRoleByName(guild.roles.cache.toJSON(), ENDEVENT_ROLE_NAMES.pancakeRebel);
+                const frenchToastRole = this.findRoleByName(guild.roles.cache.toJSON(), ENDEVENT_ROLE_NAMES.frenchToast);
+
+                const missingRoles = [
+                    [ENDEVENT_ROLE_NAMES.participant, participantRole],
+                    [ENDEVENT_ROLE_NAMES.topWaffle, topWaffleRole],
+                    [ENDEVENT_ROLE_NAMES.pancakeRebel, pancakeRebelRole],
+                    [ENDEVENT_ROLE_NAMES.frenchToast, frenchToastRole],
+                ].filter(([, role]) => !role).map(([name]) => name);
+                if (missingRoles.length > 0) {
+                    await interaction.editReply({ content: `Missing event roles: ${missingRoles.join(", ")}` });
+                    return;
+                }
+
+                const allEntries = (await services.waffleHouse.leaderboardManager.getAllEntries(services))
+                    .filter(entry => guild.members.cache.has(entry.userId));
+                const top = allEntries.slice(0, 10);
+                const bottom = [...allEntries].reverse().slice(0, 5);
                 const totalCards = await services.database.collections.waffleCards!.countDocuments();
                 const auctionPool = await services.database.collections.waffleAuctions!.countDocuments({ status: "pooled" });
+                const participantCardOwners = await services.database.collections.waffleCards!.distinct("ownerId", { ownerId: { $ne: null } }) as string[];
+                const negativePointUsers = (await services.database.collections.waffleUsers!.find({ current_wp: { $lte: -1 } }, { projection: { userId: 1 } }).toArray())
+                    .map(user => user.userId);
+                const participantUserIds = new Set(
+                    [...participantCardOwners, ...negativePointUsers].filter((userId): userId is string => !!userId && guild.members.cache.has(userId))
+                );
+                const frenchToastUserIds = new Set(
+                    (await services.database.collections.waffleFrenchToast!.find({ count: { $gt: 0 } }, { projection: { userId: 1 } }).toArray())
+                        .map(entry => entry.userId)
+                        .filter((userId): userId is string => guild.members.cache.has(userId))
+                );
+
+                await this.syncRoleMembers(participantRole!, participantUserIds, guild.members.cache.toJSON());
+                await this.syncRoleMembers(topWaffleRole!, new Set(top.map(entry => entry.userId)), guild.members.cache.toJSON());
+                await this.syncRoleMembers(pancakeRebelRole!, new Set(bottom.map(entry => entry.userId)), guild.members.cache.toJSON());
+                await this.syncRoleMembers(frenchToastRole!, frenchToastUserIds, guild.members.cache.toJSON());
+                await services.waffleHouse.setEventActive(false, services);
+
+                const privateSummaryEmbed = baseEmbed()
+                    .setTitle("🧇 Final Event Summary")
+                    .addFields(
+                        { name: ENDEVENT_ROLE_NAMES.participant, value: `${participantUserIds.size} members`, inline: true },
+                        { name: ENDEVENT_ROLE_NAMES.topWaffle, value: `${top.length} members`, inline: true },
+                        { name: ENDEVENT_ROLE_NAMES.pancakeRebel, value: `${bottom.length} members`, inline: true },
+                        { name: ENDEVENT_ROLE_NAMES.frenchToast, value: `${frenchToastUserIds.size} members`, inline: true },
+                        { name: "Event Active", value: "false", inline: true },
+                        { name: "Role Sync", value: "Completed", inline: true },
+                    );
+
+                try {
+                    const dmChannel = await interaction.user.createDM();
+                    await dmChannel.send({ embeds: [privateSummaryEmbed] });
+                } catch {
+                    // Best effort. Public output should still complete even if DMs are closed.
+                }
+
                 await interaction.editReply({
                     embeds: [
                         baseEmbed()
-                            .setTitle("🧇 Final Event Summary")
+                            .setTitle("🧇 Waffle Staff Stats")
                             .addFields(
-                                { name: "Waffles Consumed", value: `${services.waffleHouse.eventState?.totalWpEarnedServerWide ?? 0}` },
+                                { name: "Waffles Consumed", value: `${services.waffleHouse.eventState?.totalWpEarnedServerWide ?? 0}`, inline: true },
                                 { name: "Cards in Existence", value: `${totalCards}`, inline: true },
                                 { name: "Auction Pool", value: `${auctionPool}`, inline: true },
                             ),
                         leaderboardEmbed(top.map((entry, index) => ({ rank: index + 1, tag: entry.tag, score: entry.score }))),
+                        baseEmbed()
+                            .setTitle("🥞 Bottom 5")
+                            .setDescription(bottom.map((entry, index) => `**${index + 1}.** ${entry.tag} — ${entry.score}`).join("\n") || "No entries."),
                     ],
                 });
                 return;
@@ -472,6 +545,31 @@ export default class WaffleStaffCommand extends SlashCommand {
         }
 
         return chunks;
+    }
+
+    private formatMentionList(userIds: string[], max = 10): string {
+        if (userIds.length === 0) return "None";
+        const mentions = userIds.slice(0, max).map(userId => `<@${userId}>`);
+        if (userIds.length > max) {
+            mentions.push(`...and ${userIds.length - max} more`);
+        }
+        return mentions.join("\n");
+    }
+
+    private findRoleByName(roles: Role[], roleName: string): Role | undefined {
+        return roles.find(role => role.name === roleName);
+    }
+
+    private async syncRoleMembers(role: Role, targetUserIds: Set<string>, members: GuildMember[]) {
+        for (const member of members) {
+            const hasRole = member.roles.cache.has(role.id);
+            const shouldHaveRole = targetUserIds.has(member.id);
+            if (shouldHaveRole && !hasRole) {
+                await member.roles.add(role);
+            } else if (!shouldHaveRole && hasRole) {
+                await member.roles.remove(role);
+            }
+        }
     }
 
     private isStaff(member: GuildMember | any): boolean {

@@ -15,6 +15,11 @@ import { leaderboardEmbed, baseEmbed } from "../../Services/WaffleHouse/util/emb
 import { WAFFLE_CARD_CAP } from "../../Services/WaffleHouse/CardManager";
 
 export default class WaffleCommand extends SlashCommand {
+    private parseCardObjectId(raw: string | null): ObjectId | null {
+        if (!raw || !ObjectId.isValid(raw)) return null;
+        return new ObjectId(raw);
+    }
+
     public data = new SlashCommandBuilder()
         .setName("waffle")
         .setDescription("Waffle House commands")
@@ -118,8 +123,12 @@ export default class WaffleCommand extends SlashCommand {
                 return;
             }
             case "combine": {
-                const cardA = new ObjectId(interaction.options.getString("card_a", true));
-                const cardB = new ObjectId(interaction.options.getString("card_b", true));
+                const cardA = this.parseCardObjectId(interaction.options.getString("card_a", true));
+                const cardB = this.parseCardObjectId(interaction.options.getString("card_b", true));
+                if (!cardA || !cardB) {
+                    await interaction.reply({ content: "Please select valid cards from the autocomplete list.", ephemeral: true });
+                    return;
+                }
                 const result = await services.waffleHouse.cardManager.combineCards(cardA, cardB, interaction.user.id, services);
                 const components = result.success && result.newCardId
                     ? [new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -133,7 +142,11 @@ export default class WaffleCommand extends SlashCommand {
                 return;
             }
             case "infuse": {
-                const cardId = new ObjectId(interaction.options.getString("card", true));
+                const cardId = this.parseCardObjectId(interaction.options.getString("card", true));
+                if (!cardId) {
+                    await interaction.reply({ content: "Please select a valid card from the autocomplete list.", ephemeral: true });
+                    return;
+                }
                 const preview = await services.waffleHouse.cardManager.getInfusionPreview(cardId, interaction.user.id, services);
                 if (!preview.success) {
                     await interaction.reply({ content: preview.message, ephemeral: false });
@@ -158,7 +171,11 @@ export default class WaffleCommand extends SlashCommand {
                 return;
             }
             case "decompose": {
-                const cardId = new ObjectId(interaction.options.getString("card", true));
+                const cardId = this.parseCardObjectId(interaction.options.getString("card", true));
+                if (!cardId) {
+                    await interaction.reply({ content: "Please select a valid card from the autocomplete list.", ephemeral: true });
+                    return;
+                }
                 const result = await services.waffleHouse.cardManager.decomposeCard(cardId, interaction.user.id, services);
                 const components = result.success && result.restoredCardIds?.length === 2
                     ? [new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -172,7 +189,11 @@ export default class WaffleCommand extends SlashCommand {
                 return;
             }
             case "discard": {
-                const cardId = new ObjectId(interaction.options.getString("card", true));
+                const cardId = this.parseCardObjectId(interaction.options.getString("card", true));
+                if (!cardId) {
+                    await interaction.reply({ content: "Please select a valid card from the autocomplete list.", ephemeral: true });
+                    return;
+                }
                 const result = await services.waffleHouse.cardManager.discardCard(cardId, interaction.user.id, services);
                 await interaction.reply({ content: result.message, ephemeral: false });
                 return;
@@ -205,14 +226,22 @@ export default class WaffleCommand extends SlashCommand {
     private async handleAuction(interaction: ChatInputCommandInteraction, sub: string, services: Services) {
         switch (sub) {
             case "list": {
-                const cardId = new ObjectId(interaction.options.getString("card", true));
+                const cardId = this.parseCardObjectId(interaction.options.getString("card", true));
+                if (!cardId) {
+                    await interaction.reply({ content: "Please select a valid card from the autocomplete list.", ephemeral: true });
+                    return;
+                }
                 const minBid = interaction.options.getInteger("min_bid", true);
                 const result = await services.waffleHouse.auctionManager.listCard(cardId, interaction.user.id, minBid, services);
                 await interaction.reply({ content: result.message, ephemeral: true });
                 return;
             }
             case "withdraw": {
-                const cardId = new ObjectId(interaction.options.getString("card", true));
+                const cardId = this.parseCardObjectId(interaction.options.getString("card", true));
+                if (!cardId) {
+                    await interaction.reply({ content: "Please select a valid card from the autocomplete list.", ephemeral: true });
+                    return;
+                }
                 const result = await services.waffleHouse.auctionManager.withdrawCard(cardId, interaction.user.id, services);
                 await interaction.reply({ content: result.message, ephemeral: true });
                 return;

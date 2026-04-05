@@ -17,7 +17,7 @@ export default class LeaderboardManager {
         this.waffle = waffle;
     }
 
-    async getTopN(n: number, services: Services): Promise<LeaderboardEntry[]> {
+    async getAllEntries(services: Services): Promise<LeaderboardEntry[]> {
         const { database } = services;
         const now = Date.now();
 
@@ -47,7 +47,12 @@ export default class LeaderboardManager {
             });
         }
 
-        return entries.sort((a, b) => b.score - a.score).slice(0, n);
+        return entries.sort((a, b) => b.score - a.score);
+    }
+
+    async getTopN(n: number, services: Services): Promise<LeaderboardEntry[]> {
+        const entries = await this.getAllEntries(services);
+        return entries.slice(0, n);
     }
 
     async getUserScore(userId: string, services: Services): Promise<number> {
