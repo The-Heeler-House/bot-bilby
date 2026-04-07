@@ -1,4 +1,15 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, UserSelectMenuBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, User, ButtonBuilder, ButtonStyle } from "discord.js";
+import {
+    ChatInputCommandInteraction,
+    SlashCommandBuilder,
+    EmbedBuilder,
+    UserSelectMenuBuilder,
+    ActionRowBuilder,
+    StringSelectMenuBuilder,
+    StringSelectMenuOptionBuilder,
+    User,
+    ButtonBuilder,
+    ButtonStyle,
+} from "discord.js";
 import { Services } from "../../Services";
 import SlashCommand from "../SlashCommand";
 import * as logger from "../../logger";
@@ -14,7 +25,7 @@ export default class MuterouletteCommand extends SlashCommand {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("play")
-                .setDescription("Roll the dice and chance fate!")
+                .setDescription("Roll the dice and chance fate!"),
         )
         .addSubcommand((subcommand) =>
             subcommand
@@ -24,20 +35,20 @@ export default class MuterouletteCommand extends SlashCommand {
                     option
                         .setName("person")
                         .setDescription(
-                            "The person who's stats you want to check. OPTIONAL."
+                            "The person who's stats you want to check. OPTIONAL.",
                         )
-                        .setRequired(false)
-                )
+                        .setRequired(false),
+                ),
         )
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("leaders")
-                .setDescription("View the muteroulette leaderboard!")
+                .setDescription("View the muteroulette leaderboard!"),
         ) as SlashCommandBuilder;
-    
+
     async execute(
         interaction: ChatInputCommandInteraction,
-        services: Services
+        services: Services,
     ) {
         const muteRouletteWarning = ``;
 
@@ -100,15 +111,17 @@ export default class MuterouletteCommand extends SlashCommand {
             async function updateTime() {
                 await users.updateOne(
                     { user: interaction.user.id },
-                    { $set: { lastTime: currentTime } }
+                    { $set: { lastTime: currentTime } },
                 );
             }
             // remove powerup function
             async function removePowerUp(powerUp: string) {
-                const updatedPowerUps = powerUps.filter((p: any) => p !== powerUp);
+                const updatedPowerUps = powerUps.filter(
+                    (p: any) => p !== powerUp,
+                );
                 await users.updateOne(
                     { user: interaction.user.id },
-                    { $set: { powerUps: updatedPowerUps } }
+                    { $set: { powerUps: updatedPowerUps } },
                 );
             }
             // add powerup
@@ -123,7 +136,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         $set: {
                             powerUps: updatedPowerUps,
                         },
-                    }
+                    },
                 );
             }
             // avoided mute
@@ -136,20 +149,17 @@ export default class MuterouletteCommand extends SlashCommand {
                             numStreak: numStreak + 1,
                             numMaxStreak: Math.max(numMaxStreak, numStreak + 1),
                             mutePercentage: Math.round(
-                                (numMutesTotal / (numAllTotal + 1)) * 100
+                                (numMutesTotal / (numAllTotal + 1)) * 100,
                             ),
                         },
-                    }
+                    },
                 );
             }
             // muted
             async function muted(time: number) {
                 if (interaction.inCachedGuild() && interaction.member) {
                     await interaction.member
-                        .timeout(
-                            time * 60000,
-                            "Played with fate and lost."
-                        )
+                        .timeout(time * 60000, "Played with fate and lost.")
                         .catch(async (error: any) => {
                             await interaction.followUp({
                                 content: `I was unable to mute you! Are you an admin?`,
@@ -157,7 +167,9 @@ export default class MuterouletteCommand extends SlashCommand {
                             });
                         });
                 } else {
-                    logger.error("Interaction is not in a guild or member is null");
+                    logger.error(
+                        "Interaction is not in a guild or member is null",
+                    );
                     await interaction.reply({
                         content: `I was unable to mute you! Are you in this server?`,
                         ephemeral: true,
@@ -172,10 +184,10 @@ export default class MuterouletteCommand extends SlashCommand {
                             numStreak: 0,
                             numMaxStreak: Math.max(numMaxStreak, 0),
                             mutePercentage: Math.round(
-                                ((numMutesTotal + 1) / (numAllTotal + 1)) * 100
+                                ((numMutesTotal + 1) / (numAllTotal + 1)) * 100,
                             ),
                         },
-                    }
+                    },
                 );
             }
 
@@ -184,7 +196,7 @@ export default class MuterouletteCommand extends SlashCommand {
             async function shield(time: number) {
                 const shieldMessage = [
                     `You landed on a ${getTextTime(
-                        time
+                        time,
                     )} mute, but you had a \`Shield\` powerup, so you were protected!`,
                 ];
                 await interaction.reply({
@@ -205,7 +217,7 @@ export default class MuterouletteCommand extends SlashCommand {
                 }
                 const doubleMessage = [
                     `You landed on a ${getTextTime(
-                        time
+                        time,
                     )} mute, but you had a \`Double Trouble\` powerup, so your mute time was doubled!`,
                 ];
                 await interaction.reply({
@@ -228,14 +240,14 @@ export default class MuterouletteCommand extends SlashCommand {
                     }
                     const muteRaiseMessage = [
                         `You landed on a ${getTextTime(
-                            time
+                            time,
                         )} mute, but you had a \`Raise the Stakes\` powerup, so your mute time was doubled!`,
                     ];
                     await interaction.reply({
                         content: `You landed on ${randomNumber}. ${
                             muteRaiseMessage[
                                 Math.floor(
-                                    Math.random() * muteRaiseMessage.length
+                                    Math.random() * muteRaiseMessage.length,
                                 )
                             ]
                         }${muteRouletteWarning}`,
@@ -245,7 +257,7 @@ export default class MuterouletteCommand extends SlashCommand {
                 } else {
                     const noMuteMessage = [
                         `Without the \`Raise the Stakes\` powerup, this would have been a ${getTextTime(
-                            time
+                            time,
                         )} mute!`,
                     ];
                     await interaction.reply({
@@ -264,7 +276,8 @@ export default class MuterouletteCommand extends SlashCommand {
             if (Number(currentTime) - Number(lastTime) < 10000) {
                 await interaction.reply({
                     content: `You must wait ${Math.round(
-                        (10000 - (Number(currentTime) - Number(lastTime))) / 1000
+                        (10000 - (Number(currentTime) - Number(lastTime))) /
+                            1000,
                     )} seconds before using this command again!${muteRouletteWarning}`,
                     ephemeral: true,
                 });
@@ -292,7 +305,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         content: `${
                             fiftyFiftyMessage[
                                 Math.floor(
-                                    Math.random() * fiftyFiftyMessage.length
+                                    Math.random() * fiftyFiftyMessage.length,
                                 )
                             ]
                         }${muteRouletteWarning}`,
@@ -308,7 +321,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         content: `${
                             fiftyFiftyMessage[
                                 Math.floor(
-                                    Math.random() * fiftyFiftyMessage.length
+                                    Math.random() * fiftyFiftyMessage.length,
                                 )
                             ]
                         }${muteRouletteWarning}`,
@@ -355,7 +368,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     content: `You landed on ${randomNumber}. You have been muted for 10 minutes! ${
                         tenMinuteMuteMessage[
                             Math.floor(
-                                Math.random() * tenMinuteMuteMessage.length
+                                Math.random() * tenMinuteMuteMessage.length,
                             )
                         ]
                     }${muteRouletteWarning}`,
@@ -394,7 +407,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     content: `You landed on ${randomNumber}. You have been muted for 30 minutes! ${
                         thirtyMinuteMuteMessage[
                             Math.floor(
-                                Math.random() * thirtyMinuteMuteMessage.length
+                                Math.random() * thirtyMinuteMuteMessage.length,
                             )
                         ]
                     }${muteRouletteWarning}`,
@@ -433,7 +446,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     content: `You landed on ${randomNumber}. You have been muted for 1 hour! ${
                         oneHourMuteMessage[
                             Math.floor(
-                                Math.random() * oneHourMuteMessage.length
+                                Math.random() * oneHourMuteMessage.length,
                             )
                         ]
                     }${muteRouletteWarning}`,
@@ -471,7 +484,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     content: `You landed on ${randomNumber}. You have been muted for 3 hours! ${
                         threeHourMuteMessage[
                             Math.floor(
-                                Math.random() * threeHourMuteMessage.length
+                                Math.random() * threeHourMuteMessage.length,
                             )
                         ]
                     }${muteRouletteWarning}`,
@@ -511,7 +524,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         content: `You landed on ${randomNumber}. You have been muted for 1 day! ${
                             oneDayMuteMessage[
                                 Math.floor(
-                                    Math.random() * oneDayMuteMessage.length
+                                    Math.random() * oneDayMuteMessage.length,
                                 )
                             ]
                         }${muteRouletteWarning}`,
@@ -544,7 +557,7 @@ export default class MuterouletteCommand extends SlashCommand {
                         content: `You landed on ${randomNumber}. You have been muted for 1 week! ${
                             oneWeekMuteMessage[
                                 Math.floor(
-                                    Math.random() * oneWeekMuteMessage.length
+                                    Math.random() * oneWeekMuteMessage.length,
                                 )
                             ]
                         }${muteRouletteWarning}`,
@@ -652,7 +665,7 @@ export default class MuterouletteCommand extends SlashCommand {
                     .setCustomId("user_id")
                     .setRequired(true)
                     .setPlaceholder("Select user to gift!")
-                    .setMaxValues(1)
+                    .setMaxValues(1);
                 const selectGiftDropdown = new StringSelectMenuBuilder()
                     .setCustomId("gift")
                     .setRequired(true)
@@ -669,23 +682,30 @@ export default class MuterouletteCommand extends SlashCommand {
                             .setValue("Raise the Stakes"),
                         new StringSelectMenuOptionBuilder()
                             .setLabel("Fifty-Fifty")
-                            .setValue("Fifty-Fifty")
+                            .setValue("Fifty-Fifty"),
                     )
-                    .setMaxValues(1)
+                    .setMaxValues(1);
                 const confirm = new ButtonBuilder()
                     .setCustomId("confirm")
                     .setStyle(ButtonStyle.Primary)
-                    .setLabel("Confirm")
+                    .setLabel("Confirm");
                 const cancel = new ButtonBuilder()
                     .setCustomId("cancel")
                     .setStyle(ButtonStyle.Danger)
-                    .setLabel("Cancel")
-                const row1 = new ActionRowBuilder<UserSelectMenuBuilder>()
-                    .addComponents(selectUserDropdown)
-                const row2 = new ActionRowBuilder<StringSelectMenuBuilder>()
-                    .addComponents(selectGiftDropdown)
-                const row3 = new ActionRowBuilder<ButtonBuilder>()
-                    .addComponents(confirm, cancel)
+                    .setLabel("Cancel");
+                const row1 =
+                    new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(
+                        selectUserDropdown,
+                    );
+                const row2 =
+                    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+                        selectGiftDropdown,
+                    );
+                const row3 =
+                    new ActionRowBuilder<ButtonBuilder>().addComponents(
+                        confirm,
+                        cancel,
+                    );
 
                 // prompt user for a user to gift
                 const message = await interaction.reply({
@@ -694,84 +714,128 @@ export default class MuterouletteCommand extends SlashCommand {
                             Math.floor(Math.random() * giftMessage.length)
                         ]
                     }${muteRouletteWarning}`,
-                    components: [row1, row2, row3]
+                    components: [row1, row2, row3],
                 });
                 await avoidedMute();
-                const filter = (m: { author: { id: string; }; }) => m.author.id === interaction.user.id;
+                const filter = (m: { author: { id: string } }) =>
+                    m.author.id === interaction.user.id;
                 const collector = message.createMessageComponentCollector({
-                    filter: i => i.user.id == interaction.user.id,
-                    time: 60 * 1000
-                })
+                    filter: (i) => i.user.id == interaction.user.id,
+                    time: 60 * 1000,
+                });
 
                 let discordUser: string | null = null;
-                let giftedUser: WithId<MuterouletteUser> | null = null
-                let powerup: string | null = null
-                let willGift = false
+                let giftedUser: WithId<MuterouletteUser> | null = null;
+                let powerup: string | null = null;
+                let willGift = false;
                 collector.on("collect", async (e) => {
                     if (e.customId == "user_id" && e.isUserSelectMenu()) {
-                        discordUser = e.values[0]
-                        giftedUser = await users.findOne({ user: discordUser })
+                        discordUser = e.values[0];
+                        giftedUser = await users.findOne({ user: discordUser });
                     }
                     if (e.customId == "gift" && e.isStringSelectMenu()) {
-                        powerup = e.values[0]
+                        powerup = e.values[0];
                     }
                     if (e.isButton()) {
                         switch (e.customId) {
                             case "confirm":
-                                willGift = true
+                                willGift = true;
                             case "cancel":
                             default:
                                 break;
                         }
-                        collector.stop()
+                        collector.stop();
                     }
-                    await e.deferUpdate()
-                })
-                collector.on("end", async _ => {
+                    await e.deferUpdate();
+                });
+                collector.on("end", async (_) => {
                     if (!willGift) {
                         await message.edit({
-                            content: "Gift wasted. Took too long to gift, or you have chosen to not gift.",
-                            components: []
-                        })
-                        return
+                            content:
+                                "Gift wasted. Took too long to gift, or you have chosen to not gift.",
+                            components: [],
+                        });
+                        return;
                     }
                     if (discordUser == null) {
                         await message.edit({
                             content: "No user selected! Gift wasted.",
-                            components: []
-                        })
-                        return
+                            components: [],
+                        });
+                        return;
                     }
                     if (giftedUser == null) {
                         await message.edit({
-                            content: "That user has not run the muteroulette yet! Gift wasted.",
-                            components: []
-                        })
-                        return
+                            content:
+                                "That user has not run the muteroulette yet! Gift wasted.",
+                            components: [],
+                        });
+                        return;
                     }
                     if (giftedUser.user === interaction.user.id) {
                         await message.edit({
                             content: "You cannot gift yourself! Gift wasted.",
-                            components: []
-                        })
+                            components: [],
+                        });
                         return;
                     }
                     if (powerup == null) {
                         await message.edit({
                             content: "No powerup selected! Gift wasted.",
-                            components: []
-                        })
+                            components: [],
+                        });
                         return;
                     }
                     await users.updateOne(
                         { user: discordUser },
-                        { $set: { powerUps: [...giftedUser.powerUps, powerup] } }
+                        {
+                            $set: {
+                                powerUps: [...giftedUser.powerUps, powerup],
+                            },
+                        },
                     );
                     await message.edit({
                         content: `Your gift of ${powerup} has been sent to <@${discordUser}>! The gift is immediately redeemed upon arrival.`,
-                        components: []
-                    })
-                })
+                        components: [],
+                    });
+                });
+                return;
+            }
+
+            if (randomNumber == 67) {
+                const muteTime = Math.round(6.7 * 60);
+                // checks if the user has a double trouble powerup
+                if (powerUps.includes("Double Trouble")) {
+                    await doubleTrouble(muteTime);
+                    return;
+                }
+
+                // checks if the user has a raise the stakes powerup
+                if (powerUps.includes("Raise the Stakes")) {
+                    await raiseTheStakes(muteTime);
+                    return;
+                }
+
+                // checks if the user has a shield powerup
+                if (powerUps.includes("Shield")) {
+                    await shield(muteTime);
+                    return;
+                }
+
+                // rolls another dice from 1 to 100
+                const randomNumber2 = Math.floor(Math.random() * 100) + 1;
+
+                if (randomNumber2 <= 67) {
+                    await interaction.reply({
+                        content: `You landed on ${randomNumber} 🫴 You have won a 6.7 hours mute, and you are now in the same group as 67% of people who rolled on this number! ${muteRouletteWarning}`,
+                    });
+                    await muted(muteTime);
+                } else {
+                    await interaction.reply({
+                        content: `You landed on ${randomNumber} 🫴 You were suppose to be muted, but luckly for you, you weren't in the 67% of people who got muted. ${muteRouletteWarning}`,
+                    });
+                }
+
                 return;
             }
 
@@ -796,7 +860,8 @@ export default class MuterouletteCommand extends SlashCommand {
             await avoidedMute();
         } else if (interaction.options.getSubcommand() === "stats") {
             var specifiedUser =
-                (interaction.inCachedGuild() && interaction.options.getMentionable("person")) ||
+                (interaction.inCachedGuild() &&
+                    interaction.options.getMentionable("person")) ||
                 interaction.user;
             const user = await users.findOne({ user: specifiedUser.id });
 
@@ -817,14 +882,14 @@ export default class MuterouletteCommand extends SlashCommand {
             const embed = new EmbedBuilder()
                 .setTitle(`Muteroulette Stats!`)
                 .setDescription(
-                    `<@${specifiedUser.id}>\nTotal Mutes: **${numMutesTotal}**\nTotal Rolls: **${numAllTotal}**\nCurrent Streak: **${numStreak}**\nMax Streak: **${numMaxStreak}**\nMute Percentage: **${mutePercentage}%**`
+                    `<@${specifiedUser.id}>\nTotal Mutes: **${numMutesTotal}**\nTotal Rolls: **${numAllTotal}**\nCurrent Streak: **${numStreak}**\nMax Streak: **${numMaxStreak}**\nMute Percentage: **${mutePercentage}%**`,
                 )
                 .addFields({
                     name: "Powerups",
                     value: powerUps.join("\n") || "None",
                 })
                 .setColor(0x72bfed)
-                .setTimestamp()
+                .setTimestamp();
 
             await interaction.reply({ embeds: [embed] });
         } else if (interaction.options.getSubcommand() === "leaders") {
@@ -869,12 +934,13 @@ export default class MuterouletteCommand extends SlashCommand {
                 try {
                     const topMutesData = topMutes[i].numMutesTotal;
                     const topMutesUser = await interaction.guild.members.fetch(
-                        topMutes[i].user
+                        topMutes[i].user,
                     );
                     description += `Highest Number of Mutes: **\`${topMutesUser.displayName}\`** - **${topMutesData} mutes**\n`;
                 } catch (error) {
                     if (i === topMutes.length - 1) {
-                        description += "Highest Number of Mutes: **No one yet**\n";
+                        description +=
+                            "Highest Number of Mutes: **No one yet**\n";
                     }
                     continue;
                 }
@@ -884,12 +950,13 @@ export default class MuterouletteCommand extends SlashCommand {
                 try {
                     const topAllData = topAll[i].numAllTotal;
                     const topAllUser = await interaction.guild.members.fetch(
-                        topAll[i].user
+                        topAll[i].user,
                     );
                     description += `Highest Number of Rolls: **\`${topAllUser.displayName}\`** - **${topAllData} rolls**\n`;
                 } catch (error) {
                     if (i === topAll.length - 1) {
-                        description += "Highest Number of Rolls: **No one yet**\n";
+                        description +=
+                            "Highest Number of Rolls: **No one yet**\n";
                     }
                     continue;
                 }
@@ -899,12 +966,13 @@ export default class MuterouletteCommand extends SlashCommand {
                 try {
                     const topStreakData = topStreak[i].numMaxStreak;
                     const topStreakUser = await interaction.guild.members.fetch(
-                        topStreak[i].user
+                        topStreak[i].user,
                     );
                     description += `Highest Unmuted Streak: **\`${topStreakUser.displayName}\`** - **${topStreakData} rolls**\n`;
                 } catch (error) {
                     if (i === topStreak.length - 1) {
-                        description += "Highest Unmuted Streak: **No one yet**\n";
+                        description +=
+                            "Highest Unmuted Streak: **No one yet**\n";
                     }
                     continue;
                 }
@@ -916,12 +984,13 @@ export default class MuterouletteCommand extends SlashCommand {
                         lowestPercentage[i].mutePercentage;
                     const lowestPercentageUser =
                         await interaction.guild.members.fetch(
-                            lowestPercentage[i].user
+                            lowestPercentage[i].user,
                         );
                     description += `Lowest Mute Percentage: **\`${lowestPercentageUser.displayName}\`** - **${lowestPercentageData}%**\n`;
                 } catch (error) {
                     if (i === lowestPercentage.length - 1) {
-                        description += "Lowest Mute Percentage: **No one yet**\n";
+                        description +=
+                            "Lowest Mute Percentage: **No one yet**\n";
                     }
                     continue;
                 }
@@ -933,12 +1002,13 @@ export default class MuterouletteCommand extends SlashCommand {
                         highestPercentage[i].mutePercentage;
                     const highestPercentageUser =
                         await interaction.guild.members.fetch(
-                            highestPercentage[i].user
+                            highestPercentage[i].user,
                         );
                     description += `Highest Mute Percentage: **\`${highestPercentageUser.displayName}\`** - **${highestPercentageData}%**\n`;
                 } catch (error) {
                     if (i === highestPercentage.length - 1) {
-                        description += "Highest Mute Percentage: **No one yet**\n";
+                        description +=
+                            "Highest Mute Percentage: **No one yet**\n";
                     }
                     continue;
                 }
@@ -950,7 +1020,7 @@ export default class MuterouletteCommand extends SlashCommand {
                 .setTitle("Muteroulette Leaderboard!")
                 .setDescription(description)
                 .setColor(0x72bfed)
-                .setTimestamp()
+                .setTimestamp();
 
             // send the embed
             await interaction.editReply({ embeds: [embed] });
