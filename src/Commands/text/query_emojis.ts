@@ -1,6 +1,7 @@
 import { AttachmentBuilder, Message, MessageFlags } from "discord.js";
 import { Services } from "../../Services";
 import TextCommand, { TextCommandBuilder } from "../TextCommand";
+import { devIds, roleIds } from "../../constants";
 
 const API_PATH = `https://discord.com/api/v10/guilds/{guildId}/messages/search?content={emojiName}`;
 const UPDATE_RATE = 3000;
@@ -55,6 +56,8 @@ export default class QueryEmojisCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("query emojis")
         .setDescription("Perform a query on emojis within the server")
+        .addAllowedRoles(roleIds.mod)
+        .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
     async execute(
