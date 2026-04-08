@@ -65,7 +65,7 @@ export default class QueryEmojisCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("query emojis")
         .setDescription("Perform a query on emojis within the server")
-        .addAllowedRoles(roleIds.mod)
+        .addAllowedRoles(roleIds.leadership)
         .addNumberArgument("from", "Epoch time to start querying from.", false)
         .addNumberArgument("to", "Epoch time to stop querying at.", false)
         .addAllowedUsers(...devIds)
