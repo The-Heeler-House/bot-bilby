@@ -57,11 +57,17 @@ async function fetchWithRateLimit(
     );
 }
 
+function epochToId(epoch: number) {
+    return BigInt(epoch * 1000 - 1420070400000) << 22n;
+}
+
 export default class QueryEmojisCommand extends TextCommand {
     public data = new TextCommandBuilder()
         .setName("query emojis")
         .setDescription("Perform a query on emojis within the server")
         .addAllowedRoles(roleIds.mod)
+        .addNumberArgument("from", "Epoch time to start querying from.", false)
+        .addNumberArgument("to", "Epoch time to stop querying at.", false)
         .addAllowedUsers(...devIds)
         .allowInDMs(false);
 
@@ -72,16 +78,24 @@ export default class QueryEmojisCommand extends TextCommand {
     ) {
         let startTime = Date.now();
         let curTime = Date.now();
+
         const statusMessage = await message.reply("🔃 Querying emojis...");
 
         const emojis = message.guild.emojis.cache;
         let queried = 0;
         let data = ["id, emoji_name, usage"];
         for (const [id, emoji] of emojis) {
-            const url = API_PATH.replace("{guildId}", message.guild.id).replace(
+            let url = API_PATH.replace("{guildId}", message.guild.id).replace(
                 "{emojiName}",
                 emoji.name,
             );
+
+            if (args["from"]) {
+                url += `&min_id=${epochToId(Number(args["from"]))}`;
+            }
+            if (args["to"]) {
+                url += `&max_id=${epochToId(Number(args["to"]))}`;
+            }
 
             const res = await fetchWithRateLimit(url, {
                 headers: {
