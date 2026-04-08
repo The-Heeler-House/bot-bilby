@@ -74,11 +74,7 @@ export default class QueryEmojisCommand extends TextCommand {
             });
 
             const json = await res.json();
-            if (json.messages.length > 0) {
-                data.push(
-                    `${emoji.id}, ${emoji.name}, ${json.messages.length}`,
-                );
-            }
+            data.push(`${emoji.id}, ${emoji.name}, ${json.total_results}`);
             if (Date.now() - startTime > UPDATE_RATE) {
                 await statusMessage.edit({
                     content: `🔃 Querying emojis... ${emojis.size - emojis.keys().next().value}/${emojis.size} emojis left.`,
