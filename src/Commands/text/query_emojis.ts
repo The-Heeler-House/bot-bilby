@@ -60,6 +60,7 @@ export default class QueryEmojisCommand extends TextCommand {
         const statusMessage = await message.reply("🔃 Querying emojis...");
 
         const emojis = message.guild.emojis.cache;
+        let queried = 0;
         let data = ["id, emoji_name, usage"];
         for (const [id, emoji] of emojis) {
             const url = API_PATH.replace("{guildId}", message.guild.id).replace(
@@ -77,10 +78,11 @@ export default class QueryEmojisCommand extends TextCommand {
             data.push(`${emoji.id}, ${emoji.name}, ${json.total_results}`);
             if (Date.now() - startTime > UPDATE_RATE) {
                 await statusMessage.edit({
-                    content: `🔃 Querying emojis... ${emojis.size - emojis.keys().next().value}/${emojis.size} emojis left.`,
+                    content: `🔃 Querying emojis... ${emojis.size - queried}/${emojis.size} emojis left.`,
                 });
                 startTime = Date.now();
             }
+            queried++;
         }
 
         await statusMessage.edit({
