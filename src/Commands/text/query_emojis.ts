@@ -87,7 +87,7 @@ export default class QueryEmojisCommand extends TextCommand {
         for (const [id, emoji] of emojis) {
             let url = API_PATH.replace("{guildId}", message.guild.id).replace(
                 "{emojiName}",
-                emoji.name,
+                emoji.id,
             );
 
             if (args["from"]) {
