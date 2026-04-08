@@ -23,19 +23,24 @@ async function fetchWithRateLimit(
         // Check for rate limit response
         if (response.status === 429) {
             const retryAfter = response.headers.get("Retry-After");
+            const jsonContent = await response.json();
 
-            if (retryAfter) {
-                const waitTime = Math.ceil((parseFloat(retryAfter) + 1) * 1000); // Convert to milliseconds
-                console.warn(
-                    `⚠️ Rate limited. Waiting ${waitTime}ms before retry... Raw JSON content was `,
-                    await response.json(),
-                );
+            const waitTime = Math.ceil(
+                Math.max(
+                    parseFloat(retryAfter) + 1,
+                    jsonContent.retry_after + 1,
+                ) * 1000,
+            ); // Convert to milliseconds
+            console.warn(
+                `⚠️ Rate limited. Waiting ${waitTime}ms before retry... Raw JSON content was `,
+                jsonContent,
+                `\nRetry-After returned ${retryAfter}`,
+            );
 
-                // Wait for the specified duration
-                await new Promise((resolve) => setTimeout(resolve, waitTime));
-                retries++;
-                continue;
-            }
+            // Wait for the specified duration
+            await new Promise((resolve) => setTimeout(resolve, waitTime));
+            retries++;
+            continue;
         }
 
         if (Math.floor(response.status / 100) === 4) {
