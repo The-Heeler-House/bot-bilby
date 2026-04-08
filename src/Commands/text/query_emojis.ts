@@ -27,8 +27,8 @@ async function fetchWithRateLimit(
             if (retryAfter) {
                 const waitTime = Math.ceil((parseFloat(retryAfter) + 1) * 1000); // Convert to milliseconds
                 console.warn(
-                    `⚠️ Rate limited. ` +
-                        `Waiting ${waitTime}ms before retry...`,
+                    `⚠️ Rate limited. Waiting ${waitTime}ms before retry... Raw JSON content was `,
+                    await response.json(),
                 );
 
                 // Wait for the specified duration
