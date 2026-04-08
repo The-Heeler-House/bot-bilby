@@ -21,10 +21,10 @@ async function fetchWithRateLimit(
 
         // Check for rate limit response
         if (response.status === 429) {
-            const resetAfter = response.headers.get("X-RateLimit-Reset-After");
+            const retryAfter = response.headers.get("Retry-After");
 
-            if (resetAfter) {
-                const waitTime = Math.ceil(parseFloat(resetAfter) * 1000); // Convert to milliseconds
+            if (retryAfter) {
+                const waitTime = Math.ceil((parseFloat(retryAfter) + 1) * 1000); // Convert to milliseconds
                 console.warn(
                     `⚠️ Rate limited. ` +
                         `Waiting ${waitTime}ms before retry...`,
@@ -63,6 +63,7 @@ export default class QueryEmojisCommand extends TextCommand {
         services: Services,
     ) {
         let startTime = Date.now();
+        let curTime = Date.now();
         const statusMessage = await message.reply("🔃 Querying emojis...");
 
         const emojis = message.guild.emojis.cache;
@@ -82,11 +83,11 @@ export default class QueryEmojisCommand extends TextCommand {
 
             const json = await res.json();
             data.push(`${emoji.id}, ${emoji.name}, ${json.total_results}`);
-            if (Date.now() - startTime > UPDATE_RATE) {
+            if (Date.now() - curTime > UPDATE_RATE) {
                 await statusMessage.edit({
                     content: `🔃 Querying emojis... ${emojis.size - queried}/${emojis.size} emojis left.`,
                 });
-                startTime = Date.now();
+                curTime = Date.now();
             }
             queried++;
         }
