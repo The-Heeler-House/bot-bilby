@@ -19,6 +19,12 @@ async function fetchWithRateLimit(
     while (retries < maxRetries) {
         const response = await fetch(url, options);
 
+        if (Math.floor(response.status / 100) === 4) {
+            throw new Error(
+                `HTTP error ${response.status}: ${response.statusText}`,
+            );
+        }
+
         // Check for rate limit response
         if (response.status === 429) {
             const resetAfter = response.headers.get("X-RateLimit-Reset-After");
@@ -70,7 +76,7 @@ export default class QueryEmojisCommand extends TextCommand {
 
             const res = await fetchWithRateLimit(url, {
                 headers: {
-                    Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
+                    Authorization: `Bot ${process.env.TOKEN}`,
                 },
             });
 
