@@ -136,7 +136,7 @@ export interface VolatileState {
         shouldLog: { [id: string]: boolean };
         log: {
             [id: string]: {
-                timestamp: number;
+                timestamp: bigint;
                 flags: number;
                 wscore: number;
             }[];

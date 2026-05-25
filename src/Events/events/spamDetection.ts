@@ -5,51 +5,35 @@ import Denque from "denque";
 import { channelIds, roleIds } from "../../constants";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
+type LoggedMessage = {
+    timestamp: number;
+    score: number;
+};
+
+type Metadata = {
+    queue: Denque<LoggedMessage>;
+    score: number;
+};
+
 const weight = {
-    fast_msg: 2,
-    msg_has_media: 1,
-    msg_has_only_media: 2,
-    burst_media_msg: 3,
-    repeated_text: 4,
-    short_text: 1,
-    burst_text_msg: 3,
+    fast_msg: 15,
+    msg_has_media: 35,
+    msg_has_only_media: 50,
+    // repeated_text: 4,
+    // short_text: 1,
+    long_msg: 10,
+    // burst_text_msg: 3,
 };
 
 const flags = {
     fastMessaging: 1 << 0,
     hasMedia: 1 << 1,
-    hasMedidAndEmptyMessage: 1 << 2,
-    burstMedia: 1 << 3,
-    shortMessage: 1 << 4,
-    burstMessages: 1 << 5,
+    hasMediaAndEmptyMessage: 1 << 2,
+    longMessage: 1 << 3,
 };
 
-const messageStates = new Map<string, Map<string, Denque<Message>>>();
-
-// Clean up old channel/user caches every hour to prevent memory leaks
-setInterval(
-    () => {
-        const now = Date.now();
-        for (const [channelId, userStates] of messageStates.entries()) {
-            for (const [userId, queue] of userStates.entries()) {
-                // If the user's queue is empty or the last message is older than 2 hours, delete it
-                if (
-                    queue.isEmpty() ||
-                    (queue.peekBack() &&
-                        now - queue.peekBack().createdTimestamp >
-                            2 * 60 * 60 * 1000)
-                ) {
-                    userStates.delete(userId);
-                }
-            }
-            // If the channel has no users left, delete the channel entry
-            if (userStates.size === 0) {
-                messageStates.delete(channelId);
-            }
-        }
-    },
-    60 * 60 * 1000,
-); // Run every hour
+const userStates = new Map<string, Map<string, Metadata>>();
+const channelStates = new Map<string, Metadata>();
 
 export default class SpamDetection extends BotEvent {
     public eventName = Events.MessageCreate;
@@ -59,8 +43,6 @@ export default class SpamDetection extends BotEvent {
         services: Services,
         message: Message,
     ): Promise<void> {
-        let finalFlags = 0;
-
         if (!isTHHorDevServer(message.guildId)) return;
         const staffChannel = await message.guild.channels.fetch(
             channelIds.staff,
@@ -76,86 +58,108 @@ export default class SpamDetection extends BotEvent {
 
         if (!spamDetectionConf) return;
 
-        const userId = message.author.id;
+        if (!channelStates.has(channelId)) {
+            channelStates.set(channelId, {
+                score: 0,
+                queue: new Denque<LoggedMessage>(),
+            });
+        }
+        const channelQueue = channelStates.get(channelId);
         const now = Date.now();
-        let score = 0;
+        const userId = message.author.id;
 
-        if (!messageStates.has(channelId)) {
-            messageStates.set(channelId, new Map<string, Denque<Message>>());
+        if (!userStates.has(channelId)) {
+            userStates.set(channelId, new Map<string, Metadata>());
+        }
+        const userQueue = userStates.get(channelId);
+        if (!userQueue) return;
+        if (!userQueue.has(userId)) {
+            userQueue.set(userId, {
+                score: 0,
+                queue: new Denque<LoggedMessage>(),
+            });
+        }
+        const userChannelQueue = userQueue.get(userId);
+        if (!userChannelQueue) return;
+
+        while (
+            channelQueue.queue.length > 0 &&
+            channelQueue.queue.peekFront().timestamp <
+                now - spamDetectionConf.window_ms
+        ) {
+            const removed = channelQueue.queue.shift();
+            channelQueue.score -= removed.score;
+        }
+        while (
+            userChannelQueue.queue.length > 0 &&
+            userChannelQueue.queue.peekFront().timestamp <
+                now - spamDetectionConf.window_ms
+        ) {
+            const removed = userChannelQueue.queue.shift();
+            userChannelQueue.score -= removed.score;
         }
 
-        const userStates = messageStates.get(channelId);
-
-        if (!userStates.has(userId)) {
-            userStates.set(userId, new Denque<Message>());
+        if (
+            channelQueue.score > spamDetectionConf.score_threshold ||
+            userChannelQueue.score > spamDetectionConf.score_threshold
+        ) {
+            // TBD
+            return;
         }
 
-        const recentUserMsgs = userStates.get(userId);
-
-        //? clean up old messages
-        while (!recentUserMsgs.isEmpty()) {
-            if (
-                now - recentUserMsgs.peekFront().createdTimestamp >
-                spamDetectionConf.window_ms
-            ) {
-                recentUserMsgs.shift();
-            } else {
-                break;
-            }
-        }
-
-        //? how fast messages are sent
-        const lastMsg = recentUserMsgs.peekBack();
-        if (lastMsg) {
-            const delta = now - lastMsg.createdTimestamp;
-            if (delta < spamDetectionConf.min_delta_ms) {
-                finalFlags |= flags.fastMessaging;
-                score += 2;
-            }
-        }
+        let calculatedScore = 0;
+        let flag = 0;
 
         if (message.attachments.size > 0) {
-            finalFlags |= flags.hasMedia;
-            score += 1;
-            if (message.content.length == 0) {
-                finalFlags |= flags.hasMedidAndEmptyMessage;
-                score += 3;
-            }
-            let mediaCount = 0;
-            for (const msg of recentUserMsgs.toArray()) {
-                if (msg.attachments.size > 0) mediaCount++;
-            }
-            if (mediaCount >= 5) {
-                finalFlags |= flags.burstMedia;
-                score += 3;
+            if (message.content.trim().length <= 2) {
+                calculatedScore += weight.msg_has_only_media;
+                flag |= flags.hasMediaAndEmptyMessage;
+            } else {
+                calculatedScore += weight.msg_has_media;
+                flag |= flags.hasMedia;
             }
         }
-
-        if (message.content.length > 0) {
-            if (message.content.length <= 5) {
-                finalFlags |= flags.shortMessage;
-                score += 1;
-            }
-            let textCount = 0;
-            for (const msg of recentUserMsgs.toArray()) {
-                if (msg.content.length > 0) textCount++;
-            }
-            if (textCount >= 8) {
-                finalFlags |= flags.burstMessages;
-                score += 3;
-            }
+        if (message.content.length > 200) {
+            // note: magic number, may need to adjust
+            calculatedScore += weight.long_msg;
+            flag |= flags.longMessage;
+        }
+        if (
+            channelQueue.queue.peekBack().timestamp >
+            now - spamDetectionConf.min_delta_ms
+        ) {
+            calculatedScore += weight.fast_msg;
+            flag |= flags.fastMessaging;
         }
 
-        recentUserMsgs.push(message);
-        if (recentUserMsgs.size() > spamDetectionConf.max_recent) {
-            recentUserMsgs.shift();
-        }
+        channelQueue.queue.push({
+            timestamp: message.createdTimestamp,
+            score: calculatedScore,
+        });
+        userChannelQueue.queue.push({
+            timestamp: message.createdTimestamp,
+            score: calculatedScore,
+        });
+        channelQueue.score += calculatedScore;
+        userChannelQueue.score += calculatedScore;
 
-        if (services.state.volatileState.spamDetection.shouldLog[channelId]) {
-            services.state.volatileState.spamDetection.log[channelId].push({
-                timestamp: message.createdTimestamp,
-                flags: finalFlags,
-                wscore: score,
+        let timestamp = BigInt(message.createdTimestamp);
+        timestamp <<= 64n;
+        timestamp |= BigInt(message.channelId);
+        timestamp <<= 64n;
+        timestamp |= BigInt(message.author.id);
+
+        if (
+            services.state.volatileState.spamDetection.shouldLog[
+                message.channelId
+            ]
+        ) {
+            services.state.volatileState.spamDetection.log[
+                message.channelId
+            ].push({
+                timestamp: timestamp,
+                flags: flag,
+                wscore: calculatedScore,
             });
         }
     }
