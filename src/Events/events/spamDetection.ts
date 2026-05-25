@@ -125,8 +125,9 @@ export default class SpamDetection extends BotEvent {
             flag |= flags.longMessage;
         }
         if (
+            channelQueue.queue.peekBack() &&
             channelQueue.queue.peekBack().timestamp >
-            now - spamDetectionConf.min_delta_ms
+                now - spamDetectionConf.min_delta_ms
         ) {
             calculatedScore += weight.fast_msg;
             flag |= flags.fastMessaging;
