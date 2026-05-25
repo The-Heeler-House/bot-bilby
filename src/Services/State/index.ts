@@ -136,9 +136,16 @@ export interface VolatileState {
         shouldLog: { [id: string]: boolean };
         log: {
             [id: string]: {
-                timestamp: bigint;
-                flags: number;
-                wscore: number;
+                timestamp: number;
+                channelId: string;
+                authorId: string;
+                flag1: number;
+                flag2: number;
+                flag3: number;
+                flag4: number;
+                score: number;
+                score1: number;
+                score2: number;
             }[];
         };
 

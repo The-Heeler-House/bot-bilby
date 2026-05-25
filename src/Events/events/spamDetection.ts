@@ -144,12 +144,6 @@ export default class SpamDetection extends BotEvent {
         channelQueue.score += calculatedScore;
         userChannelQueue.score += calculatedScore;
 
-        let timestamp = BigInt(message.createdTimestamp);
-        timestamp <<= 64n;
-        timestamp |= BigInt(message.channelId);
-        timestamp <<= 64n;
-        timestamp |= BigInt(message.author.id);
-
         if (
             services.state.volatileState.spamDetection.shouldLog[
                 message.channelId
@@ -158,9 +152,16 @@ export default class SpamDetection extends BotEvent {
             services.state.volatileState.spamDetection.log[
                 message.channelId
             ].push({
-                timestamp: timestamp,
-                flags: flag,
-                wscore: calculatedScore,
+                timestamp: message.createdTimestamp,
+                channelId: message.channelId,
+                authorId: message.author.id,
+                flag1: flag & flags.fastMessaging,
+                flag2: flag & flags.hasMedia,
+                flag3: flag & flags.hasMediaAndEmptyMessage,
+                flag4: flag & flags.longMessage,
+                score: calculatedScore,
+                score1: channelQueue.score,
+                score2: userChannelQueue.score,
             });
         }
     }
