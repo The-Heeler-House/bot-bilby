@@ -103,6 +103,10 @@ export default class SpamDetection extends BotEvent {
             channelQueue.score > spamDetectionConf.score_threshold ||
             userChannelQueue.score > spamDetectionConf.score_threshold
         ) {
+            await staffChannel.send({
+                content: `<@&1073391142881722400> Possible media/message spam in <#${channelId}>.`,
+                flags: MessageFlags.SuppressNotifications,
+            });
             // TBD
             return;
         }
