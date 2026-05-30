@@ -15,6 +15,9 @@ type Metadata = {
     score: number;
 };
 
+const waiTillNextWarning = 15_000;
+let lastWarningTime: number | undefined;
+
 const weight = {
     fast_msg: 15,
     msg_has_media: 35,
@@ -103,12 +106,14 @@ export default class SpamDetection extends BotEvent {
             channelQueue.score > spamDetectionConf.score_threshold ||
             userChannelQueue.score > spamDetectionConf.score_threshold
         ) {
-            await staffChannel.send({
-                content: `<@&1073391142881722400> Possible media/message spam in <#${channelId}>.`,
-                flags: MessageFlags.SuppressNotifications,
-            });
-            // TBD
-            return;
+            if (lastWarningTime && now - lastWarningTime < waiTillNextWarning) {
+            } else {
+                lastWarningTime = now;
+                await staffChannel.send({
+                    content: `<@&1073391142881722400> Possible media/message spam in <#${channelId}>.`,
+                    flags: MessageFlags.SuppressNotifications,
+                });
+            }
         }
 
         let calculatedScore = 0;
