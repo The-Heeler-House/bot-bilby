@@ -21,7 +21,7 @@ let lastWarningTime: number | undefined;
 const weight = {
     fast_msg: 15,
     msg_has_media: 35,
-    msg_has_only_media: 40,
+    msg_has_only_media: 50,
     // repeated_text: 4,
     // short_text: 1,
     long_msg: 10,
