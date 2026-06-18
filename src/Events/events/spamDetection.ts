@@ -15,13 +15,13 @@ type Metadata = {
     score: number;
 };
 
-const waiTillNextWarning = 15_000;
+const waiTillNextWarning = 60_000;
 let lastWarningTime: number | undefined;
 
 const weight = {
     fast_msg: 15,
     msg_has_media: 35,
-    msg_has_only_media: 50,
+    msg_has_only_media: 40,
     // repeated_text: 4,
     // short_text: 1,
     long_msg: 10,
