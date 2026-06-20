@@ -39,8 +39,8 @@ export default class SetSpamDetect extends TextCommand {
         const requiredKey: (keyof SpamDetection)[] = [
             "window_ms",
             "min_delta_ms",
-            "max_recent",
             "score_threshold",
+            "fast_msg_min_cnt",
         ];
         for (let i of requiredKey) {
             if (

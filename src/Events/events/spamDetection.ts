@@ -104,13 +104,14 @@ export default class SpamDetection extends BotEvent {
 
         if (
             channelQueue.score > spamDetectionConf.score_threshold ||
-            userChannelQueue.score > spamDetectionConf.score_threshold
+            userChannelQueue.score > spamDetectionConf.score_threshold ||
+            channelQueue.queue.length > spamDetectionConf.fast_msg_min_cnt
         ) {
             if (lastWarningTime && now - lastWarningTime < waiTillNextWarning) {
             } else {
                 lastWarningTime = now;
                 await staffChannel.send({
-                    content: `<@&1073391142881722400> Possible media/message spam in <#${channelId}>.`,
+                    content: `<@&${roleIds.staff}> Possible media/message spam, or chat going fast, in <#${channelId}>.`,
                     flags: MessageFlags.SuppressNotifications,
                 });
             }
