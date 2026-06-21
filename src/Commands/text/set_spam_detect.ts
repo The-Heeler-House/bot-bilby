@@ -62,7 +62,7 @@ export default class SetSpamDetect extends TextCommand {
             },
             {
                 $set: {
-                    max_recent: config.max_recent,
+                    fast_msg_min_cnt: config.fast_msg_min_cnt,
                     min_delta_ms: config.min_delta_ms,
                     score_threshold: config.score_threshold,
                     window_ms: config.window_ms,
