@@ -146,6 +146,8 @@ export interface VolatileState {
                 score: number;
                 score1: number;
                 score2: number;
+                channel_buffer_length: number;
+                user_buffer_length: number;
             }[];
         };
 

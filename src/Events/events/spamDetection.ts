@@ -172,6 +172,8 @@ export default class SpamDetection extends BotEvent {
                 score: calculatedScore,
                 score1: channelQueue.score,
                 score2: userChannelQueue.score,
+                channel_buffer_length: channelQueue.queue.length,
+                user_buffer_length: userChannelQueue.queue.length,
             });
         }
     }
