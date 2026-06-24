@@ -24,11 +24,24 @@ export default class ExportLogSpamDetect extends TextCommand {
         const telemetry =
             services.state.volatileState.spamDetection.log[args["channel"]];
         const csvData = [
-            "timestamp,channelId,authorId,score,score1,score2,flag1,flag2,flag3,flag4",
+            "timestamp,channelId,authorId,score,score1,score2,flag1,flag2,flag3,flag4,channel_buffer_length,user_buffer_length",
         ];
         for (const row of telemetry) {
             csvData.push(
-                `${row.timestamp},${row.channelId},${row.authorId},${row.score},${row.score1},${row.score2},${row.flag1},${row.flag2},${row.flag3},${row.flag4}`,
+                [
+                    row.timestamp,
+                    row.channelId,
+                    row.authorId,
+                    row.score,
+                    row.score1,
+                    row.score2,
+                    row.flag1,
+                    row.flag2,
+                    row.flag3,
+                    row.flag4,
+                    row.channel_buffer_length,
+                    row.user_buffer_length,
+                ].join(","),
             );
         }
 
