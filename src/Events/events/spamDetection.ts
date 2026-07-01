@@ -111,8 +111,7 @@ export default class SpamDetection extends BotEvent {
             } else {
                 lastWarningTime = now;
                 await staffChannel.send({
-                    content: `<@&${roleIds.staff}> Possible media/message spam, or chat going fast, in <#${channelId}>.`,
-                    flags: MessageFlags.SuppressNotifications,
+                    content: `<@&${roleIds.staff}> Possible media/message spam, or chat going fast, in <#${channelId}>.\nThis alert was created at <t:${Math.round(now / 1000)}> [(jump to message at that moment for context)](https://discord.com/channels/${message.guildId}/${channelId}/${message.id}).`,
                 });
             }
         }
