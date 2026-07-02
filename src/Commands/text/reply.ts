@@ -39,7 +39,7 @@ export default class ReplyCommand extends TextCommand {
             let fetchedMessage = await channel.messages.fetch(messageId);
             const files = message.attachments.map((v) => v);
             const stickers = message.stickers.map((v) => v);
-            const content = args["message"].trim();
+            const content = args["message"]?.trim() ?? "";
             if (
                 content.length == 0 &&
                 files.length == 0 &&
