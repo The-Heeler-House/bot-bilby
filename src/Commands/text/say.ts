@@ -11,6 +11,7 @@ export default class SayCommand extends TextCommand {
         .addImplicitStringArgument(
             "message",
             "The message to send into off-topic",
+            false,
         )
         .allowInDMs(false);
 

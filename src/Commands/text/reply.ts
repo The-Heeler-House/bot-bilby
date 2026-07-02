@@ -12,7 +12,7 @@ export default class ReplyCommand extends TextCommand {
             "message_link",
             "Message you want to reply (message as a link)",
         )
-        .addImplicitStringArgument("message", "The message to send")
+        .addImplicitStringArgument("message", "The message to send", false)
         .allowInDMs(false);
 
     async execute(
