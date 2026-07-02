@@ -29,11 +29,6 @@ export default class ReplyCommand extends TextCommand {
             return;
         }
 
-        if (args["message"].trim().length == 0) {
-            await message.reply("Error! Cannot reply with an empty message!");
-            return;
-        }
-
         let channelId = result[3];
         let messageId = result[4];
 
@@ -42,9 +37,21 @@ export default class ReplyCommand extends TextCommand {
                 channelId,
             )) as TextChannel;
             let fetchedMessage = await channel.messages.fetch(messageId);
+            const files = message.attachments.map((v) => v);
+            const stickers = message.stickers.map((v) => v);
+            const content = args["message"].trim();
+            if (
+                content.length == 0 &&
+                files.length == 0 &&
+                stickers.length == 0
+            ) {
+                await message.reply("Error! Cannot send an empty message!");
+                return;
+            }
             await fetchedMessage.reply({
-                content: args["message"],
-                files: message.attachments.map((v) => v),
+                content,
+                files,
+                stickers,
             });
             await message.react("✅");
         } catch (e) {

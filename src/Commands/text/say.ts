@@ -22,13 +22,17 @@ export default class SayCommand extends TextCommand {
         let channel = (await message.guild.channels.fetch(
             channelIds.offTopic,
         )) as TextChannel;
-        if (args["message"].trim().length == 0) {
+        const files = message.attachments.map((v) => v);
+        const stickers = message.stickers.map((v) => v);
+        const content = args["message"].trim();
+        if (content.length == 0 && files.length == 0 && stickers.length == 0) {
             await message.reply("Error! Cannot send an empty message!");
             return;
         }
         await channel.send({
-            content: args["message"],
-            files: message.attachments.map((v) => v),
+            content,
+            files,
+            stickers,
         });
         await message.react("✅");
     }
