@@ -20,7 +20,23 @@ const client = new Client({
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMembers,
     ],
+    // Defaults are a 15s timeout with 3 retries. Discord's API is regularly
+    // slower than that, and every exhausted request surfaces as an AbortError
+    // that used to take the whole process down.
+    rest: {
+        timeout: 30_000,
+        retries: 5,
+    },
 });
+
+/**
+ * An AbortError from @discordjs/rest means a single HTTP request timed out.
+ * The process itself is still perfectly healthy, so it must not be treated as
+ * a fatal, exit-worthy crash the way a genuine uncaught exception is.
+ */
+function isTransientNetworkError(error: any): boolean {
+    return error?.name === "AbortError" || error?.code === "UND_ERR_CONNECT_TIMEOUT";
+}
 
 const commands = new CommandPreprocessor();
 const events = new EventManager();
@@ -48,6 +64,18 @@ process.on("uncaughtException", async (error, origin) => {
     );
     console.error(error); // Log the full error to STDERR.
 
+    // A timed-out HTTP request leaves Bilby in a perfectly well-defined state.
+    // Killing the process over one is what caused the endless restart loop, so
+    // report it and carry on instead.
+    if (isTransientNetworkError(error)) {
+        await services.pager.sendError(
+            error,
+            `Uncaught transient network error (origin: ${origin})`,
+            services.state.state.pagedUsers,
+        );
+        return;
+    }
+
     const result = await services.pager.sendCrash(
         error,
         origin,
@@ -63,6 +91,27 @@ process.on("uncaughtException", async (error, origin) => {
         );
         process.exit(1);
     }
+});
+
+process.on("unhandledRejection", async (reason: any) => {
+    // Without this handler Node escalates an unhandled rejection into an
+    // uncaughtException, which then exits. A rejected REST promise is not worth
+    // taking the bot down for, so it is reported as an error instead.
+    logger.error(
+        "Detected an unhandled promise rejection.\n",
+        reason?.message ?? String(reason),
+        "\n",
+        reason?.stack ?? "(no stack trace)",
+    );
+    console.error(reason);
+
+    const error = reason instanceof Error ? reason : new Error(String(reason));
+
+    await services.pager.sendError(
+        error,
+        "Unhandled promise rejection",
+        services.state.state.pagedUsers,
+    );
 });
 
 client.on(Events.ClientReady, async () => {

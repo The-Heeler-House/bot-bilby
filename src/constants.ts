@@ -6,6 +6,8 @@ export const roleIds = {
     helper: config.get<string>("roleIds.helper"),
     mod: config.get<string>("roleIds.mod"),
     leadership: config.get<string>("roleIds.leadership"),
+    headMod: config.get<string>("roleIds.headMod"),
+    admin: config.get<string>("roleIds.admin"),
     verifying: config.get<string>("roleIds.verifying"),
     newbie: config.get<string>("roleIds.newbie"),
     fan: config.get<string>("roleIds.fan")
@@ -19,7 +21,8 @@ export const channelIds = {
     mediaLog: config.get<string>("channelIds.mediaLog"),
     memberLog: config.get<string>("channelIds.memberLog"),
     reactionLog: config.get<string>("channelIds.reactionLog"),
-    announcements: config.get<string>("channelIds.announcements")
+    announcements: config.get<string>("channelIds.announcements"),
+    leadershipPings: config.get<string>("channelIds.leadershipPings")
 }
 
 export const channelCategoryIds = {
