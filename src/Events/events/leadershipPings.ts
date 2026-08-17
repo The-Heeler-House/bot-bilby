@@ -1,6 +1,6 @@
 import { Client, Events, Message, TextChannel } from "discord.js";
 import BotEvent from "../BotEvent";
-import { roleIds, channelIds, channelCategoryIds } from "../../constants";
+import { roleIds, channelIds } from "../../constants";
 import { Services } from "../../Services";
 import { isTHHorDevServer } from "../../Helper/EventsHelper";
 
@@ -13,16 +13,9 @@ export default class LeadershipPingEvent extends BotEvent {
 
         const roles = [roleIds.leadership, roleIds.headMod, roleIds.admin];
 
-        const ignoreCategory = [
-            channelCategoryIds.staffPro,
-            channelCategoryIds.leadership,
-            channelCategoryIds.staffInfo
-        ];
-
         if (
             !roles.some(v => message.mentions.roles.has(v)) ||
-            message.channel.isDMBased() ||
-            ignoreCategory.includes(message.channel.parentId)
+            message.channel.isDMBased()
         ) return;
 
         const leadershipPingChannel = await message.client.channels.fetch(channelIds.leadershipPings) as TextChannel;
