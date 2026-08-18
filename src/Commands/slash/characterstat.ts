@@ -12,10 +12,9 @@ import { createHash } from "crypto";
 import { load as parse } from "cheerio";
 import moment from "moment-timezone";
 import { getAverageColor } from "fast-average-color-node";
+import JSONData from "../../Assets/characterstat-data/list.json";
 
-const BLUEYPEDIA_URL = "https://blueypedia.fandom.com";
-const CHARACTER_CATEGORY_URL = `${BLUEYPEDIA_URL}/wiki/Category:Characters`;
-const REFRESH_AFTER = 15 * 60;
+const API_ROOT = "https://blueypedia.fandom.com/rest.php/v1";
 
 const RATING_LIST = [
     "S+",
@@ -48,40 +47,13 @@ const ATTRIBUTE_LIST = [
     "Luck",
 ];
 
-let characterLists = [];
-let lastFetch = moment("1970-01-01T12:00:00Z");
-
-async function getData() {
-    const now = moment();
-    const time_diff = moment.duration(now.diff(lastFetch)).asSeconds();
-    if (time_diff >= REFRESH_AFTER) {
-        lastFetch = moment();
-    } else return;
-
-    const charListPage = await fetch(CHARACTER_CATEGORY_URL);
-    const $charList = parse(await charListPage.text());
-
-    const EXCLUDED_PAGE = ["Heeler family"];
-
-    characterLists = $charList(
-        "main #content .category-page__members .category-page__member a.category-page__member-link",
-    )
-        .map(function () {
-            return {
-                text: $charList(this).text(),
-                url: $charList(this).attr("href"),
-            };
-        })
-        .toArray()
-        .filter((v) => !v.text.startsWith("Category:"))
-        .filter((v) => !EXCLUDED_PAGE.includes(v.text));
-}
+let characterLists = JSONData;
 
 export default class CharacterStatCommand extends SlashCommand {
     public data = new SlashCommandBuilder()
         .setName("characterstat")
         .setDescription(
-            "[DEPRECATED] Check the stat for a Bluey character in a battle against other characters!",
+            "Check the stat for a Bluey character in a battle against other characters!",
         )
         .addStringOption((option) =>
             option
@@ -104,12 +76,6 @@ export default class CharacterStatCommand extends SlashCommand {
         interaction: ChatInputCommandInteraction,
         services: Services,
     ) {
-        await interaction.reply({
-            embeds: [],
-            content:
-                "Sorry! This command has been deprecated due to technical details.",
-        });
-        return;
         const character = interaction.options.getString("character");
         const equip = interaction.options.getString("equip");
         const hash = createHash("sha512");
@@ -120,13 +86,19 @@ export default class CharacterStatCommand extends SlashCommand {
             .setTimestamp();
 
         const generateEmbed = async (character: string, equip: string) => {
-            const CHARACTER_NAME_PATH = "main .page-header #firstHeading";
-            const CHARACTER_IMAGE_PATH = ".pi-item.pi-image a";
+            const CHARACTER_NAME_PATH = ".pi-title";
+            const CHARACTER_IMAGE_PATH = ".pi-image-thumbnail";
 
-            const CHARACTER_PAGE = await fetch(BLUEYPEDIA_URL + character);
-            const $CHARACTER = parse(await CHARACTER_PAGE.text());
+            const JSON_OUT = await fetch(
+                `${API_ROOT}/page/${character}/with_html`,
+                {
+                    method: "GET",
+                },
+            ).then((res) => res.json());
+            const RAW = JSON_OUT["html"];
+            const $CHARACTER = parse(RAW);
 
-            const IMAGE_URL = $CHARACTER(CHARACTER_IMAGE_PATH).attr("href");
+            const IMAGE_URL = $CHARACTER(CHARACTER_IMAGE_PATH).attr("src");
             const IMAGE_COLOR = await getAverageColor(IMAGE_URL);
 
             let characterName = $CHARACTER(CHARACTER_NAME_PATH).text();
@@ -190,8 +162,6 @@ export default class CharacterStatCommand extends SlashCommand {
         interaction: AutocompleteInteraction,
         services: Services,
     ) {
-        return;
-        await getData();
         const focusedValue = interaction.options.getFocused();
 
         const filtered = characterLists

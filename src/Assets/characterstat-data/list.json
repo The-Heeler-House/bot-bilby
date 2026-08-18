@@ -1,0 +1,646 @@
+[
+    {
+        "text": "Alfie",
+        "url": "Alfie"
+    },
+    {
+        "text": "Alfie's Boss",
+        "url": "Alfie%27s_Boss"
+    },
+    {
+        "text": "Alfie's Mum",
+        "url": "Alfie%27s_Mum"
+    },
+    {
+        "text": "Alt Energy Dog",
+        "url": "Alt_Energy_Dog"
+    },
+    {
+        "text": "Argentinean Backpacker",
+        "url": "Argentinean_Backpacker"
+    },
+    {
+        "text": "Background characters",
+        "url": "Background_characters"
+    },
+    {
+        "text": "Bandit Heeler",
+        "url": "Bandit_Heeler"
+    },
+    {
+        "text": "Bella",
+        "url": "Bella"
+    },
+    {
+        "text": "Bentley",
+        "url": "Bentley"
+    },
+    {
+        "text": "Bingo Heeler",
+        "url": "Bingo_Heeler"
+    },
+    {
+        "text": "Blue-and-Yellow Macaw",
+        "url": "Blue-and-Yellow_Macaw"
+    },
+    {
+        "text": "Bluey Heeler",
+        "url": "Bluey_Heeler"
+    },
+    {
+        "text": "Bob Heeler",
+        "url": "Bob_Heeler"
+    },
+    {
+        "text": "Border Collie family",
+        "url": "Border_Collie_family"
+    },
+    {
+        "text": "Brandy Cattle",
+        "url": "Brandy_Cattle"
+    },
+    {
+        "text": "Bucky Dunstan",
+        "url": "Bucky_Dunstan"
+    },
+    {
+        "text": "Buddy",
+        "url": "Buddy"
+    },
+    {
+        "text": "Buddy's family",
+        "url": "Buddy%27s_family"
+    },
+    {
+        "text": "Buddy's Mum",
+        "url": "Buddy%27s_Mum"
+    },
+    {
+        "text": "Bus Stop Dog",
+        "url": "Bus_Stop_Dog"
+    },
+    {
+        "text": "Bus Stop Lady",
+        "url": "Bus_Stop_Lady"
+    },
+    {
+        "text": "Busker",
+        "url": "Busker"
+    },
+    {
+        "text": "Calypso",
+        "url": "Calypso"
+    },
+    {
+        "text": "Captain",
+        "url": "Captain"
+    },
+    {
+        "text": "Checkout Dog",
+        "url": "Checkout_Dog"
+    },
+    {
+        "text": "Checkout Lady",
+        "url": "Checkout_Lady"
+    },
+    {
+        "text": "Cherry",
+        "url": "Cherry"
+    },
+    {
+        "text": "Chilli Heeler",
+        "url": "Chilli_Heeler"
+    },
+    {
+        "text": "Chilli's Mum",
+        "url": "Chilli%27s_Mum"
+    },
+    {
+        "text": "Chippy",
+        "url": "Chippy"
+    },
+    {
+        "text": "Chloe",
+        "url": "Chloe"
+    },
+    {
+        "text": "Chloe's family",
+        "url": "Chloe%27s_family"
+    },
+    {
+        "text": "Chloe's Mum",
+        "url": "Chloe%27s_Mum"
+    },
+    {
+        "text": "Chris Heeler",
+        "url": "Chris_Heeler"
+    },
+    {
+        "text": "Chucky",
+        "url": "Chucky"
+    },
+    {
+        "text": "Chunky Chimp (Film)",
+        "url": "Chunky_Chimp_(Film)"
+    },
+    {
+        "text": "Cinema Counter Dog",
+        "url": "Cinema_Counter_Dog"
+    },
+    {
+        "text": "Coco",
+        "url": "Coco"
+    },
+    {
+        "text": "Coco's family",
+        "url": "Coco%27s_family"
+    },
+    {
+        "text": "Cookie (Stickbird)",
+        "url": "Cookie_(Stickbird)"
+    },
+    {
+        "text": "Cookie (The Sign)",
+        "url": "Cookie_(The_Sign)"
+    },
+    {
+        "text": "Cookie's Friend A",
+        "url": "Cookie%27s_Friend_A"
+    },
+    {
+        "text": "Cookie's Friend B",
+        "url": "Cookie%27s_Friend_B"
+    },
+    {
+        "text": "Cornelius",
+        "url": "Cornelius"
+    },
+    {
+        "text": "Customer (Dance Mode)",
+        "url": "Customer_(Dance_Mode)"
+    },
+    {
+        "text": "Customer (Kids)",
+        "url": "Customer_(Kids)"
+    },
+    {
+        "text": "Daisy",
+        "url": "Daisy"
+    },
+    {
+        "text": "Digger",
+        "url": "Digger"
+    },
+    {
+        "text": "Docket Boy",
+        "url": "Docket_Boy"
+    },
+    {
+        "text": "Doctor (Baby Race)",
+        "url": "Doctor_(Baby_Race)"
+    },
+    {
+        "text": "Doctor (Bumpy and the Wise Old Wolfhound)",
+        "url": "Doctor_(Bumpy_and_the_Wise_Old_Wolfhound)"
+    },
+    {
+        "text": "Doctor (Exercise)",
+        "url": "Doctor_(Exercise)"
+    },
+    {
+        "text": "Doreen",
+        "url": "Doreen"
+    },
+    {
+        "text": "Dougie",
+        "url": "Dougie"
+    },
+    {
+        "text": "Dougie's family",
+        "url": "Dougie%27s_family"
+    },
+    {
+        "text": "Dougie's Mum",
+        "url": "Dougie%27s_Mum"
+    },
+    {
+        "text": "Dusty",
+        "url": "Dusty"
+    },
+    {
+        "text": "Employee",
+        "url": "Employee"
+    },
+    {
+        "text": "Fido",
+        "url": "Fido"
+    },
+    {
+        "text": "Flying Fox Kid",
+        "url": "Flying_Fox_Kid"
+    },
+    {
+        "text": "Frank",
+        "url": "Frank"
+    },
+    {
+        "text": "French Backpacker",
+        "url": "French_Backpacker"
+    },
+    {
+        "text": "Frisky Heeler",
+        "url": "Frisky_Heeler"
+    },
+    {
+        "text": "Golden Conure",
+        "url": "Golden_Conure"
+    },
+    {
+        "text": "Grey Nomads",
+        "url": "Grey_Nomads"
+    },
+    {
+        "text": "Gruber",
+        "url": "Gruber"
+    },
+    {
+        "text": "Gruber's Dad",
+        "url": "Gruber%27s_Dad"
+    },
+    {
+        "text": "Harley",
+        "url": "Harley"
+    },
+    {
+        "text": "Hercules",
+        "url": "Hercules"
+    },
+    {
+        "text": "Honey",
+        "url": "Honey"
+    },
+    {
+        "text": "Honey's family",
+        "url": "Honey%27s_family"
+    },
+    {
+        "text": "Hospital Kid",
+        "url": "Hospital_Kid"
+    },
+    {
+        "text": "Hospital Kid's Mum",
+        "url": "Hospital_Kid%27s_Mum"
+    },
+    {
+        "text": "Ice Cream Lady",
+        "url": "Ice_Cream_Lady"
+    },
+    {
+        "text": "Indy",
+        "url": "Indy"
+    },
+    {
+        "text": "Indy's family",
+        "url": "Indy%27s_family"
+    },
+    {
+        "text": "Indy's Mum",
+        "url": "Indy%27s_Mum"
+    },
+    {
+        "text": "Jack Russell",
+        "url": "Jack_Russell"
+    },
+    {
+        "text": "Jack's Dad",
+        "url": "Jack%27s_Dad"
+    },
+    {
+        "text": "Jack's Mum",
+        "url": "Jack%27s_Mum"
+    },
+    {
+        "text": "Janelle",
+        "url": "Janelle"
+    },
+    {
+        "text": "Jasper G.",
+        "url": "Jasper_G."
+    },
+    {
+        "text": "Jasper G.'s Mum",
+        "url": "Jasper_G.%27s_Mum"
+    },
+    {
+        "text": "Jasper W.",
+        "url": "Jasper_W."
+    },
+    {
+        "text": "Jean-Luc",
+        "url": "Jean-Luc"
+    },
+    {
+        "text": "Jean-Luc's Dad",
+        "url": "Jean-Luc%27s_Dad"
+    },
+    {
+        "text": "Jean-Luc's family",
+        "url": "Jean-Luc%27s_family"
+    },
+    {
+        "text": "Jerry Lee",
+        "url": "Jerry_Lee"
+    },
+    {
+        "text": "Judo",
+        "url": "Judo"
+    },
+    {
+        "text": "Judo's family",
+        "url": "Judo%27s_family"
+    },
+    {
+        "text": "Juniper",
+        "url": "Juniper"
+    },
+    {
+        "text": "Juniper's Mum",
+        "url": "Juniper%27s_Mum"
+    },
+    {
+        "text": "Librarian",
+        "url": "Librarian"
+    },
+    {
+        "text": "Library Dog",
+        "url": "Library_Dog"
+    },
+    {
+        "text": "Lila",
+        "url": "Lila"
+    },
+    {
+        "text": "Lila's Brother",
+        "url": "Lila%27s_Brother"
+    },
+    {
+        "text": "Lila's family",
+        "url": "Lila%27s_family"
+    },
+    {
+        "text": "List of non-canine characters",
+        "url": "List_of_non-canine_characters"
+    },
+    {
+        "text": "Lucky",
+        "url": "Lucky"
+    },
+    {
+        "text": "Lucky's family",
+        "url": "Lucky%27s_family"
+    },
+    {
+        "text": "Lulu Russell",
+        "url": "Lulu_Russell"
+    },
+    {
+        "text": "Mackenzie Border Collie",
+        "url": "Mackenzie_Border_Collie"
+    },
+    {
+        "text": "Mackenzie's Dad",
+        "url": "Mackenzie%27s_Dad"
+    },
+    {
+        "text": "Mackenzie's Mum",
+        "url": "Mackenzie%27s_Mum"
+    },
+    {
+        "text": "Major Tom",
+        "url": "Major_Tom"
+    },
+    {
+        "text": "Marcus",
+        "url": "Marcus"
+    },
+    {
+        "text": "Maynard",
+        "url": "Maynard"
+    },
+    {
+        "text": "Mentioned Characters",
+        "url": "Mentioned_Characters"
+    },
+    {
+        "text": "Mia",
+        "url": "Mia"
+    },
+    {
+        "text": "Missy",
+        "url": "Missy"
+    },
+    {
+        "text": "Mort Cattle",
+        "url": "Mort_Cattle"
+    },
+    {
+        "text": "Mrs. Retriever",
+        "url": "Mrs._Retriever"
+    },
+    {
+        "text": "Muffin Heeler",
+        "url": "Muffin_Heeler"
+    },
+    {
+        "text": "Nurse",
+        "url": "Nurse"
+    },
+    {
+        "text": "Old Pug",
+        "url": "Old_Pug"
+    },
+    {
+        "text": "Pat",
+        "url": "Pat"
+    },
+    {
+        "text": "Poffertje Dog",
+        "url": "Poffertje_Dog"
+    },
+    {
+        "text": "Policeman",
+        "url": "Policeman"
+    },
+    {
+        "text": "Pom Pom",
+        "url": "Pom_Pom"
+    },
+    {
+        "text": "Pom Pom's family",
+        "url": "Pom_Pom%27s_family"
+    },
+    {
+        "text": "Pom Pom's Mum",
+        "url": "Pom_Pom%27s_Mum"
+    },
+    {
+        "text": "Pony Lady",
+        "url": "Pony_Lady"
+    },
+    {
+        "text": "Postie",
+        "url": "Postie"
+    },
+    {
+        "text": "Pretzel",
+        "url": "Pretzel"
+    },
+    {
+        "text": "Radley Heeler",
+        "url": "Radley_Heeler"
+    },
+    {
+        "text": "Rocko",
+        "url": "Rocko"
+    },
+    {
+        "text": "Russell family",
+        "url": "Russell_family"
+    },
+    {
+        "text": "Rusty",
+        "url": "Rusty"
+    },
+    {
+        "text": "Rusty's Dad",
+        "url": "Rusty%27s_Dad"
+    },
+    {
+        "text": "Rusty's family",
+        "url": "Rusty%27s_family"
+    },
+    {
+        "text": "Rusty's Mum",
+        "url": "Rusty%27s_Mum"
+    },
+    {
+        "text": "Sheila",
+        "url": "Sheila"
+    },
+    {
+        "text": "Shopper",
+        "url": "Shopper"
+    },
+    {
+        "text": "Snickers",
+        "url": "Snickers"
+    },
+    {
+        "text": "Snickers' family",
+        "url": "Snickers%27_family"
+    },
+    {
+        "text": "Snickers' Mum",
+        "url": "Snickers%27_Mum"
+    },
+    {
+        "text": "Socks Heeler",
+        "url": "Socks_Heeler"
+    },
+    {
+        "text": "Sparky",
+        "url": "Sparky"
+    },
+    {
+        "text": "Store Clerk",
+        "url": "Store_Clerk"
+    },
+    {
+        "text": "Stripe Heeler",
+        "url": "Stripe_Heeler"
+    },
+    {
+        "text": "Surfer (Show and Tell)",
+        "url": "Surfer_(Show_and_Tell)"
+    },
+    {
+        "text": "Surfer (The Beach)",
+        "url": "Surfer_(The_Beach)"
+    },
+    {
+        "text": "Takeaway Lady",
+        "url": "Takeaway_Lady"
+    },
+    {
+        "text": "Terriers' Mum",
+        "url": "Terriers%27_Mum"
+    },
+    {
+        "text": "The Butlers",
+        "url": "The_Butlers"
+    },
+    {
+        "text": "The Sheepdogs",
+        "url": "The_Sheepdogs"
+    },
+    {
+        "text": "The Terriers",
+        "url": "The_Terriers"
+    },
+    {
+        "text": "User:TheRealRustyKelpie/Sandbox Families",
+        "url": "User:TheRealRustyKelpie/Sandbox_Families"
+    },
+    {
+        "text": "Tiny C.",
+        "url": "Tiny_C."
+    },
+    {
+        "text": "Trixie Heeler",
+        "url": "Trixie_Heeler"
+    },
+    {
+        "text": "Truck Driver",
+        "url": "Truck_Driver"
+    },
+    {
+        "text": "Vet Corgi",
+        "url": "Vet_Corgi"
+    },
+    {
+        "text": "Wendy",
+        "url": "Wendy"
+    },
+    {
+        "text": "Wicket-keeper",
+        "url": "Wicket-keeper"
+    },
+    {
+        "text": "Winnie",
+        "url": "Winnie"
+    },
+    {
+        "text": "Winnie's family",
+        "url": "Winnie%27s_family"
+    },
+    {
+        "text": "Winton",
+        "url": "Winton"
+    },
+    {
+        "text": "Winton and the Terriers' family",
+        "url": "Winton_and_the_Terriers%27_family"
+    },
+    {
+        "text": "Yoga Instructor",
+        "url": "Yoga_Instructor"
+    },
+    {
+        "text": "Zara",
+        "url": "Zara"
+    },
+    {
+        "text": "Ziggy",
+        "url": "Ziggy"
+    }
+]
