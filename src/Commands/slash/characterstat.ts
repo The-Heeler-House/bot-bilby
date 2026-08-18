@@ -105,7 +105,6 @@ export default class CharacterStatCommand extends SlashCommand {
             characterName = characterName.trim();
             equip = equip.trim();
 
-            hash.update($CHARACTER.text());
             hash.update(characterName.toLowerCase());
             hash.update(character);
             hash.update(equip.toLowerCase());
