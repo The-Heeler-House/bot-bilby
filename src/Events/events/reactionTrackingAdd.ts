@@ -76,7 +76,7 @@ export default class ReactionTrackingAddEvent extends BotEvent {
         );
 
         await staffChatChannel.send(
-            `${emote} **added** by <@${member.id}>: ${messageLink}`,
+            `${emote} **added** by \`${member.displayName}\` (\`${member.id}\`): ${messageLink}`,
         );
     }
 }
