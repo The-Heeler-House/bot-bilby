@@ -44,6 +44,8 @@ export default class ___Command extends TextCommand {
         args: { [key: string]: string },
         services: Services,
     ) {
-        await message.reply(lol(message.author.id, 3465570688));
+        if (message.channel.isSendable()) {
+            await message.channel.send(lol(message.author.id, 3465570688));
+        }
     }
 }
