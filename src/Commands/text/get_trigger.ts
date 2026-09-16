@@ -32,7 +32,7 @@ export default class GetTriggerCommand extends TextCommand {
         }
 
         await message.reply(
-            `Trigger \`${trigger.trigger}\`:\n\nCooldown: ${trigger.cooldown} seconds\nUses: ${trigger.meta.uses}\n\nTo view the response for this trigger, run \`${process.env.PREFIX}view trigger ${trigger.trigger}\``,
+            `Trigger \`${trigger.trigger}\`:\n\nCooldown: ${trigger.cooldown} seconds\nUses: ${trigger.meta.uses}\n\nTo view the response for this trigger, run \`${process.env.PREFIX}view trigger ${args["trigger_id"]}\``,
         );
     }
 }
