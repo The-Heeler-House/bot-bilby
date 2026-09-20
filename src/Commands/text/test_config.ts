@@ -43,7 +43,10 @@ export default class TestConfigCommand extends TextCommand {
                     ? PermissionFlagsBits.SendMessagesInThreads
                     : PermissionFlagsBits.SendMessages;
                 result.channels[channel].canSend = perms.has([sendPerm]);
-                result.channels[channel].canRead = true;
+                result.channels[channel].canRead = perms.has([
+                    PermissionFlagsBits.ViewChannel,
+                    PermissionFlagsBits.ReadMessageHistory,
+                ]);
             } catch {
                 result.channels[channel].canRead = false;
                 result.channels[channel].canSend = false;
