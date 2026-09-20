@@ -30,6 +30,7 @@ export default class TestConfigCommand extends TextCommand {
             roles: {} as { [key: string]: boolean },
         };
         for (const channel in channelIds) {
+            result.channels[channel] = { canRead: false, canSend: false };
             const id = channelIds[channel];
             try {
                 const channelInstance = await message.guild.channels.fetch(id);
@@ -53,6 +54,7 @@ export default class TestConfigCommand extends TextCommand {
             }
         }
         for (const roles in roleIds) {
+            result.roles[roles] = false;
             const id = roleIds[roles];
             try {
                 await message.guild.roles.fetch(id);
