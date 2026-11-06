@@ -18,7 +18,7 @@ export default class AccountAgeGateEvent extends BotEvent {
         if (accountAge < minAge) {
             await member
                 .send(
-                    `Welcome to The Heeler House! Unfortunately, your account is too new to join the server. Please try again in a few days. If you believe this is a mistake, please contact a staff member.`,
+                    `Welcome to The Heeler House! Unfortunately, your account is too new to join the server. Please try again in a few days.`,
                 )
                 .catch((error) => {
                     logger.error(
