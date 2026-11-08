@@ -22,10 +22,15 @@ export default function getServices(
 
     // Services accessable to commands and events
     const database = new DatabaseService();
+
+    const s3 = new S3Service();
+    // Bound how long archived media lives, as published in PRIVACY.md.
+    s3.applyRetentionPolicy("media");
+
     return {
         commands,
         database,
-        s3: new S3Service(),
+        s3,
         state: new StateService(),
         pager: new PagerService(client),
         waitForDatabase: () => database.waitForConnection(),

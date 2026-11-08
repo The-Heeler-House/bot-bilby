@@ -9,8 +9,13 @@ import {
 } from "discord.js";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
+import { DATA_RETENTION_DAYS } from "../../constants";
+import * as logger from "../../logger";
 
 const STATE_PATH = path.join(__dirname, "../../../state.json");
+
+const RETENTION_MS = DATA_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+const PRUNE_INTERVAL_MS = 60 * 60 * 1000; // Hourly.
 
 const defaultState: State = {
     joinGate: 5, // 5 days by default
@@ -60,6 +65,43 @@ export default class StateService {
 
             this.save();
         }
+
+        this.pruneExpiredData();
+        // Bilby stays up for weeks at a time, so expiry cannot only happen at
+        // startup or the window would be meaningless on a long-lived process.
+        setInterval(() => this.pruneExpiredData(), PRUNE_INTERVAL_MS).unref();
+    }
+
+    /**
+     * Drops persisted data that has aged past the retention window documented
+     * in PRIVACY.md.
+     *
+     * Tracked messages keep a snapshot of a linked message's content and its
+     * author, so they are user data and must not be held indefinitely.
+     *
+     * @returns the number of entries removed.
+     */
+    public pruneExpiredData(): number {
+        const cutoff = Date.now() - RETENTION_MS;
+        let removed = 0;
+
+        for (const [id, tracked] of this.state.trackedMessages) {
+            // Entries written before retention existed carry no timestamp.
+            // Treat those as expired rather than keeping them forever.
+            if ((tracked?.timestamp ?? 0) < cutoff) {
+                this.state.trackedMessages.delete(id);
+                removed++;
+            }
+        }
+
+        if (removed > 0) {
+            logger.command(
+                `Pruned ${removed} tracked message(s) older than ${DATA_RETENTION_DAYS} days.`,
+            );
+            this.save();
+        }
+
+        return removed;
     }
 
     save() {
