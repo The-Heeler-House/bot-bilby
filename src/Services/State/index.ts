@@ -34,6 +34,7 @@ export default class StateService {
      */
     public volatileState: VolatileState = {
         trackedReactions: new Map(),
+        exclude_joingate: new Set(),
         slashCommandData: {
             guessWhoSessions: new Map(),
         },
@@ -129,6 +130,7 @@ export interface GuessWhoSession {
 
 export interface VolatileState {
     trackedReactions: Map<string, TrackedReaction>;
+    exclude_joingate: Set<Snowflake>;
     slashCommandData: {
         guessWhoSessions: Map<string, GuessWhoSession>;
     };

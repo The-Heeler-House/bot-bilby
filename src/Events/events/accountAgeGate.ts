@@ -15,7 +15,15 @@ export default class AccountAgeGateEvent extends BotEvent {
 
         const accountAge = Date.now() - member.user.createdTimestamp;
         const minAge = services.state.state.joinGate * dayToMiliseconds;
-        if (accountAge < minAge) {
+        const excludedUsers = services.state.volatileState.exclude_joingate;
+
+        const userDataString = [
+            `User: <@${member.user.id}> [${member.user.username}] (${member.user.id})`,
+            `Account age: ${(accountAge / dayToMiliseconds).toPrecision(2)} days < ${services.state.state.joinGate} days`,
+        ].join("\n");
+
+        const excluded = excludedUsers.has(member.user.id);
+        if (accountAge < minAge && !excluded) {
             await member
                 .send(
                     `Welcome to The Heeler House! Unfortunately, your account is too new to join the server. Please try again in a few days.`,
@@ -33,7 +41,18 @@ export default class AccountAgeGateEvent extends BotEvent {
                 channelIds.memberLog,
             )) as TextChannel;
             await channel.send(
-                `Member KICKED by the account age gate.\nUser: <@${member.user.id}> [${member.user.username}] (${member.user.id})\nAccount age: ${(accountAge / dayToMiliseconds).toPrecision(2)} days < ${services.state.state.joinGate} days`,
+                `Member KICKED by the account age gate.\n${userDataString}`,
+            );
+        }
+        if (excluded) {
+            const channel = (await client.channels.fetch(
+                channelIds.memberLog,
+            )) as TextChannel;
+            await channel.send(
+                `Member ALLOWED to join because they were excluded from the account age gate.\n${userDataString}`,
+            );
+            services.state.volatileState.exclude_joingate.delete(
+                member.user.id,
             );
         }
     }
