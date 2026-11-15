@@ -11,7 +11,6 @@ import SlashCommand from "../SlashCommand";
 import { createHash } from "crypto";
 import { load as parse } from "cheerio";
 import moment from "moment-timezone";
-import { getAverageColor } from "fast-average-color-node";
 import JSONData from "../../Assets/characterstat-data/list.json";
 
 const API_ROOT = "https://blueypedia.fandom.com/rest.php/v1";
@@ -99,7 +98,6 @@ export default class CharacterStatCommand extends SlashCommand {
             const $CHARACTER = parse(RAW);
 
             const IMAGE_URL = $CHARACTER(CHARACTER_IMAGE_PATH).attr("src");
-            const IMAGE_COLOR = await getAverageColor(IMAGE_URL);
 
             let characterName = $CHARACTER(CHARACTER_NAME_PATH).text();
             characterName = characterName.trim();
@@ -122,7 +120,6 @@ export default class CharacterStatCommand extends SlashCommand {
             }
 
             const embed = new EmbedBuilder()
-                .setColor(IMAGE_COLOR.hex as ColorResolvable)
                 .setTitle(`Character Stats!`)
                 .setDescription(
                     `**Character: "${characterName}"**\n**Equipped with: "${equip}"**`,
