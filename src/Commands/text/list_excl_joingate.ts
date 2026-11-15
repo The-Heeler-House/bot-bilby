@@ -5,8 +5,8 @@ import { roleIds } from "../../constants";
 
 export default class ToggleGateCommand extends TextCommand {
     public data = new TextCommandBuilder()
-        .setName("get excl joingate")
-        .setDescription("Get the joingate exclusion list.")
+        .setName("list excl joingate")
+        .setDescription("List the joingate exclusion list.")
         .addAllowedRoles(roleIds.mod)
         .allowInDMs(false);
 
