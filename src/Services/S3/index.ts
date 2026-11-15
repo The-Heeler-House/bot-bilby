@@ -4,6 +4,7 @@
 
 import { BucketItemWithMetadata, BucketStream, ItemBucketMetadata, Client as MinioClient, Tag } from 'minio';
 import * as logger from "../../logger";
+import { DATA_RETENTION_DAYS } from "../../constants";
 import * as dotenv from "dotenv";
 import { Readable } from 'stream';
 dotenv.config();
@@ -45,5 +46,40 @@ export default class S3Service {
 
     public async setTags(bucket: string, name: string, tags: { [key: string]: string }, options?: any) {
         return await this.client.setObjectTagging(bucket, name, tags, options);
+    }
+
+    /**
+     * Installs a lifecycle rule so that archived media expires on its own after
+     * the retention window documented in PRIVACY.md.
+     *
+     * The media bucket holds attachments posted by members, which we keep only
+     * so that moderators can review deleted media. Letting the storage server
+     * expire them is what keeps that from becoming indefinite retention of user
+     * content, and it covers objects written before this rule existed too.
+     *
+     * Never throws: a storage server that rejects the rule should not stop the
+     * bot from starting, but it does need to be loud in the logs.
+     */
+    public async applyRetentionPolicy(bucket: string, days: number = DATA_RETENTION_DAYS): Promise<void> {
+        try {
+            await this.client.setBucketLifecycle(bucket, {
+                Rule: [
+                    {
+                        ID: `bilby-retention-${days}d`,
+                        Status: "Enabled",
+                        Filter: { Prefix: "" },
+                        Expiration: { Days: days }
+                    }
+                ]
+            });
+
+            logger.command(`Applied a ${days} day retention policy to the "${bucket}" bucket.`);
+        } catch (error) {
+            logger.warning(
+                `Failed to apply the ${days} day retention policy to the "${bucket}" bucket.`,
+                "Archived media may not expire on schedule — check the storage server.\n",
+                error
+            );
+        }
     }
 }

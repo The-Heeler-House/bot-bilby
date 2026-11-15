@@ -264,3 +264,13 @@ export const badWordFilter = {
         "marica",
     ],
 };
+
+/**
+ * How long data derived from Discord may be kept outside of Discord, in days.
+ *
+ * This bounds the archived media bucket and the tracked message snapshots in
+ * the state file. It is the retention window published in PRIVACY.md and
+ * declared on our privileged intent request, so changing it here means
+ * changing it in both of those places too.
+ */
+export const DATA_RETENTION_DAYS = 30;

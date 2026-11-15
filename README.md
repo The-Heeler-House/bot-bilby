@@ -45,6 +45,9 @@ or
 npm run bot-windows # for people using Windows
 ```
 
+## Privacy
+Bot Bilby handles message content, join events, and aggregate presence data for The Heeler House. What it processes, what it stores, and how to request deletion are documented in [PRIVACY.md](PRIVACY.md).
+
 ## Credit & License
 Contributors: @jalenluorion, @sudoker0, and @CloudburstSys (Leah).
 
