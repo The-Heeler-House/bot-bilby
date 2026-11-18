@@ -18,7 +18,16 @@ export default class PingCommand extends TextCommand {
             await message.guild?.autoModerationRules.fetch();
         if (!moderationRules) return;
         await message.reply({
-            content: JSON.stringify(moderationRules.toJSON()),
+            files: [
+                {
+                    attachment: Buffer.from(
+                        JSON.stringify(moderationRules.toJSON(), null, 4),
+                        "utf-8",
+                    ),
+                    name: "moderationRules.json",
+                },
+            ],
+            content: "dumped",
         });
     }
 }
