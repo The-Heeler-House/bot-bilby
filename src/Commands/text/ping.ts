@@ -8,8 +8,14 @@ export default class PingCommand extends TextCommand {
         .setDescription("Returns the websocket heartbeat of Bot Bilby")
         .allowInDMs(true);
 
-    async execute(message: Message, args: { [key: string]: string }, services: Services) {
-        const test_msg = await message.reply({ content: "..." })
-        await test_msg.edit(`Pong! 🏓\nRTT is ${test_msg.createdTimestamp - message.createdTimestamp}ms. Connection to Discord's Gateway took ${message.client.ws.ping}ms.`);
+    async execute(
+        message: Message,
+        args: { [key: string]: string },
+        services: Services,
+    ) {
+        const test_msg = await message.reply({ content: "..." });
+        await test_msg.edit(
+            `Pong! 🏓\nRTT is ${test_msg.createdTimestamp - message.createdTimestamp}ms. Connection to Discord's Gateway took ${message.client.ws.ping}ms.`,
+        );
     }
 }
